@@ -1,0 +1,221 @@
+/* ==========================================================================
+   1. Theme Variables & Global Setup
+   ========================================================================== */
+:root {
+  --charcoal: #121212;
+  --charcoal-light: #1e1e1e;
+  --charcoal-muted: #2a2a2a;
+  --neon-orange: #FF5F1F;
+  --neon-orange-dim: rgba(255, 95, 31, 0.3);
+  --orange-glow: 0 0 15px rgba(255, 95, 31, 0.5);
+  --orange-glow-intense: 0 0 25px rgba(255, 95, 31, 0.85);
+  --text-main: #e0e0e0;
+  --text-muted: #888888;
+  --font-mono: 'Fira Code', 'Courier New', Courier, monospace;
+}
+
+/* Base resets for the editor app */
+body {
+  background-color: var(--charcoal);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   2. Dashboard Layout & Sidebar
+   ========================================================================== */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: var(--charcoal);
+}
+
+.sidebar {
+  width: 80px;
+  height: 100%;
+  background-color: #0a0a0a;
+  border-right: 1px solid rgba(255, 95, 31, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+
+/* Expand sidebar on hover functionality */
+.sidebar:hover {
+  width: 240px;
+}
+
+.sidebar-icon {
+  color: var(--text-muted);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sidebar-icon:hover, 
+.sidebar-icon.active {
+  color: var(--neon-orange);
+  background: rgba(255, 95, 31, 0.1);
+  box-shadow: inset 0 0 8px rgba(255, 95, 31, 0.2);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   3. Monaco / CodeMirror Editor Customization
+   ========================================================================== */
+.editor-container {
+  position: relative;
+  flex: 1;
+  background: var(--charcoal);
+  border: 1px solid rgba(255, 95, 31, 0.2);
+  border-radius: 8px;
+  margin: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.3s ease;
+}
+
+.editor-container:focus-within {
+  border-color: var(--neon-orange);
+  box-shadow: var(--orange-glow), 0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* Custom Neon Thick Cursor Configuration */
+.monaco-editor .cursor {
+  background-color: var(--neon-orange) !important;
+  border-left: 3px solid var(--neon-orange) !important;
+  box-shadow: var(--orange-glow);
+}
+
+/* ==========================================================================
+   4. High-Contrast Interactive Elements
+   ========================================================================== */
+.fix-all-btn {
+  background: var(--neon-orange);
+  color: #000000;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  box-shadow: var(--orange-glow);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.fix-all-btn:hover {
+  transform: scale(1.03);
+  box-shadow: var(--orange-glow-intense);
+}
+
+.fix-all-btn:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   5. AI Split Diff View Modifications
+   ========================================================================== */
+/* Tailoring standard diff view colors into the Neon Orange aesthetic */
+.diff-viewer-container {
+  background-color: var(--charcoal-light);
+  font-family: var(--font-mono);
+}
+
+/* Outdated/Deleted Code (Muted Charcoal) */
+.diff-removed {
+  background-color: rgba(42, 42, 42, 0.7) !important;
+  color: #666666 !important;
+  text-decoration: line-through;
+}
+
+/* New/AI Suggested Code (Neon Glow Entry) */
+.diff-added {
+  background-color: rgba(255, 95, 31, 0.15) !important;
+  color: #ffffff !important;
+  border-left: 2px solid var(--neon-orange);
+}
+
+/* Severity Badges */
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.badge-critical {
+  background: rgba(255, 95, 31, 0.2);
+  color: var(--neon-orange);
+  border: 1px solid var(--neon-orange);
+  box-shadow: var(--orange-glow);
+  animation: pulse-border 2s infinite alternative;
+}
+
+.badge-optimization {
+  background: rgba(212, 143, 56, 0.2);
+  color: #d48f38;
+  border: 1px solid #d48f38;
+}
+
+/* ==========================================================================
+   6. Keyframes & Animation FX
+   ========================================================================== */
+
+/* The Scanning Laser Line Loader */
+@keyframes scan {
+  0% { top: 0%; opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.scanner-line {
+  position: absolute;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, var(--neon-orange), transparent);
+  box-shadow: var(--orange-glow-intense);
+  animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Glowing animation for critical warnings */
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 5px rgba(255, 95, 31, 0.4); }
+  100% { box-shadow: 0 0 15px rgba(255, 95, 31, 0.8); }
+}
+
+/* Global custom scrollbar for that sleek terminal look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--charcoal);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--charcoal-muted);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-orange-dim);
+}

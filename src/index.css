@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+body {
+  background: #121212;
+}
+
+/* Neon Orange Glow Styles */
+button {
+  transition: all 0.1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+/* Fix-All Button Pulse */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 25px rgba(255, 95, 0, 0.5); }
+  50% { box-shadow: 0 0 55px rgba(255, 95, 0, 0.95); }
+}
+.animate-pulse {
+  animation: pulse 0.6s ease-in-out;
+}
