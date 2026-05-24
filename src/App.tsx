@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atom-one-dark.css';
+import { Analytics } from '@vercel/analytics/react';
 
 // Types
 interface Session {
@@ -519,6 +520,7 @@ const App: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      <Analytics />
     </div>
   );
 };
