@@ -108,7 +108,7 @@ const App: React.FC = () => {
   const [selectedPlugin, setSelectedPlugin] = useState<string>('Test Runner');
   const [selectedSkill, setSelectedSkill] = useState<string>('Syntax Repair');
   const [agentStatus, setAgentStatus] = useState<string>('idle');
-  const [agentMessage, setAgentMessage] = useState<string>('Agent ready');
+  const [agentMessage, setAgentMessage] = useState<string>('Agent ready');   const [agentMode, setAgentMode] = useState<string>('assist');
 
   useEffect(() => {
     const savedSessions = localStorage.getItem('codeSessions');
@@ -170,7 +170,7 @@ try {
       const data = await res.json();
       if (data.issues) setIssues(data.issues);
       if (data.fixedCode) setFixedCode(data.fixedCode);
-      if (data.summary) setAnalysisSummary(data.summary);
+      
     } catch (err) {
       console.error('OpenRouter API error:', err);
     }
