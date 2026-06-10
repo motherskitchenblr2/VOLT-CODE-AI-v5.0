@@ -171,7 +171,7 @@ const App: React.FC = () => {
           original: 'console.log("Sum is: " + sum);',
           fixed: '// Debug log removed for production'
         });
-        currentFixed = currentFixed.replace(/console\.log\([^)]+\);?/g, '// Debug log removed for production');
+        currentFixed = currentFixed.replace(/^\s*console\.log\(.*?\);\s*$/gm, '// Debug log removed for production');
       }
 
       if (code.includes(' == ')) {
