@@ -156,92 +156,24 @@ const App: React.FC = () => {
     setScanProgress(100);
     setIsScanning(false);
 
-    const lang = language === 'auto' ? detectedLanguage : language;
-    const detectedIssues: Issue[] = [];
-    let currentFixed = code;
-
-    if (lang === 'javascript') {
-      if (code.includes('console.log')) {
-        detectedIssues.push({
-          id: 1,
-          type: 'Debug Statement',
-          severity: 'Medium',
-          description: 'Remove console.log statements for production',
-          explanation: 'Console logs can expose sensitive data and slow down performance in production.',
-          original: 'console.log("Sum is: " + sum);',
-          fixed: '// Debug log removed for production'
-        });
-        currentFixed = currentFixed.replace(/^\s*console\.log\(.*?\);\s*$/gm, '// Debug log removed for production');
-      }
-
-      if (code.includes(' == ')) {
-        detectedIssues.push({
-          id: 2,
-          type: 'Type Safety',
-          severity: 'High',
-          description: 'Use strict equality (===) instead of loose (==)',
-          explanation: 'Loose equality can cause unexpected type coercion bugs.',
-          original: 'if (x == y)',
-          fixed: 'if (x === y)'
-        });
-        currentFixed = currentFixed.replace(/ == /g, ' === ');
-      }
-
-      if (code.includes('let ') && !code.includes('const ')) {
-        detectedIssues.push({
-          id: 3,
-          type: 'Performance',
-          severity: 'Low',
-          description: 'Use const where variables are never reassigned',
-          explanation: 'Const improves readability and enables better JS engine optimizations.',
-          original: 'let sum = 0;',
-          fixed: 'const sum = 0;'
-        });
-      }
-    }
-
-    if (lang === 'python') {
-      if (code.includes('print(')) {
-        detectedIssues.push({
-          id: 1,
-          type: 'Debug Statement',
-          severity: 'Medium',
-          description: 'Remove print statements',
-          explanation: 'Production code should use proper logging.',
-          original: 'print("...")',
-          fixed: '# print removed'
-        });
-        currentFixed = currentFixed.replace(/print\([^)]+\)/g, '# print removed');
-      }
-    }
-
-    if (code.length > 40 && detectedIssues.length < 3) {
-      detectedIssues.push({
-        id: detectedIssues.length + 1,
-        type: 'Code Quality',
-        severity: 'High',
-        description: 'Potential logic improvement detected',
-        explanation: 'Consider adding input validation for edge cases.',
-        original: 'for (let i = 0; i < arr.length; i++)',
-        fixed: 'for (let i = 0; i < arr.length; i++) { if (arr[i] != null)'
+try {
+      const res = await fetch('/api/openrouter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language: language === 'auto' ? detectedLanguage : language,
+          model: selectedModel
+        })
       });
+      const data = await res.json();
+      if (data.issues) setIssues(data.issues);
+      if (data.fixedCode) setFixedCode(data.fixedCode);
+      if (data.summary) setAnalysisSummary(data.summary);
+    } catch (err) {
+      console.error('OpenRouter API error:', err);
     }
 
-    if (detectedIssues.length === 0) {
-      detectedIssues.push({
-        id: 1,
-        type: 'Optimization',
-        severity: 'Low',
-        description: 'Code looks clean but can be improved',
-        explanation: 'Add JSDoc comments and improve naming for better maintainability.',
-        original: code.split('\n')[0],
-        fixed: '// Optimized version\n' + code.split('\n')[0]
-      });
-      currentFixed = '// AI Optimized:\n' + code;
-    }
-
-    setIssues(detectedIssues);
-    setFixedCode(currentFixed);
     setIsAnalyzing(false);
     setShowDiff(true);
   };
