@@ -224,6 +224,7 @@ const App: React.FC = () => {
   // Debounced Sentinel Scanner Watcher
   useEffect(() => {
     if (!enableSentinel) return;
+    let active = true;
 
     const timer = setTimeout(async () => {
       setIsSentinelScanning(true);
@@ -243,7 +244,7 @@ const App: React.FC = () => {
         });
         if (res.ok) {
           const data = await res.json();
-          if (data && data.issues) {
+          if (active && data && data.issues) {
             setSentinelIssues(data.issues);
             setSentinelStats(prev => ({
               ...prev,
@@ -256,13 +257,18 @@ const App: React.FC = () => {
       } catch (err) {
         console.error(err);
       } finally {
-        setIsSentinelScanning(false);
-        setLastSentinelScan(new Date().toLocaleTimeString());
+        if (active) {
+          setIsSentinelScanning(false);
+          setLastSentinelScan(new Date().toLocaleTimeString());
+        }
       }
     }, debounceDelay);
 
-    return () => clearTimeout(timer);
-  }, [code, enableSentinel, debounceDelay]);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin]);
 
   const detectLanguage = (codeStr: string): string => {
     if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
