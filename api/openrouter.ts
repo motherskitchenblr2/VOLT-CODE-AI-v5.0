@@ -115,7 +115,7 @@ Rules:
       })
     });
 
-    const data = await response.json();
+    const data: any = await response.json();
 
     if (!response.ok) {
       return res.status(response.status).json({ 
