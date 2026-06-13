@@ -1,4 +1,13 @@
 /// <reference types="node" />
+interface OpenRouterResponse {
+  choices?: Array<{ message?: { content?: string } }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -124,12 +133,11 @@ Rules:
       })
     });
 
-    const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }>; usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } };
+    const data = (await response.json()) as OpenRouterResponse;
 
-    if (!response.ok) {
-      return res.status(response.status).json({ 
-        error: 'OpenRouter error', 
-        details: data 
+      return res.status(response.status).json({
+        error: 'OpenRouter error',
+        details: data
       });
     }
 
