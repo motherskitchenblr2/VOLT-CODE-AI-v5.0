@@ -57,12 +57,12 @@ const VALID_BODY = {
 describe('handler – response.json() typed result (choices / usage access)', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
-    process.env['OPENROUTER_API_KEY'] = 'test-key';
+    vi.stubEnv('OPENROUTER_API_KEY', 'test-key');
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
-    delete process.env['OPENROUTER_API_KEY'];
+    vi.unstubAllEnvs();
   });
 
   // -------------------------------------------------------------------------
