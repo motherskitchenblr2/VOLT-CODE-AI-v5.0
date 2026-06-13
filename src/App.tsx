@@ -179,11 +179,11 @@ const App: React.FC = () => {
     setSessions(newSessions);
   };
 
-  const addLog = (msg: string, type: 'info' | 'success' | 'error' | 'warn' = 'info') => {
+  const addLog = useCallback((msg: string, type: 'info' | 'success' | 'error' | 'warn' = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     const prefix = type === 'success' ? '✔ [SUCCESS]' : type === 'error' ? '✖ [ERROR]' : type === 'warn' ? '⚠ [WARNING]' : 'ℹ [INFO]';
     setTerminalLogs(prev => [...prev, `[${timestamp}] ${prefix} ${msg}`]);
-  };
+  }, []);
 
 
 
@@ -218,14 +218,16 @@ const App: React.FC = () => {
               tokensConsumed: prev.tokensConsumed + (data.tokensUsed || 0)
             }));
             addLog(`[SENTINEL] Passive scan completed. Found ${data.issues.length} potential issue(s).`, data.issues.length > 0 ? 'warn' : 'success');
+            setLastSentinelScan(new Date().toLocaleTimeString());
           }
+        } else {
+          addLog(`[SENTINEL] Passive scan failed with HTTP ${res.status}`, 'error');
         }
       } catch (err) {
         console.error(err);
       } finally {
         if (active) {
           setIsSentinelScanning(false);
-          setLastSentinelScan(new Date().toLocaleTimeString());
         }
       }
     }, debounceDelay);
@@ -234,11 +236,11 @@ const App: React.FC = () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin]);
+  }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin, addLog]);
 
   const detectLanguage = (codeStr: string): string => {
     if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
-    if (codeStr.includes('function ') || codeStr.includes('const ') || codeStr.includes('=>')) return 'javascript';
+
     if (codeStr.includes('#include') || codeStr.includes('int main')) return 'cpp';
     if (codeStr.includes('<html') || codeStr.includes('<div')) return 'html';
     if (codeStr.includes('{') && codeStr.includes('}') && codeStr.includes(':')) return 'css';
