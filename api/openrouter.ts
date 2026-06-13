@@ -3,7 +3,32 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, language, model, agentMode, skill } = req.body || {};
+  const { code, language, model, agentMode, skill, plugin, customPrompt } = req.body || {};
+
+  // Input Sanitization & Validation (CodeRabbit review fixes)
+  const allowedPlugins = [
+    'Test Runner',
+    'Console Trace',
+    'Diff Reviewer',
+    'Repo Scanner',
+    'API Schema Reader',
+    'Dependency Audit'
+  ];
+
+  if (plugin && !allowedPlugins.includes(plugin)) {
+    return res.status(400).json({ error: `Invalid plugin parameter. Allowed: ${allowedPlugins.join(', ')}` });
+  }
+
+  let sanitizedCustomPrompt = '';
+  if (customPrompt) {
+    const trimmed = String(customPrompt).trim();
+    if (trimmed.length > 500) {
+      return res.status(400).json({ error: 'customPrompt exceeds maximum allowed length of 500 characters.' });
+    }
+    sanitizedCustomPrompt = trimmed
+      .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
+      .replace(/ignore\s+previous\s+instructions|system\s+prompt|reset\s+instructions/gi, '[INJECTION REMOVED]');
+  }
 
   if (!code) {
     return res.status(400).json({ error: 'Missing code' });
@@ -37,6 +62,7 @@ export default async function handler(req: any, res: any) {
 
   const systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
 ${skillMap[skill] || 'Focus: all bug types equally.'}
+${plugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${plugin}".` : ''}
 
 Output schema:
 {
@@ -64,7 +90,10 @@ Rules:
 - Low=style
 - Truncate fixedCode if >200 lines`;
 
-  const userPrompt = `Language: ${language || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
+  let userPrompt = `Language: ${language || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
+  if (sanitizedCustomPrompt) {
+    userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
+  }
 
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
