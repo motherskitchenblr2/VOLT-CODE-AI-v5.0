@@ -15,11 +15,17 @@ export default async function handler(req: any, res: any) {
     'Dependency Audit'
   ];
 
-  const trimmedPlugin = typeof plugin === 'string' ? plugin.trim() : plugin;
-
-  if (trimmedPlugin && !allowedPlugins.includes(trimmedPlugin)) {
-    return res.status(400).json({ error: `Invalid plugin parameter. Allowed: ${allowedPlugins.join(', ')}` });
+  let trimmedPlugin: string | undefined;
+  if (plugin !== undefined && plugin !== null) {
+    if (typeof plugin !== 'string') {
+      return res.status(400).json({ error: 'Plugin parameter must be a string.' });
+    }
+    trimmedPlugin = plugin.trim();
+    if (trimmedPlugin && !allowedPlugins.includes(trimmedPlugin)) {
+      return res.status(400).json({ error: `Invalid plugin parameter. Allowed: ${allowedPlugins.join(', ')}` });
+    }
   }
+
 
   let sanitizedCustomPrompt = '';
   if (customPrompt) {

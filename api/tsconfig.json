@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
+    "composite": true,
     "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.api.tsbuildinfo",
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "node",
     "types": ["node"],
     "skipLibCheck": true,
-    "noEmit": true,
+    "outDir": "../node_modules/.tmp/api",
     "strict": true
   },
   "include": ["openrouter.ts"]
 }
+
 
