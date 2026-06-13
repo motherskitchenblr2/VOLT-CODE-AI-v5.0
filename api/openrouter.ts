@@ -137,7 +137,7 @@ Rules:
 
     if (!response.ok) {
       return res.status(response.status).json({ 
-
+      error: 'OpenRouter error',
         details: data 
       });
     }
