@@ -1,5 +1,5 @@
 /// <reference types="node" />
-interface OpenRouterResponse {
+interface GroqResponse {
   choices?: Array<{ message?: { content?: string } }>;
   usage?: {
     prompt_tokens?: number;
@@ -15,7 +15,7 @@ export default async function handler(req: any, res: any) {
 
   const { code, language, model, agentMode, skill, plugin, customPrompt } = req.body || {};
 
-  // Input Sanitization & Validation (CodeRabbit review fixes)
+  // Input Sanitization & Validation
   const allowedPlugins = [
     'Test Runner',
     'Console Trace',
@@ -36,7 +36,6 @@ export default async function handler(req: any, res: any) {
     }
   }
 
-
   let sanitizedCustomPrompt = '';
   if (customPrompt) {
     const trimmed = String(customPrompt).trim();
@@ -55,20 +54,33 @@ export default async function handler(req: any, res: any) {
   // Smart model routing based on code characteristics
   const lines = code.split('\n').length;
   const hasSecurityKeywords = /eval\(|innerHTML|dangerouslySet|exec\(|password|secret|token/i.test(code);
-  
-  let selectedModel = model && model !== 'openrouter/auto' 
-    ? model 
+
+  // Groq model selection — maps previous OpenRouter models to Groq equivalents
+  let selectedModel = model && model !== 'openrouter/auto'
+    ? (() => {
+        const modelMap: Record<string, string> = {
+          'qwen/qwen3-coder:free': 'qwen-qwen3-32b',
+          'deepseek/deepseek-v3-0324:free': 'deepseek-r1-distill-llama-70b',
+          'meta-llama/llama-3.3-70b-instruct:free': 'llama-3.3-70b-versatile',
+          'google/gemma-3-27b-it:free': 'gemma2-9b-it',
+          'mistralai/mistral-7b-instruct:free': 'mistral-saba-24b',
+          'microsoft/phi-3-mini-128k-instruct:free': 'llama-3.1-8b-instant',
+          'qwen/qwen-2.5-72b-instruct:free': 'qwen-qwen3-32b',
+          'deepseek/deepseek-r1:free': 'deepseek-r1-distill-llama-70b',
+        };
+        return modelMap[model] || 'llama-3.3-70b-versatile';
+      })()
     : (
-        hasSecurityKeywords 
-          ? 'qwen/qwen3-coder:free' 
-          : lines > 200 
-            ? 'qwen/qwen3-coder:free'
-            : lines > 50 
-              ? 'meta-llama/llama-3.3-70b-instruct:free' 
-              : 'mistralai/mistral-7b-instruct:free'
+        hasSecurityKeywords
+          ? 'deepseek-r1-distill-llama-70b'
+          : lines > 200
+          ? 'deepseek-r1-distill-llama-70b'
+          : lines > 50
+          ? 'llama-3.3-70b-versatile'
+          : 'llama-3.1-8b-instant'
       );
 
-  // Skill-based system prompt (token-efficient, compressed)
+  // Skill-based system prompt
   const skillMap: Record<string, string> = {
     'Syntax Repair': 'Focus: syntax errors, off-by-one, null access, undefined vars.',
     'Bug Isolation': 'Focus: logic bugs, wrong output, incorrect conditions, edge cases.',
@@ -79,48 +91,19 @@ export default async function handler(req: any, res: any) {
   };
 
   const systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
-${skillMap[skill] || 'Focus: all bug types equally.'}
-${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
+${skill ? skillMap[skill] || '' : ''}
+${trimmedPlugin ? `Active Plugin: ${trimmedPlugin}.` : ''}
+${sanitizedCustomPrompt ? `Custom Instructions: ${sanitizedCustomPrompt}` : ''}
+Return JSON: { "issues": [...], "fixes": [...], "fixed_code": "...", "explanation": "..." }`;
 
-Output schema:
-{
-  "issues": [
-    {
-      "id": 1,
-      "type": "string",
-      "severity": "Critical|High|Medium|Low",
-      "line": 0,
-      "description": "string",
-      "original": "string",
-      "fixed": "string",
-      "explanation": "string"
-    }
-  ],
-  "fixedCode": "string",
-  "summary": "string"
-}
-
-Rules:
-- Max 10 issues
-- severity=Critical means crash/security
-- High=wrong output
-- Medium=perf/smell
-- Low=style
-- Truncate fixedCode if >200 lines`;
-
-  let userPrompt = `Language: ${language || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
-  if (sanitizedCustomPrompt) {
-    userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
-  }
+  const userPrompt = `Language: ${language || 'unknown'}\nMode: ${agentMode || 'standard'}\n\nCode:\n${code}`;
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://codeeditorv5bydesignarenaai.vercel.app',
-        'X-Title': 'VOLT CODE AI'
       },
       body: JSON.stringify({
         model: selectedModel,
@@ -133,23 +116,22 @@ Rules:
       })
     });
 
-    const data = (await response.json()) as OpenRouterResponse;
+    const data = (await response.json()) as GroqResponse;
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: 'OpenRouter error',
+        error: 'Groq error',
         details: data
       });
     }
-
 
     const text = data?.choices?.[0]?.message?.content;
     const usage = data?.usage || {};
 
     if (!text) {
-      return res.status(500).json({ 
-        error: 'Empty model response', 
-        details: data 
+      return res.status(500).json({
+        error: 'Empty model response',
+        details: data
       });
     }
 
@@ -157,26 +139,24 @@ Rules:
     try {
       parsed = JSON.parse(text);
     } catch {
-      // If model returns markdown-wrapped JSON, try to extract
       const jsonMatch = text.match(/```(?:json)?\n?([\s\S]*?)```/);
       if (jsonMatch) {
         try {
           parsed = JSON.parse(jsonMatch[1]);
         } catch {
-          return res.status(500).json({ 
-            error: 'Model did not return valid JSON', 
-            raw: text 
+          return res.status(500).json({
+            error: 'Model did not return valid JSON',
+            raw: text
           });
         }
       } else {
-        return res.status(500).json({ 
-          error: 'Model did not return valid JSON', 
-          raw: text 
+        return res.status(500).json({
+          error: 'Model did not return valid JSON',
+          raw: text
         });
       }
     }
 
-    // Add token usage to response
     const promptTokens = usage.prompt_tokens || 0;
     const completionTokens = usage.completion_tokens || 0;
     const totalTokens = usage.total_tokens || (promptTokens + completionTokens);
@@ -190,9 +170,9 @@ Rules:
     });
 
   } catch (error: any) {
-    return res.status(500).json({ 
-      error: 'Server error', 
-      details: error?.message || 'Unknown error' 
+    return res.status(500).json({
+      error: 'Server error',
+      details: error?.message || 'Unknown error'
     });
   }
 }
