@@ -1,4 +1,9 @@
 /// <reference types="node" />
+
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
 interface GroqResponse {
   choices?: Array<{ message?: { content?: string } }>;
   usage?: {
@@ -13,7 +18,7 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, language, model, agentMode, skill, plugin, customPrompt } = req.body || {};
+  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys } = req.body || {};
 
   // Input Sanitization & Validation
   const allowedPlugins = [
@@ -51,34 +56,84 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Missing code' });
   }
 
-  // Smart model routing based on code characteristics
-  const lines = code.split('\n').length;
-  const hasSecurityKeywords = /eval\(|innerHTML|dangerouslySet|exec\(|password|secret|token/i.test(code);
+  // Determine provider dynamically if not supplied by client
+  let providerName = provider || '';
+  if (!providerName) {
+    if (model) {
+      if (model.includes('openrouter') || model.startsWith('qwen/') || model.startsWith('deepseek/') || model.includes('google/gemma-3') || model.includes('meta-llama/')) {
+        providerName = 'OpenRouter';
+      } else if (model.includes('nvidia/') || model.startsWith('meta/') || model.includes('deepseek-ai/deepseek-r1') || model.includes('nvidia/nemotron')) {
+        providerName = 'NVIDIA';
+      } else if (model.includes('Llama-3.3') || model.includes('DeepSeek-R1') || model.includes('Mistral-7B') || model.startsWith('google/gemma-2') || model.startsWith('Qwen/')) {
+        providerName = 'HuggingFace';
+      } else {
+        providerName = 'Groq';
+      }
+    } else {
+      providerName = 'Groq';
+    }
+  }
 
-  // Groq model selection — maps previous OpenRouter models to Groq equivalents
-  let selectedModel = model && model !== 'openrouter/auto'
-    ? (() => {
-        const modelMap: Record<string, string> = {
-          'qwen/qwen3-coder:free': 'qwen-qwen3-32b',
-          'deepseek/deepseek-v3-0324:free': 'deepseek-r1-distill-llama-70b',
-          'meta-llama/llama-3.3-70b-instruct:free': 'llama-3.3-70b-versatile',
-          'google/gemma-3-27b-it:free': 'gemma2-9b-it',
-          'mistralai/mistral-7b-instruct:free': 'mistral-saba-24b',
-          'microsoft/phi-3-mini-128k-instruct:free': 'llama-3.1-8b-instant',
-          'qwen/qwen-2.5-72b-instruct:free': 'qwen-qwen3-32b',
-          'deepseek/deepseek-r1:free': 'deepseek-r1-distill-llama-70b',
-        };
-        return modelMap[model] || 'llama-3.3-70b-versatile';
-      })()
-    : (
-        hasSecurityKeywords
-          ? 'deepseek-r1-distill-llama-70b'
-          : lines > 200
-          ? 'deepseek-r1-distill-llama-70b'
-          : lines > 50
-          ? 'llama-3.3-70b-versatile'
-          : 'llama-3.1-8b-instant'
-      );
+  // Map default model IDs if model or openrouter/auto is requested
+  let selectedModel = model && model !== 'openrouter/auto' ? model : '';
+  if (!selectedModel) {
+    if (providerName === 'Groq') {
+      selectedModel = 'llama-3.3-70b-versatile';
+    } else if (providerName === 'OpenRouter') {
+      selectedModel = 'meta-llama/llama-3.3-70b-instruct';
+    } else if (providerName === 'NVIDIA') {
+      selectedModel = 'meta/llama-3.3-70b-instruct';
+    } else if (providerName === 'HuggingFace') {
+      selectedModel = 'meta-llama/Llama-3.3-70B-Instruct';
+    } else {
+      selectedModel = 'llama-3.3-70b-versatile';
+      providerName = 'Groq';
+    }
+  }
+
+  // Resolve API Key
+  let apiKey = '';
+  if (providerName === 'Groq') {
+    apiKey = keys?.groq || process.env.GROQ_API_KEY || '';
+  } else if (providerName === 'OpenRouter') {
+    apiKey = keys?.openrouter || process.env.OPENROUTER_API_KEY || '';
+  } else if (providerName === 'NVIDIA') {
+    apiKey = keys?.nvidia || process.env.NVIDIA_API_KEY || '';
+  } else if (providerName === 'HuggingFace') {
+    apiKey = keys?.huggingface || process.env.HUGGINGFACE_API_KEY || '';
+  }
+
+  if (!apiKey) {
+    if (process.env.NODE_ENV === 'test') {
+      apiKey = 'mock-key-for-testing';
+    } else {
+      return res.status(400).json({
+        error: `Missing API Key for provider: ${providerName}. Please enter it in Settings or supply it as an environment variable.`
+      });
+    }
+  }
+
+  // Configure target URL and headers
+  let fetchUrl = '';
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
+
+  if (providerName === 'Groq') {
+    fetchUrl = 'https://api.groq.com/openai/v1/chat/completions';
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  } else if (providerName === 'OpenRouter') {
+    fetchUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    headers['Authorization'] = `Bearer ${apiKey}`;
+    headers['HTTP-Referer'] = 'https://volt-code-ai.vercel.app';
+    headers['X-Title'] = 'Volt Code AI';
+  } else if (providerName === 'NVIDIA') {
+    fetchUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  } else if (providerName === 'HuggingFace') {
+    fetchUrl = 'https://api-inference.huggingface.co/v1/chat/completions';
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
 
   // Skill-based system prompt
   const skillMap: Record<string, string> = {
@@ -126,12 +181,9 @@ Rules:
   }
 
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(fetchUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         model: selectedModel,
         messages: [
@@ -215,9 +267,8 @@ Rules:
       tokensUsed: totalTokens,
       promptTokens,
       completionTokens,
-      modelUsed: model || selectedModel
+      modelUsed: selectedModel
     });
-
 
   } catch (error: any) {
     return res.status(500).json({
