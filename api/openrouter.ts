@@ -91,12 +91,39 @@ export default async function handler(req: any, res: any) {
   };
 
   const systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
-${skill ? skillMap[skill] || '' : ''}
-${trimmedPlugin ? `Active Plugin: ${trimmedPlugin}.` : ''}
-${sanitizedCustomPrompt ? `Custom Instructions: ${sanitizedCustomPrompt}` : ''}
-Return JSON: { "issues": [...], "fixes": [...], "fixed_code": "...", "explanation": "..." }`;
+${skillMap[skill] || 'Focus: all bug types equally.'}
+${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
 
-  const userPrompt = `Language: ${language || 'unknown'}\nMode: ${agentMode || 'standard'}\n\nCode:\n${code}`;
+Output schema:
+{
+  "issues": [
+    {
+      "id": 1,
+      "type": "string",
+      "severity": "Critical|High|Medium|Low",
+      "line": 0,
+      "description": "string",
+      "original": "string",
+      "fixed": "string",
+      "explanation": "string"
+    }
+  ],
+  "fixedCode": "string",
+  "summary": "string"
+}
+
+Rules:
+- Max 10 issues
+- severity=Critical means crash/security
+- High=wrong output
+- Medium=perf/smell
+- Low=style
+- Truncate fixedCode if >200 lines`;
+
+  let userPrompt = `Language: ${language || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
+  if (sanitizedCustomPrompt) {
+    userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
+  }
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -120,7 +147,7 @@ Return JSON: { "issues": [...], "fixes": [...], "fixed_code": "...", "explanatio
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: 'Groq error',
+        error: 'OpenRouter error',
         details: data
       });
     }
@@ -157,6 +184,28 @@ Return JSON: { "issues": [...], "fixes": [...], "fixed_code": "...", "explanatio
       }
     }
 
+    // Normalize keys to support both Groq/snake_case and frontend camelCase structures
+    if (parsed) {
+      if (parsed.fixed_code && !parsed.fixedCode) {
+        parsed.fixedCode = parsed.fixed_code;
+      }
+      if (parsed.explanation && !parsed.summary) {
+        parsed.summary = parsed.explanation;
+      }
+      if (parsed.fixes && !parsed.issues) {
+        parsed.issues = parsed.fixes.map((fix: any, index: number) => ({
+          id: fix.id || index + 1,
+          type: fix.type || 'style',
+          severity: fix.severity || 'Medium',
+          line: fix.line || 0,
+          description: fix.description || fix.explanation || '',
+          original: fix.original || '',
+          fixed: fix.fixed || '',
+          explanation: fix.explanation || ''
+        }));
+      }
+    }
+
     const promptTokens = usage.prompt_tokens || 0;
     const completionTokens = usage.completion_tokens || 0;
     const totalTokens = usage.total_tokens || (promptTokens + completionTokens);
@@ -166,8 +215,9 @@ Return JSON: { "issues": [...], "fixes": [...], "fixed_code": "...", "explanatio
       tokensUsed: totalTokens,
       promptTokens,
       completionTokens,
-      modelUsed: selectedModel
+      modelUsed: model || selectedModel
     });
+
 
   } catch (error: any) {
     return res.status(500).json({
