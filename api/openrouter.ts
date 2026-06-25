@@ -20,6 +20,14 @@ export default async function handler(req: any, res: any) {
 
   const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys } = req.body || {};
 
+  let sanitizedModel = '';
+  if (model !== undefined && model !== null) {
+    if (typeof model !== 'string') {
+      return res.status(400).json({ error: 'Model parameter must be a string.' });
+    }
+    sanitizedModel = model.trim();
+  }
+
   // Input Sanitization & Validation
   const allowedPlugins = [
     'Test Runner',
@@ -59,12 +67,12 @@ export default async function handler(req: any, res: any) {
   // Determine provider dynamically if not supplied by client
   let providerName = provider || '';
   if (!providerName) {
-    if (model) {
-      if (model.includes('openrouter') || model.startsWith('qwen/') || model.startsWith('deepseek/') || model.includes('google/gemma-3') || model.includes('meta-llama/')) {
+    if (sanitizedModel) {
+      if (sanitizedModel.includes('openrouter') || sanitizedModel.startsWith('qwen/') || sanitizedModel.startsWith('deepseek/') || sanitizedModel.includes('google/gemma-3') || sanitizedModel.includes('meta-llama/')) {
         providerName = 'OpenRouter';
-      } else if (model.includes('nvidia/') || model.startsWith('meta/') || model.includes('deepseek-ai/deepseek-r1') || model.includes('nvidia/nemotron')) {
+      } else if (sanitizedModel.includes('nvidia/') || sanitizedModel.startsWith('meta/') || sanitizedModel.includes('deepseek-ai/deepseek-r1') || sanitizedModel.includes('nvidia/nemotron')) {
         providerName = 'NVIDIA';
-      } else if (model.includes('Llama-3.3') || model.includes('DeepSeek-R1') || model.includes('Mistral-7B') || model.startsWith('google/gemma-2') || model.startsWith('Qwen/')) {
+      } else if (sanitizedModel.includes('Llama-3.3') || sanitizedModel.includes('DeepSeek-R1') || sanitizedModel.includes('Mistral-7B') || sanitizedModel.startsWith('google/gemma-2') || sanitizedModel.startsWith('Qwen/')) {
         providerName = 'HuggingFace';
       } else {
         providerName = 'Groq';
@@ -75,7 +83,7 @@ export default async function handler(req: any, res: any) {
   }
 
   // Map default model IDs if model or openrouter/auto is requested
-  let selectedModel = model && model !== 'openrouter/auto' ? model : '';
+  let selectedModel = sanitizedModel && sanitizedModel !== 'openrouter/auto' ? sanitizedModel : '';
   if (!selectedModel) {
     if (providerName === 'Groq') {
       selectedModel = 'llama-3.3-70b-versatile';
@@ -244,7 +252,7 @@ Rules:
       if (parsed.explanation && !parsed.summary) {
         parsed.summary = parsed.explanation;
       }
-      if (parsed.fixes && !parsed.issues) {
+      if (parsed.fixes && Array.isArray(parsed.fixes) && !parsed.issues) {
         parsed.issues = parsed.fixes.map((fix: any, index: number) => ({
           id: fix.id || index + 1,
           type: fix.type || 'style',
