@@ -1,5 +1,5 @@
 <p align="center">
- <img width="2062" height="763" alt="App Branding Banner" src="https://github.com/user-attachments/assets/3fe09306-8ac4-4a49-a5a2-96de8c56ae1d" />
+ <img width="2062" height="763" alt="App Branding Banner" src="https://github.com/motherskitchenblr2/VOLT-CODE-AI-v5.0/blob/main/56842c2d-fd48-40c2-ac86-b90dc5805c9a.png" />
 </p>
 
 <p align="center">
