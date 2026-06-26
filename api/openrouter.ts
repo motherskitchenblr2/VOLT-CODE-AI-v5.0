@@ -59,13 +59,13 @@ export default async function handler(req: any, res: any) {
   let selectedModel = model && model !== 'openrouter/auto'
     ? (() => {
         const modelMap: Record<string, string> = {
-          'qwen/qwen3-coder:free': 'qwen-qwen3-32b',
+          'qwen/qwen3-coder:free': 'deepseek-r1-distill-qwen-32b',
           'deepseek/deepseek-v3-0324:free': 'deepseek-r1-distill-llama-70b',
           'meta-llama/llama-3.3-70b-instruct:free': 'llama-3.3-70b-versatile',
           'google/gemma-3-27b-it:free': 'gemma2-9b-it',
-          'mistralai/mistral-7b-instruct:free': 'mistral-saba-24b',
+          'mistralai/mistral-7b-instruct:free': 'llama-3.1-8b-instant',
           'microsoft/phi-3-mini-128k-instruct:free': 'llama-3.1-8b-instant',
-          'qwen/qwen-2.5-72b-instruct:free': 'qwen-qwen3-32b',
+          'qwen/qwen-2.5-72b-instruct:free': 'deepseek-r1-distill-qwen-32b',
           'deepseek/deepseek-r1:free': 'deepseek-r1-distill-llama-70b',
         };
         return modelMap[model] || 'llama-3.3-70b-versatile';
