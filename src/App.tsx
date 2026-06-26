@@ -240,14 +240,14 @@ const App: React.FC = () => {
     };
   }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin, addLog]);
 
-  const detectLanguage = (codeStr: string): string => {
+  const detectLanguage = useCallback((codeStr: string): string => {
     if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
 
     if (codeStr.includes('#include') || codeStr.includes('int main')) return 'cpp';
     if (codeStr.includes('<html') || codeStr.includes('<div')) return 'html';
     if (codeStr.includes('{') && codeStr.includes('}') && codeStr.includes(':')) return 'css';
     return 'javascript';
-  };
+  }, []);
 
   const handleCodeChange = (newCode: string) => {
     // FIX 1: Clean escaped HTML entities
