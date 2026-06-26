@@ -1,9 +1,4 @@
 /// <reference types="node" />
-
-declare const process: {
-  env: Record<string, string | undefined>;
-};
-
 interface GroqResponse {
   choices?: Array<{ message?: { content?: string } }>;
   usage?: {
@@ -18,15 +13,7 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys } = req.body || {};
-
-  let sanitizedModel = '';
-  if (model !== undefined && model !== null) {
-    if (typeof model !== 'string') {
-      return res.status(400).json({ error: 'Model parameter must be a string.' });
-    }
-    sanitizedModel = model.trim();
-  }
+  const { code, language, model, agentMode, skill, plugin, customPrompt } = req.body || {};
 
   // Input Sanitization & Validation
   const allowedPlugins = [
@@ -64,84 +51,34 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Missing code' });
   }
 
-  // Determine provider dynamically if not supplied by client
-  let providerName = provider || '';
-  if (!providerName) {
-    if (sanitizedModel) {
-      if (sanitizedModel.includes('openrouter') || sanitizedModel.startsWith('qwen/') || sanitizedModel.startsWith('deepseek/') || sanitizedModel.includes('google/gemma-3') || sanitizedModel.includes('meta-llama/')) {
-        providerName = 'OpenRouter';
-      } else if (sanitizedModel.includes('nvidia/') || sanitizedModel.startsWith('meta/') || sanitizedModel.includes('deepseek-ai/deepseek-r1') || sanitizedModel.includes('nvidia/nemotron')) {
-        providerName = 'NVIDIA';
-      } else if (sanitizedModel.includes('Llama-3.3') || sanitizedModel.includes('DeepSeek-R1') || sanitizedModel.includes('Mistral-7B') || sanitizedModel.startsWith('google/gemma-2') || sanitizedModel.startsWith('Qwen/')) {
-        providerName = 'HuggingFace';
-      } else {
-        providerName = 'Groq';
-      }
-    } else {
-      providerName = 'Groq';
-    }
-  }
+  // Smart model routing based on code characteristics
+  const lines = code.split('\n').length;
+  const hasSecurityKeywords = /eval\(|innerHTML|dangerouslySet|exec\(|password|secret|token/i.test(code);
 
-  // Map default model IDs if model or openrouter/auto is requested
-  let selectedModel = sanitizedModel && sanitizedModel !== 'openrouter/auto' ? sanitizedModel : '';
-  if (!selectedModel) {
-    if (providerName === 'Groq') {
-      selectedModel = 'llama-3.3-70b-versatile';
-    } else if (providerName === 'OpenRouter') {
-      selectedModel = 'meta-llama/llama-3.3-70b-instruct';
-    } else if (providerName === 'NVIDIA') {
-      selectedModel = 'meta/llama-3.3-70b-instruct';
-    } else if (providerName === 'HuggingFace') {
-      selectedModel = 'meta-llama/Llama-3.3-70B-Instruct';
-    } else {
-      selectedModel = 'llama-3.3-70b-versatile';
-      providerName = 'Groq';
-    }
-  }
-
-  // Resolve API Key
-  let apiKey = '';
-  if (providerName === 'Groq') {
-    apiKey = keys?.groq || process.env.GROQ_API_KEY || '';
-  } else if (providerName === 'OpenRouter') {
-    apiKey = keys?.openrouter || process.env.OPENROUTER_API_KEY || '';
-  } else if (providerName === 'NVIDIA') {
-    apiKey = keys?.nvidia || process.env.NVIDIA_API_KEY || '';
-  } else if (providerName === 'HuggingFace') {
-    apiKey = keys?.huggingface || process.env.HUGGINGFACE_API_KEY || '';
-  }
-
-  if (!apiKey) {
-    if (process.env.NODE_ENV === 'test') {
-      apiKey = 'mock-key-for-testing';
-    } else {
-      return res.status(400).json({
-        error: `Missing API Key for provider: ${providerName}. Please enter it in Settings or supply it as an environment variable.`
-      });
-    }
-  }
-
-  // Configure target URL and headers
-  let fetchUrl = '';
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  };
-
-  if (providerName === 'Groq') {
-    fetchUrl = 'https://api.groq.com/openai/v1/chat/completions';
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  } else if (providerName === 'OpenRouter') {
-    fetchUrl = 'https://openrouter.ai/api/v1/chat/completions';
-    headers['Authorization'] = `Bearer ${apiKey}`;
-    headers['HTTP-Referer'] = 'https://volt-code-ai.vercel.app';
-    headers['X-Title'] = 'Volt Code AI';
-  } else if (providerName === 'NVIDIA') {
-    fetchUrl = 'https://integrate.api.nvidia.com/v1/chat/completions';
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  } else if (providerName === 'HuggingFace') {
-    fetchUrl = 'https://api-inference.huggingface.co/v1/chat/completions';
-    headers['Authorization'] = `Bearer ${apiKey}`;
-  }
+  // Groq model selection — maps previous OpenRouter models to Groq equivalents
+  let selectedModel = model && model !== 'openrouter/auto'
+    ? (() => {
+        const modelMap: Record<string, string> = {
+          'qwen/qwen3-coder:free': 'qwen-qwen3-32b',
+          'deepseek/deepseek-v3-0324:free': 'deepseek-r1-distill-llama-70b',
+          'meta-llama/llama-3.3-70b-instruct:free': 'llama-3.3-70b-versatile',
+          'google/gemma-3-27b-it:free': 'gemma2-9b-it',
+          'mistralai/mistral-7b-instruct:free': 'mistral-saba-24b',
+          'microsoft/phi-3-mini-128k-instruct:free': 'llama-3.1-8b-instant',
+          'qwen/qwen-2.5-72b-instruct:free': 'qwen-qwen3-32b',
+          'deepseek/deepseek-r1:free': 'deepseek-r1-distill-llama-70b',
+        };
+        return modelMap[model] || 'llama-3.3-70b-versatile';
+      })()
+    : (
+        hasSecurityKeywords
+          ? 'deepseek-r1-distill-llama-70b'
+          : lines > 200
+          ? 'deepseek-r1-distill-llama-70b'
+          : lines > 50
+          ? 'llama-3.3-70b-versatile'
+          : 'llama-3.1-8b-instant'
+      );
 
   // Skill-based system prompt
   const skillMap: Record<string, string> = {
@@ -154,44 +91,20 @@ export default async function handler(req: any, res: any) {
   };
 
   const systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
-${skillMap[skill] || 'Focus: all bug types equally.'}
-${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
+${skill ? skillMap[skill] || '' : ''}
+${trimmedPlugin ? `Active Plugin: ${trimmedPlugin}.` : ''}
+${sanitizedCustomPrompt ? `Custom Instructions: ${sanitizedCustomPrompt}` : ''}
+Return JSON: { "issues": [...], "fixes": [...], "fixed_code": "...", "explanation": "..." }`;
 
-Output schema:
-{
-  "issues": [
-    {
-      "id": 1,
-      "type": "string",
-      "severity": "Critical|High|Medium|Low",
-      "line": 0,
-      "description": "string",
-      "original": "string",
-      "fixed": "string",
-      "explanation": "string"
-    }
-  ],
-  "fixedCode": "string",
-  "summary": "string"
-}
-
-Rules:
-- Max 10 issues
-- severity=Critical means crash/security
-- High=wrong output
-- Medium=perf/smell
-- Low=style
-- Truncate fixedCode if >200 lines`;
-
-  let userPrompt = `Language: ${language || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
-  if (sanitizedCustomPrompt) {
-    userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
-  }
+  const userPrompt = `Language: ${language || 'unknown'}\nMode: ${agentMode || 'standard'}\n\nCode:\n${code}`;
 
   try {
-    const response = await fetch(fetchUrl, {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers,
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         model: selectedModel,
         messages: [
@@ -207,7 +120,7 @@ Rules:
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: 'OpenRouter error',
+        error: 'Groq error',
         details: data
       });
     }
@@ -241,28 +154,6 @@ Rules:
           error: 'Model did not return valid JSON',
           raw: text
         });
-      }
-    }
-
-    // Normalize keys to support both Groq/snake_case and frontend camelCase structures
-    if (parsed) {
-      if (parsed.fixed_code && !parsed.fixedCode) {
-        parsed.fixedCode = parsed.fixed_code;
-      }
-      if (parsed.explanation && !parsed.summary) {
-        parsed.summary = parsed.explanation;
-      }
-      if (parsed.fixes && Array.isArray(parsed.fixes) && !parsed.issues) {
-        parsed.issues = parsed.fixes.map((fix: any, index: number) => ({
-          id: fix.id || index + 1,
-          type: fix.type || 'style',
-          severity: fix.severity || 'Medium',
-          line: fix.line || 0,
-          description: fix.description || fix.explanation || '',
-          original: fix.original || '',
-          fixed: fix.fixed || '',
-          explanation: fix.explanation || ''
-        }));
       }
     }
 

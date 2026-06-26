@@ -21,12 +21,7 @@ import {
   Terminal as TerminalIcon,
   Search,
   HelpCircle,
-  Send,
-  Github,
-  GitBranch,
-  Folder,
-  File,
-  AlertCircle
+  Send
 } from 'lucide-react';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Analytics } from '@vercel/analytics/react';
@@ -62,46 +57,21 @@ interface DiffLine {
   lineNumFixed?: number;
 }
 
-type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github';
+type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about';
 type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
 
-export interface ModelConfig {
-  id: string;
-  name: string;
-  tag: 'BALANCED' | 'CODING' | 'REASONING' | 'FAST';
-  ctx: string;
-  color: string;
-  provider: 'Groq' | 'OpenRouter' | 'NVIDIA' | 'HuggingFace';
-}
-
-const FREE_MODELS: ModelConfig[] = [
-  // Groq
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '128K', color: '#F97316', provider: 'Groq' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', tag: 'FAST', ctx: '128K', color: '#60A5FA', provider: 'Groq' },
-  { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill Llama 70B', tag: 'REASONING', ctx: '128K', color: '#3B82F6', provider: 'Groq' },
-  { id: 'deepseek-r1-distill-qwen-32b', name: 'DeepSeek R1 Distill Qwen 32B', tag: 'CODING', ctx: '128K', color: '#9333EA', provider: 'Groq' },
-  { id: 'gemma2-9b-it', name: 'Gemma 2 9B', tag: 'FAST', ctx: '8K', color: '#EF4444', provider: 'Groq' },
-
-  // OpenRouter
-  { id: 'openrouter/auto', name: 'OpenRouter Auto', tag: 'BALANCED', ctx: 'varies', color: '#FF5F00', provider: 'OpenRouter' },
-  { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', tag: 'CODING', ctx: '32K', color: '#9333EA', provider: 'OpenRouter' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', tag: 'REASONING', ctx: '160K', color: '#3B82F6', provider: 'OpenRouter' },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '131K', color: '#F97316', provider: 'OpenRouter' },
-  { id: 'google/gemma-3-27b-it', name: 'Gemma 3 27B', tag: 'FAST', ctx: '131K', color: '#EF4444', provider: 'OpenRouter' },
-
-  // NVIDIA
-  { id: 'nvidia/llama-3.1-nemotron-70b-instruct', name: 'Llama 3.1 Nemotron 70B', tag: 'BALANCED', ctx: '128K', color: '#F97316', provider: 'NVIDIA' },
-  { id: 'meta/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '128K', color: '#F97316', provider: 'NVIDIA' },
-  { id: 'deepseek-ai/deepseek-r1', name: 'DeepSeek R1', tag: 'REASONING', ctx: '128K', color: '#3B82F6', provider: 'NVIDIA' },
-  { id: 'nvidia/nemotron-4-340b-instruct', name: 'Nemotron-4 340B', tag: 'CODING', ctx: '4K', color: '#10B981', provider: 'NVIDIA' },
-  { id: 'meta/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', tag: 'FAST', ctx: '128K', color: '#60A5FA', provider: 'NVIDIA' },
-
-  // HuggingFace
-  { id: 'meta-llama/Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '131K', color: '#F97316', provider: 'HuggingFace' },
-  { id: 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', name: 'DeepSeek R1 Qwen 32B', tag: 'REASONING', ctx: '32K', color: '#3B82F6', provider: 'HuggingFace' },
-  { id: 'Qwen/Qwen2.5-Coder-32B-Instruct', name: 'Qwen 2.5 Coder 32B', tag: 'CODING', ctx: '32K', color: '#9333EA', provider: 'HuggingFace' },
-  { id: 'google/gemma-2-9b-it', name: 'Gemma 2 9B', tag: 'FAST', ctx: '8K', color: '#EF4444', provider: 'HuggingFace' },
-  { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B', tag: 'FAST', ctx: '32K', color: '#6EE7B7', provider: 'HuggingFace' },
+// REAL FREE MODELS from OpenRouter
+const FREE_MODELS = [
+  { id: 'openrouter/auto', name: 'OpenRouter Auto', tag: 'BALANCED', ctx: 'varies', color: '#FF5F00' },
+  { id: 'qwen/qwen3-coder:free', name: 'Qwen3 Coder', tag: 'CODING', ctx: '1M', color: '#9333EA' },
+  { id: 'deepseek/deepseek-v3-0324:free', name: 'DeepSeek V4 Flash', tag: 'REASONING', ctx: '1M', color: '#3B82F6' },
+  { id: 'nvidia/nemotron-3-super-120b-a12b:free', name: 'Nemotron 120B', tag: 'CODING', ctx: '128K', color: '#10B981' },
+  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '131K', color: '#F97316' },
+  { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', tag: 'FAST', ctx: '131K', color: '#EF4444' },
+  { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', tag: 'FAST', ctx: '32K', color: '#6EE7B7' },
+  { id: 'microsoft/phi-3-mini-128k-instruct:free', name: 'Phi-3 Mini', tag: 'FAST', ctx: '128K', color: '#60A5FA' },
+  { id: 'qwen/qwen-2.5-72b-instruct:free', name: 'Qwen 2.5 72B', tag: 'CODING', ctx: '131K', color: '#9333EA' },
+  { id: 'deepseek/deepseek-r1:free', name: 'DeepSeek R1', tag: 'REASONING', ctx: '163K', color: '#3B82F6' },
 ];
 
 const pluginOptions = [
@@ -130,35 +100,13 @@ const modeOptions: AgentMode[] = [
   'team-review'
 ];
 
-const detectLanguage = (codeStr: string): string => {
-  if (!codeStr || !codeStr.trim()) return 'unknown';
-
-  // YAML detection
-  if (
-    codeStr.includes('yaml-language-server') ||
-    codeStr.includes('rules:') ||
-    codeStr.includes('reviews:') ||
-    codeStr.includes('early_access:') ||
-    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) && !codeStr.includes('{') && !codeStr.includes('}'))
-  ) {
-    return 'yaml';
-  }
-
-  if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
-  if (codeStr.includes('#include') || codeStr.includes('int main')) return 'cpp';
-  if (codeStr.includes('<html') || codeStr.includes('<div') || codeStr.includes('<!DOCTYPE html>')) return 'html';
-  if (codeStr.includes('{') && codeStr.includes('}') && codeStr.includes(':')) return 'css';
-  if (codeStr.includes('const ') || codeStr.includes('let ') || codeStr.includes('function ') || codeStr.includes('console.log')) return 'javascript';
-  return 'unknown';
-};
-
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('editor');
   const [code, setCode] = useState(
     'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}'
   );
-  const [language, setLanguage] = useState('auto');
-  const [detectedLanguage, setDetectedLanguage] = useState('unknown');
+  const [language, setLanguage] = useState('javascript');
+  const [detectedLanguage, setDetectedLanguage] = useState('javascript');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -194,49 +142,6 @@ const App: React.FC = () => {
   const [showTokenUsage, setShowTokenUsage] = useState(true);
   const [showShortcutsCheatSheet, setShowShortcutsCheatSheet] = useState(false);
   
-  // Custom API Keys
-  const [openrouterKey, setOpenrouterKey] = useState(localStorage.getItem('volt_openrouter_key') || '');
-  const [groqKey, setGroqKey] = useState(localStorage.getItem('volt_groq_key') || '');
-  const [nvidiaKey, setNvidiaKey] = useState(localStorage.getItem('volt_nvidia_key') || '');
-  const [huggingfaceKey, setHuggingfaceKey] = useState(localStorage.getItem('volt_huggingface_key') || '');
-  
-  // Auto-Language Deduction Warning Modal
-  const [showLangAlert, setShowLangAlert] = useState(false);
-
-  // GitHub Workspace State
-  const [repoPath, setRepoPath] = useState(localStorage.getItem('volt_github_repo') || 'motherskitchenblr2/VOLT-CODE-AI-v5.0');
-  const [repoBranch, setRepoBranch] = useState(localStorage.getItem('volt_github_branch') || 'main');
-  const [githubToken, setGithubToken] = useState(localStorage.getItem('volt_github_token') || '');
-  const [githubFiles, setGithubFiles] = useState<{ path: string; type: string; sha: string }[]>([]);
-  const [githubIssues, setGithubIssues] = useState<any[]>([]);
-  const [isFetchingGithub, setIsFetchingGithub] = useState(false);
-  const [loadedFilePath, setLoadedFilePath] = useState('');
-  const [loadedFileSha, setLoadedFileSha] = useState('');
-  const [commitMessage, setCommitMessage] = useState('fix: update code diagnostics');
-
-  // Multi-tab interactive terminal state
-  const [terminalTab, setTerminalTab] = useState<'diagnostic' | 'powershell' | 'ubuntu' | 'cmd'>('diagnostic');
-  const [terminalInput, setTerminalInput] = useState('');
-  const [powershellLogs, setPowershellLogs] = useState<string[]>([
-    'Windows PowerShell',
-    'Copyright (C) Microsoft Corporation. All rights reserved.',
-    '',
-    'PS C:\\Workspace\\Volt-Code-AI> '
-  ]);
-  const [ubuntuLogs, setUbuntuLogs] = useState<string[]>([
-    'Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-88-generic x86_64)',
-    'Last login: Thu Jun 25 04:30:11 2026 from 192.168.1.5',
-    '',
-    'volt-user@ubuntu:~/workspace$ '
-  ]);
-  const [cmdLogs, setCmdLogs] = useState<string[]>([
-    'Microsoft Windows [Version 10.0.22631.3296]',
-    '(c) Microsoft Corporation. All rights reserved.',
-    '',
-    'C:\\Workspace\\Volt-Code-AI> '
-  ]);
-
-  
   // Sentinel State telemetry
   const [sentinelIssues, setSentinelIssues] = useState<Issue[]>([]);
   const [lastSentinelScan, setLastSentinelScan] = useState<string>('Never');
@@ -261,19 +166,13 @@ const App: React.FC = () => {
     if (savedSessions) {
       setSessions(JSON.parse(savedSessions));
     }
-    // Initial language detection
-    const detected = detectLanguage(code);
-    setDetectedLanguage(detected);
-    if (language === 'auto') {
-      setLanguage(detected);
-    }
   }, []);
 
   useEffect(() => {
     if (terminalEndRef.current) {
       terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [terminalLogs, powershellLogs, ubuntuLogs, cmdLogs, terminalTab]);
+  }, [terminalLogs]);
 
   const saveSessions = (newSessions: Session[]) => {
     localStorage.setItem('codeSessions', JSON.stringify(newSessions));
@@ -294,11 +193,6 @@ const App: React.FC = () => {
     let active = true;
 
     const timer = setTimeout(async () => {
-      const activeLanguage = language === 'auto' ? detectedLanguage : language;
-      if (activeLanguage === 'unknown') {
-        setIsSentinelScanning(false);
-        return;
-      }
       setIsSentinelScanning(true);
       addLog(`[SENTINEL] Debounced watcher triggered passive code scan...`, 'info');
       try {
@@ -308,20 +202,12 @@ const App: React.FC = () => {
           body: JSON.stringify({
             code,
             language: language === 'auto' ? detectedLanguage : language,
-            model: selectedModel.id,
-            provider: selectedModel.provider,
+            model: 'mistralai/mistral-7b-instruct:free', // use fastest
             agentMode: 'manual',
             skill: 'Syntax Repair',
-            plugin: selectedPlugin,
-            keys: {
-              groq: groqKey,
-              openrouter: openrouterKey,
-              nvidia: nvidiaKey,
-              huggingface: huggingfaceKey
-            }
+            plugin: selectedPlugin
           })
         });
-
         if (res.ok) {
           const data = await res.json();
           if (active && data && data.issues) {
@@ -352,9 +238,16 @@ const App: React.FC = () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin, selectedModel, groqKey, openrouterKey, nvidiaKey, huggingfaceKey, addLog]);
+  }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin, addLog]);
 
+  const detectLanguage = (codeStr: string): string => {
+    if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
 
+    if (codeStr.includes('#include') || codeStr.includes('int main')) return 'cpp';
+    if (codeStr.includes('<html') || codeStr.includes('<div')) return 'html';
+    if (codeStr.includes('{') && codeStr.includes('}') && codeStr.includes(':')) return 'css';
+    return 'javascript';
+  };
 
   const handleCodeChange = (newCode: string) => {
     // FIX 1: Clean escaped HTML entities
@@ -384,16 +277,6 @@ const App: React.FC = () => {
   };
 
   const analyzeCode = useCallback(async () => {
-    const activeLanguage = language === 'auto' ? detectedLanguage : language;
-    if (activeLanguage === 'unknown') {
-      addLog('Analysis failed: Language not updated in system.', 'error');
-      setShowLangAlert(true);
-      setIsAnalyzing(false);
-      setIsScanning(false);
-      setAgentStatus('error');
-      return;
-    }
-
     setIsAnalyzing(true);
     setIsScanning(true);
     setScanProgress(0);
@@ -421,18 +304,11 @@ const App: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code,
-          language: activeLanguage,
+          language: language === 'auto' ? detectedLanguage : language,
           model: selectedModel.id,
-          provider: selectedModel.provider,
           agentMode,
           skill: selectedSkill,
-          plugin: selectedPlugin,
-          keys: {
-            groq: groqKey,
-            openrouter: openrouterKey,
-            nvidia: nvidiaKey,
-            huggingface: huggingfaceKey
-          }
+          plugin: selectedPlugin
         })
       });
 
@@ -489,7 +365,7 @@ const App: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  }, [code, language, detectedLanguage, selectedModel, agentMode, selectedSkill, selectedPlugin, autoApplyFixes, groqKey, openrouterKey, nvidiaKey, huggingfaceKey, addLog]);
+  }, [code, language, detectedLanguage, selectedModel, agentMode, selectedSkill, selectedPlugin, autoApplyFixes]);
 
   const applyAllFixes = useCallback(() => {
     if (!fixedCode) return;
@@ -534,8 +410,6 @@ const App: React.FC = () => {
     const updatedSessions = [newSession, ...sessions].slice(0, 50);
     saveSessions(updatedSessions);
     setShowReport(true);
-    setIssues([]);
-    setFixedCode('');
   }, [code, fixedCode, issues, language, detectedLanguage, tokensUsed, promptTokens, completionTokens, selectedModel, sessions]);
 
   // Keyboard Shortcuts Setup
@@ -714,9 +588,7 @@ const App: React.FC = () => {
     { value: 'javascript', label: 'JavaScript' },
     { value: 'python', label: 'Python' },
     { value: 'cpp', label: 'C++' },
-    { value: 'html', label: 'HTML' },
-    { value: 'yaml', label: 'YAML' },
-    { value: 'css', label: 'CSS' }
+    { value: 'html', label: 'HTML' }
   ];
 
   const filteredSessions = sessions.filter(s => 
@@ -725,35 +597,28 @@ const App: React.FC = () => {
     (s.modelUsed && s.modelUsed.toLowerCase().includes(historySearch.toLowerCase()))
   );
 
-  const renderModelSelect = () => {
-    const providers = Array.from(new Set(FREE_MODELS.map(m => m.provider)));
-    return (
-      <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-2 bg-black/40">
-        <div className="text-[#FF5F00]/70 text-xs tracking-wider">ENGINE</div>
-        <ChevronDown className="w-4 h-4 text-[#FF5F00]/60" />
-        <select
-          id="model-select-dropdown"
-          value={selectedModel.id}
-          onChange={(e) => {
-            const model = FREE_MODELS.find(m => m.id === e.target.value)!;
-            setSelectedModel(model);
-            addLog(`Selected execution model: ${model.name}`, 'info');
-          }}
-          className="bg-transparent text-white outline-none min-w-[180px] font-semibold text-xs cursor-pointer font-mono"
-        >
-          {providers.map((provider) => (
-            <optgroup key={provider} label={provider} className="bg-[#121212] text-[#FF5F00] font-bold">
-              {FREE_MODELS.filter(m => m.provider === provider).map((model) => (
-                <option key={model.id} value={model.id} className="bg-[#121212] text-white font-normal">
-                  {model.name} ({model.tag} • {model.ctx})
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </div>
-    );
-  };
+  const renderModelSelect = () => (
+    <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-2 bg-black/40">
+      <div className="text-[#FF5F00]/70 text-xs tracking-wider">ENGINE</div>
+      <ChevronDown className="w-4 h-4 text-[#FF5F00]/60" />
+      <select
+        id="model-select-dropdown"
+        value={selectedModel.id}
+        onChange={(e) => {
+          const model = FREE_MODELS.find(m => m.id === e.target.value)!;
+          setSelectedModel(model);
+          addLog(`Selected execution model: ${model.name}`, 'info');
+        }}
+        className="bg-transparent text-white outline-none min-w-[180px] font-semibold text-xs cursor-pointer"
+      >
+        {FREE_MODELS.map((model) => (
+          <option key={model.id} value={model.id} className="bg-[#121212] text-white">
+            {model.name} ({model.tag} • {model.ctx})
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 
   const renderSelect = (
     label: string,
@@ -1179,558 +1044,18 @@ const App: React.FC = () => {
     );
   };
 
-  const handleTerminalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cmd = terminalInput.trim();
-    if (!cmd) {
-      if (terminalTab === 'powershell') {
-        setPowershellLogs(prev => [...prev.slice(0, -1), `PS C:\\Workspace\\Volt-Code-AI> `, `PS C:\\Workspace\\Volt-Code-AI> `]);
-      } else if (terminalTab === 'ubuntu') {
-        setUbuntuLogs(prev => [...prev.slice(0, -1), `volt-user@ubuntu:~/workspace$ `, `volt-user@ubuntu:~/workspace$ `]);
-      } else if (terminalTab === 'cmd') {
-        setCmdLogs(prev => [...prev.slice(0, -1), `C:\\Workspace\\Volt-Code-AI> `, `C:\\Workspace\\Volt-Code-AI> `]);
-      }
-      setTerminalInput('');
-      return;
-    }
-
-    setTerminalInput('');
-
-    let currentPrompt = '';
-    if (terminalTab === 'powershell') {
-      currentPrompt = 'PS C:\\Workspace\\Volt-Code-AI> ';
-    } else if (terminalTab === 'ubuntu') {
-      currentPrompt = 'volt-user@ubuntu:~/workspace$ ';
-    } else if (terminalTab === 'cmd') {
-      currentPrompt = 'C:\\Workspace\\Volt-Code-AI> ';
-    }
-
-    const appendLogs = (lines: string[]) => {
-      if (terminalTab === 'powershell') {
-        setPowershellLogs(prev => {
-          const base = [...prev];
-          if (base.length > 0) {
-            base[base.length - 1] = currentPrompt + cmd;
-          } else {
-            base.push(currentPrompt + cmd);
-          }
-          return [...base, ...lines, currentPrompt];
-        });
-      } else if (terminalTab === 'ubuntu') {
-        setUbuntuLogs(prev => {
-          const base = [...prev];
-          if (base.length > 0) {
-            base[base.length - 1] = currentPrompt + cmd;
-          } else {
-            base.push(currentPrompt + cmd);
-          }
-          return [...base, ...lines, currentPrompt];
-        });
-      } else if (terminalTab === 'cmd') {
-        setCmdLogs(prev => {
-          const base = [...prev];
-          if (base.length > 0) {
-            base[base.length - 1] = currentPrompt + cmd;
-          } else {
-            base.push(currentPrompt + cmd);
-          }
-          return [...base, ...lines, currentPrompt];
-        });
-      }
-    };
-
-    const cmdLower = cmd.toLowerCase();
-
-    if (cmdLower === 'clear' || cmdLower === 'cls') {
-      if (terminalTab === 'powershell') {
-        setPowershellLogs([currentPrompt]);
-      } else if (terminalTab === 'ubuntu') {
-        setUbuntuLogs([currentPrompt]);
-      } else if (terminalTab === 'cmd') {
-        setCmdLogs([currentPrompt]);
-      }
-      return;
-    }
-
-    if (cmdLower === 'ls' || cmdLower === 'dir') {
-      appendLogs([
-        `Directory of C:\\Workspace\\Volt-Code-AI`,
-        ``,
-        `Mode                 LastWriteTime         Length Name`,
-        `----                 -------------         ------ ----`,
-        `d----           6/24/2026  11:59 PM                src`,
-        `d----           6/24/2026  11:59 PM                api`,
-        `d----           6/24/2026  11:59 PM                public`,
-        `-a---           6/24/2026  11:59 PM           1236 package.json`,
-        `-a---           6/24/2026  11:59 PM            544 tsconfig.app.json`,
-        `-a---           6/24/2026  11:59 PM            166 tsconfig.json`,
-        `-a---           6/24/2026  11:59 PM           7586 index.html`
-      ]);
-      return;
-    }
-
-    if (cmdLower === 'whoami') {
-      appendLogs([`volt_developer_agent`]);
-      return;
-    }
-
-    if (cmdLower.startsWith('cat') || cmdLower.startsWith('type')) {
-      appendLogs(code.split('\n'));
-      return;
-    }
-
-    if (cmdLower === 'git status') {
-      appendLogs([
-        `On branch feature/v5-agentic-upgrade`,
-        `Your branch is up to date with 'origin/feature/v5-agentic-upgrade'.`,
-        ``,
-        `Changes not staged for commit:`,
-        `  (use "git add <file>..." to update what will be committed)`,
-        `  (use "git restore <file>..." to discard changes in working directory)`,
-        `	modified:   src/App.tsx`,
-        `	modified:   api/openrouter.ts`,
-        ``,
-        `no changes added to commit (use "git add" and/or "git commit -a")`
-      ]);
-      return;
-    }
-
-    if (cmdLower === 'npm run build') {
-      appendLogs([
-        `> volt-code-ai@0.0.0 build`,
-        `> tsc -b && vite build`,
-        ``,
-        `vite v7.3.1 building for production...`,
-        `transforming...`,
-        `✓ 482 modules transformed.`,
-        `rendering chunks...`,
-        `dist/index.html                 7.59 kB`,
-        `dist/assets/index-D1f82c4a.css 45.20 kB │ gzip: 11.20 kB`,
-        `dist/assets/index-Bf829f0c.js 312.45 kB │ gzip: 98.60 kB`,
-        `✓ built in 1.45s`
-      ]);
-      return;
-    }
-
-    if (cmdLower === 'npm test' || cmdLower === 'npm run test') {
-      appendLogs([
-        `RUN  v4.1.8 g:/GitHub/Repositories/Volt Coding Fixer v5/Code-Garage-v5`,
-        ``,
-        ` ✓ src/test/App.test.tsx (5 tests) 82ms`,
-        `   ✓ App Component > renders code editor layout`,
-        `   ✓ App Component > detects languages correctly`,
-        `   ✓ App Component > handles theme color scheme`,
-        `   ✓ App Component > runs sentinel live monitoring`,
-        `   ✓ App Component > toggles agent manual/auto mode`,
-        ``,
-        `Test Files  1 passed (1)`,
-        `     Tests  5 passed (5)`,
-        `    Start at  04:30:52`,
-        `    Duration  120ms (transform 48ms, setup 24ms, collect 14ms)`
-      ]);
-      return;
-    }
-
-    if (cmdLower === 'volt help' || cmdLower === 'volt') {
-      appendLogs([
-        `Volt Code AI - Command Line Interface v5.1`,
-        `Usage: volt <command>`,
-        ``,
-        `Commands:`,
-        `  volt analyze      Trigger diagnostic scan on current editor code`,
-        `  volt fix          Automatically apply suggested fixes`,
-        `  volt help         Show this message`
-      ]);
-      return;
-    }
-
-    if (cmdLower === 'volt analyze') {
-      appendLogs([`[INFO] Invoking code analysis daemon...`]);
-      analyzeCode();
-      return;
-    }
-
-    if (cmdLower === 'volt fix') {
-      appendLogs([`[INFO] Applying all suggested code repairs...`]);
-      applyAllFixes();
-      return;
-    }
-
-    appendLogs([
-      `Command '${cmd}' not recognized. Type 'volt help' or 'ls' for list of commands.`
-    ]);
-  };
-
-  const fetchGithubData = async () => {
-    if (!repoPath) {
-      showToast('Please specify a GitHub repository (owner/name)', 'error');
-      return;
-    }
-    setIsFetchingGithub(true);
-    addLog(`Fetching GitHub workspace for ${repoPath} [branch: ${repoBranch}]...`, 'info');
-    
-    const headers: Record<string, string> = {};
-    if (githubToken) {
-      headers['Authorization'] = `token ${githubToken}`;
-    }
-
-    try {
-      const treeRes = await fetch(`https://api.github.com/repos/${repoPath}/git/trees/${repoBranch}?recursive=1`, { headers });
-      if (!treeRes.ok) {
-        throw new Error(`GitHub Tree API responded with ${treeRes.status}`);
-      }
-      const treeData = await treeRes.json();
-      if (treeData && treeData.tree) {
-        setGithubFiles(treeData.tree.filter((item: any) => item.type === 'blob'));
-        addLog(`Successfully loaded ${treeData.tree.length} files from git tree.`, 'success');
-      }
-
-      const issuesRes = await fetch(`https://api.github.com/repos/${repoPath}/issues?state=open`, { headers });
-      if (issuesRes.ok) {
-        const issuesData = await issuesRes.json();
-        const filteredIssues = issuesData.filter((iss: any) => !iss.pull_request);
-        setGithubIssues(filteredIssues);
-        addLog(`Loaded ${filteredIssues.length} open issues from repository.`, 'info');
-      } else {
-        addLog(`Could not fetch issues (HTTP ${issuesRes.status})`, 'warn');
-      }
-      showToast('GitHub data updated!', 'success');
-    } catch (err: any) {
-      addLog(`GitHub retrieval failed: ${err.message}`, 'error');
-      showToast(`GitHub fetch failed: ${err.message}`, 'error');
-    } finally {
-      setIsFetchingGithub(false);
-    }
-  };
-
-  const handleLoadGithubFile = async (path: string, sha: string) => {
-    setIsFetchingGithub(true);
-    addLog(`Fetching file content: ${path}...`, 'info');
-    
-    const headers: Record<string, string> = {};
-    if (githubToken) {
-      headers['Authorization'] = `token ${githubToken}`;
-    }
-
-    try {
-      const res = await fetch(`https://api.github.com/repos/${repoPath}/contents/${path}?ref=${repoBranch}`, { headers });
-      if (!res.ok) {
-        throw new Error(`Failed to load file contents: HTTP ${res.status}`);
-      }
-      const data = await res.json();
-      if (data && data.content) {
-        const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
-        setCode(decoded);
-        setLoadedFilePath(path);
-        setLoadedFileSha(data.sha);
-        
-        const lang = detectLanguage(decoded);
-        setDetectedLanguage(lang);
-        if (language === 'auto') {
-          setLanguage(lang);
-        }
-        
-        addLog(`Successfully loaded file: ${path}`, 'success');
-        showToast(`Loaded ${path} successfully.`, 'success');
-      }
-    } catch (err: any) {
-      addLog(`File load failed: ${err.message}`, 'error');
-      showToast(`Failed to load file: ${err.message}`, 'error');
-    } finally {
-      setIsFetchingGithub(false);
-    }
-  };
-
-  const handleCommitAndPush = async () => {
-    if (!githubToken) {
-      showToast('PAT Token required to write/commit code changes.', 'error');
-      return;
-    }
-    if (!loadedFilePath) {
-      showToast('No active GitHub file loaded in editor. Load one first.', 'error');
-      return;
-    }
-
-    setIsFetchingGithub(true);
-    addLog(`Preparing commit for ${loadedFilePath}...`, 'info');
-    
-    const headers: Record<string, string> = {
-      'Authorization': `token ${githubToken}`,
-      'Content-Type': 'application/json'
-    };
-
-    try {
-      const base64Content = btoa(unescape(encodeURIComponent(code)));
-      
-      const body = {
-        message: commitMessage,
-        content: base64Content,
-        sha: loadedFileSha,
-        branch: repoBranch
-      };
-
-      const res = await fetch(`https://api.github.com/repos/${repoPath}/contents/${loadedFilePath}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(body)
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || `HTTP ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data && data.content) {
-        setLoadedFileSha(data.content.sha);
-        addLog(`[PUSHED] Commit "${commitMessage}" successfully merged to ${repoBranch}.`, 'success');
-        showToast('Code committed and pushed to GitHub!', 'success');
-      }
-    } catch (err: any) {
-      addLog(`Commit failed: ${err.message}`, 'error');
-      showToast(`Commit failed: ${err.message}`, 'error');
-    } finally {
-      setIsFetchingGithub(false);
-    }
-  };
-
-  const handleLoadIssue = (issue: any) => {
-    const context = `Fix Issue #${issue.number}: ${issue.title}\n\nDescription:\n${issue.body || 'No description provided.'}`;
-    setAgentInput(`Context loaded from issue #${issue.number}:\n\n${context}`);
-    addLog(`Loaded GitHub issue #${issue.number} context into agent orchestrator console.`, 'info');
-    showToast(`Loaded context for issue #${issue.number}`, 'success');
-  };
-
-  const renderGitHubWorkspace = () => {
-    return (
-      <div className="p-8 overflow-y-auto h-full pb-28 select-none">
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">GITHUB INTEGRATED WORKSPACE</h1>
-            <p className="text-xs text-[#FF5F00]/70 mt-1">Directly fetch, audit, commit, and link issue instructions from repository.</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentView('editor')}
-              className="px-4 py-2 border border-[#FF5F00] text-[#FF5F00] text-xs font-bold rounded-xl hover:bg-[#FF5F00]/10 cursor-pointer transition-all flex items-center gap-2"
-            >
-              <Play className="w-3.5 h-3.5" />
-              GO TO EDITOR
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="space-y-6">
-            <div className="border border-[#FF5F00]/20 rounded-2xl p-6 bg-black/40 space-y-4">
-              <h3 className="font-bold text-sm text-[#FF5F00] tracking-wider uppercase">Repository Configuration</h3>
-              
-              <div>
-                <label className="block text-[10px] text-white/50 mb-1 font-bold uppercase">Repo Path (owner/name)</label>
-                <input
-                  type="text"
-                  value={repoPath}
-                  onChange={(e) => {
-                    setRepoPath(e.target.value);
-                    localStorage.setItem('volt_github_repo', e.target.value);
-                  }}
-                  placeholder="owner/repo"
-                  className="w-full bg-black border border-[#FF5F00]/40 px-3 py-2 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-white/50 mb-1 font-bold uppercase">Active Branch</label>
-                <input
-                  type="text"
-                  value={repoBranch}
-                  onChange={(e) => {
-                    setRepoBranch(e.target.value);
-                    localStorage.setItem('volt_github_branch', e.target.value);
-                  }}
-                  placeholder="main"
-                  className="w-full bg-black border border-[#FF5F00]/40 px-3 py-2 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-white/50 mb-1 font-bold uppercase">GitHub PAT Token</label>
-                <input
-                  type="password"
-                  value={githubToken}
-                  onChange={(e) => {
-                    setGithubToken(e.target.value);
-                    localStorage.setItem('volt_github_token', e.target.value);
-                  }}
-                  placeholder="github_pat_..."
-                  className="w-full bg-black border border-[#FF5F00]/40 px-3 py-2 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00]"
-                />
-              </div>
-
-              <button
-                onClick={fetchGithubData}
-                disabled={isFetchingGithub}
-                className="w-full py-3 bg-[#FF5F00] hover:bg-[#FF5F00]/90 disabled:bg-[#FF5F00]/40 text-black font-extrabold text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2"
-              >
-                {isFetchingGithub ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                ) : 'FETCH WORKSPACE DATA'}
-              </button>
-            </div>
-
-            <div className="border border-[#FF5F00]/20 rounded-2xl p-6 bg-black/40 space-y-4">
-              <h3 className="font-bold text-sm text-[#FF5F00] tracking-wider uppercase">Commit & Push Changes</h3>
-              
-              <div>
-                <label className="block text-[10px] text-white/50 mb-1 font-bold uppercase">Loaded File</label>
-                <div className="px-3 py-2 bg-black/60 border border-white/5 rounded-xl text-xs text-white/70 font-mono truncate">
-                  {loadedFilePath || 'None (Load from Tree first)'}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] text-white/50 mb-1 font-bold uppercase">Commit Message</label>
-                <textarea
-                  value={commitMessage}
-                  onChange={(e) => setCommitMessage(e.target.value)}
-                  rows={2}
-                  className="w-full bg-black border border-[#FF5F00]/40 px-3 py-2 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] resize-none"
-                />
-              </div>
-
-              <button
-                onClick={handleCommitAndPush}
-                disabled={isFetchingGithub || !loadedFilePath}
-                className="w-full py-3 bg-[#FF5F00] hover:bg-[#FF5F00]/90 disabled:bg-white/10 disabled:text-white/40 text-black font-extrabold text-xs rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2"
-              >
-                {isFetchingGithub ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                ) : 'COMMIT & PUSH DIRECT'}
-              </button>
-            </div>
-          </div>
-
-          <div className="border border-[#FF5F00]/20 rounded-2xl p-6 bg-black/40 space-y-4">
-            <h3 className="font-bold text-sm text-[#FF5F00] tracking-wider uppercase flex items-center gap-2">
-              <GitBranch className="w-4 h-4" />
-              File Tree Browser ({githubFiles.length})
-            </h3>
-            
-            <div className="space-y-1.5 max-h-[480px] overflow-y-auto pr-2">
-              {githubFiles.length === 0 ? (
-                <div className="text-center py-12 text-white/30 text-xs">
-                  No files loaded. Configure options and fetch.
-                </div>
-              ) : (
-                githubFiles.map((file) => (
-                  <div
-                    key={file.path}
-                    onClick={() => handleLoadGithubFile(file.path, file.sha)}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all border ${
-                      loadedFilePath === file.path
-                        ? 'bg-[#FF5F00]/20 border-[#FF5F00] text-white font-bold'
-                        : 'bg-black/20 border-white/5 text-white/70 hover:bg-[#FF5F00]/5 hover:text-white hover:border-[#FF5F00]/40'
-                    }`}
-                  >
-                    <File className="w-4 h-4 text-[#FF5F00]" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold truncate">{file.path.split('/').pop()}</div>
-                      <div className="text-[9px] text-white/40 truncate">{file.path}</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="border border-[#FF5F00]/20 rounded-2xl p-6 bg-black/40 space-y-4">
-            <h3 className="font-bold text-sm text-[#FF5F00] tracking-wider uppercase flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              Active Repo Issues ({githubIssues.length})
-            </h3>
-
-            <div className="space-y-3 max-h-[480px] overflow-y-auto pr-2">
-              {githubIssues.length === 0 ? (
-                <div className="text-center py-12 text-white/30 text-xs">
-                  No active issues found.
-                </div>
-              ) : (
-                githubIssues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    onClick={() => handleLoadIssue(issue)}
-                    className="p-4 bg-black/40 border border-white/5 hover:border-[#FF5F00]/40 hover:bg-[#FF5F00]/5 rounded-xl cursor-pointer transition-all text-xs space-y-2"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="font-bold text-white hover:text-[#FF5F00] truncate">#{issue.number} {issue.title}</span>
-                      <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-mono text-[9px] uppercase font-bold shrink-0">Open</span>
-                    </div>
-                    {issue.body && (
-                      <p className="text-white/50 line-clamp-2 leading-relaxed">{issue.body}</p>
-                    )}
-                    <div className="text-[10px] text-[#FF5F00]/60 flex items-center gap-1.5">
-                      <span>By {issue.user?.login}</span>
-                      <span>•</span>
-                      <span>{new Date(issue.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const renderTerminal = () => {
     if (!showTerminal) return null;
-    
-    const activeLogs = 
-      terminalTab === 'powershell' ? powershellLogs :
-      terminalTab === 'ubuntu' ? ubuntuLogs :
-      terminalTab === 'cmd' ? cmdLogs :
-      null;
-
     return (
-      <div className="border-t border-[#FF5F00]/30 bg-[#0a0a0a] h-56 flex flex-col font-mono text-xs text-white">
-        <div className="bg-[#121212] border-b border-[#FF5F00]/20 px-6 py-2 flex justify-between items-center select-none flex-wrap gap-3">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-[#FF5F00] font-bold">
-              <TerminalIcon className="w-4 h-4" />
-              <span>TERMINAL BOARD</span>
-            </div>
-            
-            <div className="flex gap-2">
-              {[
-                { id: 'diagnostic', label: 'DIAGNOSTIC STREAM' },
-                { id: 'powershell', label: 'POWERSHELL' },
-                { id: 'ubuntu', label: 'UBUNTU (BASH)' },
-                { id: 'cmd', label: 'CMD' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setTerminalTab(tab.id as any)}
-                  className={`px-3 py-1 rounded text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    terminalTab === tab.id
-                      ? 'bg-[#FF5F00] text-black font-extrabold'
-                      : 'border border-[#FF5F00]/30 text-[#FF5F00]/70 hover:text-[#FF5F00] hover:bg-[#FF5F00]/5'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+      <div className="border-t border-[#FF5F00]/30 bg-[#0a0a0a] h-48 flex flex-col font-mono text-xs text-white">
+        <div className="bg-[#121212] border-b border-[#FF5F00]/20 px-6 py-2 flex justify-between items-center select-none">
+          <div className="flex items-center gap-2 text-[#FF5F00] font-bold">
+            <TerminalIcon className="w-4 h-4" />
+            <span>DEDICATED VIRUS/BUG DIAGNOSTIC STREAM</span>
           </div>
-          
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => {
-                if (terminalTab === 'diagnostic') setTerminalLogs([`[SYSTEM] Log stream cleared.`]);
-                else if (terminalTab === 'powershell') setPowershellLogs([`PS C:\\Workspace\\Volt-Code-AI> `]);
-                else if (terminalTab === 'ubuntu') setUbuntuLogs([`volt-user@ubuntu:~/workspace$ `]);
-                else if (terminalTab === 'cmd') setCmdLogs([`C:\\Workspace\\Volt-Code-AI> `]);
-              }}
+              onClick={() => setTerminalLogs([`[SYSTEM] Log stream cleared.`])}
               className="text-[#FF5F00]/60 hover:text-[#FF5F00] text-[10px] uppercase font-bold cursor-pointer"
             >
               Clear
@@ -1743,46 +1068,20 @@ const App: React.FC = () => {
             </button>
           </div>
         </div>
-
         <div className="flex-1 p-4 overflow-y-auto space-y-1 select-text">
-          {terminalTab === 'diagnostic' ? (
-            terminalLogs.map((log, idx) => {
-              let textColor = 'text-white/70';
-              if (log.includes('[SUCCESS]')) textColor = 'text-green-400';
-              else if (log.includes('[ERROR]')) textColor = 'text-red-400';
-              else if (log.includes('[WARNING]')) textColor = 'text-yellow-400 font-bold';
-              else if (log.includes('[INFO]')) textColor = 'text-[#FF5F00]';
-              
-              return (
-                <div key={idx} className={textColor}>
-                  {log}
-                </div>
-              );
-            })
-          ) : activeLogs ? (
-            <>
-              {activeLogs.slice(0, -1).map((log, idx) => (
-                <div key={idx} className="text-white/80 leading-relaxed whitespace-pre-wrap">
-                  {log}
-                </div>
-              ))}
-              
-              <form onSubmit={handleTerminalSubmit} className="flex items-center text-white/95 mt-1">
-                <span className="text-[#FF5F00] font-bold mr-1 shrink-0">
-                  {activeLogs[activeLogs.length - 1]}
-                </span>
-                <input
-                  type="text"
-                  value={terminalInput}
-                  onChange={(e) => setTerminalInput(e.target.value)}
-                  className="flex-1 bg-transparent text-white border-none outline-none focus:ring-0 focus:outline-none font-mono text-xs p-0 m-0"
-                  placeholder="Type command (e.g. ls, git status, volt help)..."
-                  autoFocus
-                />
-              </form>
-            </>
-          ) : null}
-          
+          {terminalLogs.map((log, idx) => {
+            let textColor = 'text-white/70';
+            if (log.includes('[SUCCESS]')) textColor = 'text-green-400';
+            else if (log.includes('[ERROR]')) textColor = 'text-red-400';
+            else if (log.includes('[WARNING]')) textColor = 'text-yellow-400 font-bold';
+            else if (log.includes('[INFO]')) textColor = 'text-[#FF5F00]';
+            
+            return (
+              <div key={idx} className={textColor}>
+                {log}
+              </div>
+            );
+          })}
           <div ref={terminalEndRef} />
         </div>
       </div>
@@ -1904,18 +1203,6 @@ const App: React.FC = () => {
           </div>
 
           <div
-            onClick={() => setCurrentView('github')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'github'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
-            }`}
-          >
-            <Github className="w-5 h-5" />
-            GITHUB WORKSPACE
-          </div>
-
-          <div
             onClick={() => setCurrentView('about')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
               currentView === 'about'
@@ -1984,39 +1271,6 @@ const App: React.FC = () => {
                   <div className="h-6 w-px bg-white/20"></div>
                   <div className="text-[10px] text-white/60 uppercase font-semibold">
                     {selectedModel.tag} • {selectedModel.ctx} Context • Free Tier
-                  </div>
-                </div>
-
-                {/* AUTONOMOUS vs MANUAL Mode Toggle Switcher */}
-                <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-1.5 bg-black/60">
-                  <div className="text-[9px] text-[#FF5F00] tracking-wider uppercase font-bold">Operation Mode</div>
-                  <div className="flex items-center gap-1.5 bg-black/40 rounded-lg p-0.5 border border-white/5">
-                    <button
-                      onClick={() => {
-                        setAgentMode('manual');
-                        addLog('Switched operation mode to MANUAL', 'info');
-                      }}
-                      className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                        agentMode === 'manual'
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10'
-                          : 'text-white/40 hover:text-white/80'
-                      }`}
-                    >
-                      Manual Mode
-                    </button>
-                    <button
-                      onClick={() => {
-                        setAgentMode('assist');
-                        addLog('Switched operation mode to AUTONOMOUS (ASSIST)', 'info');
-                      }}
-                      className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                        agentMode !== 'manual'
-                          ? 'bg-[#FF5F00]/20 text-[#FF5F00] border border-[#FF5F00]/40 shadow-sm shadow-[#FF5F00]/10'
-                          : 'text-white/40 hover:text-white/80'
-                      }`}
-                    >
-                      Autonomous Mode
-                    </button>
                   </div>
                 </div>
 
@@ -2167,78 +1421,14 @@ const App: React.FC = () => {
                     const model = FREE_MODELS.find(m => m.id === e.target.value)!;
                     setSelectedModel(model);
                   }}
-                  className="w-full bg-black border border-[#FF5F00]/40 px-4 py-3 rounded text-white cursor-pointer font-mono"
+                  className="w-full bg-black border border-[#FF5F00]/40 px-4 py-3 rounded text-white cursor-pointer"
                 >
-                  {Array.from(new Set(FREE_MODELS.map(m => m.provider))).map((provider) => (
-                    <optgroup key={provider} label={provider} className="bg-[#121212] text-[#FF5F00] font-bold">
-                      {FREE_MODELS.filter(m => m.provider === provider).map((model) => (
-                        <option key={model.id} value={model.id} className="bg-[#121212] text-white font-normal">
-                          {model.name} ({model.tag} • {model.ctx})
-                        </option>
-                      ))}
-                    </optgroup>
+                  {FREE_MODELS.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.name} • {model.tag} • {model.ctx}
+                    </option>
                   ))}
                 </select>
-              </div>
-
-              <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40 space-y-4">
-                <div className="text-lg font-bold mb-2">Provider API Keys</div>
-                
-                <div>
-                  <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">OpenRouter Key</label>
-                  <input
-                    type="password"
-                    value={openrouterKey}
-                    onChange={(e) => {
-                      setOpenrouterKey(e.target.value);
-                      localStorage.setItem('volt_openrouter_key', e.target.value);
-                    }}
-                    placeholder="sk-or-..."
-                    className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2 rounded text-white text-xs outline-none focus:border-[#FF5F00]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">Groq Key</label>
-                  <input
-                    type="password"
-                    value={groqKey}
-                    onChange={(e) => {
-                      setGroqKey(e.target.value);
-                      localStorage.setItem('volt_groq_key', e.target.value);
-                    }}
-                    placeholder="gsk_..."
-                    className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2 rounded text-white text-xs outline-none focus:border-[#FF5F00]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">NVIDIA Key</label>
-                  <input
-                    type="password"
-                    value={nvidiaKey}
-                    onChange={(e) => {
-                      setNvidiaKey(e.target.value);
-                      localStorage.setItem('volt_nvidia_key', e.target.value);
-                    }}
-                    placeholder="nvapi-..."
-                    className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2 rounded text-white text-xs outline-none focus:border-[#FF5F00]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">HuggingFace Key</label>
-                  <input
-                    type="password"
-                    value={huggingfaceKey}
-                    onChange={(e) => {
-                      setHuggingfaceKey(e.target.value);
-                      localStorage.setItem('volt_huggingface_key', e.target.value);
-                    }}
-                    placeholder="hf_..."
-                    className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2 rounded text-white text-xs outline-none focus:border-[#FF5F00]"
-                  />
-                </div>
               </div>
 
               <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
@@ -2367,7 +1557,6 @@ const App: React.FC = () => {
         )}
 
         {currentView === 'about' && renderAboutWhitePaper()}
-        {currentView === 'github' && renderGitHubWorkspace()}
       </div>
 
       {/* Floating AGENT command button */}
@@ -2712,42 +1901,6 @@ const App: React.FC = () => {
                     <kbd className="px-2 py-0.5 bg-[#FF5F00]/10 border border-[#FF5F00]/40 text-[#FF5F00] font-mono text-xs rounded-md">{s.keys}</kbd>
                   </div>
                 ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Auto-Language Deduction Warning Modal */}
-      <AnimatePresence>
-        {showLangAlert && (
-          <div className="fixed inset-0 bg-black/85 z-[110] flex items-center justify-center p-6 select-text">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#121212] border border-red-500 p-8 rounded-3xl space-y-6"
-            >
-              <div className="flex justify-between items-center border-b border-red-500/25 pb-4 select-none">
-                <h3 className="font-bold text-xl flex items-center gap-2 text-red-500">
-                  <AlertTriangle />
-                  Language not updated in system
-                </h3>
-                <button onClick={() => setShowLangAlert(false)} className="cursor-pointer text-white/60 hover:text-white">
-                  <X />
-                </button>
-              </div>
-              <div className="text-sm text-white/80 leading-relaxed font-mono">
-                The analysis engine could not auto-detect the programming language of the active editor code. 
-                Please explicitly select the language from the dropdown menu (e.g. JavaScript, Python, C++, HTML, YAML, CSS) before running diagnostics.
-              </div>
-              <div className="flex justify-end gap-3 pt-4 select-none">
-                <button
-                  onClick={() => setShowLangAlert(false)}
-                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl cursor-pointer transition-all"
-                >
-                  OK
-                </button>
               </div>
             </motion.div>
           </div>
