@@ -731,11 +731,11 @@ const App: React.FC = () => {
     const checkpointId = await createCheckpoint(targetPath, code);
 
     // Apply only accepted hunks
-    const allFixed = issues.reduce((acc, issue) => {
-      if (!acceptedHunkIds.includes(issue.id)) return acc;
-      const escaped = escapeRegExp(issue.original);
-      return acc.replace(new RegExp(escaped, 'g'), issue.fixed);
-    }, code);
+const allFixed = issues.reduce((acc, issue) => {
+  if (!acceptedHunkIds.includes(issue.id)) return acc;
+  const escaped = escapeRegExp(issue.original);
+  return acc.replace(new RegExp(escaped, 'g'), () => issue.fixed);
+}, code);
     
     setCode(allFixed);
     setShowDiff(false);

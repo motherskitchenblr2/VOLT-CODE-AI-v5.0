@@ -11,9 +11,9 @@ export default async function handler(req: any, res: any) {
   const { method } = req;
   const { action, username } = req.query;
 
-  if (!username) {
-    return res.status(400).json({ error: 'Username query parameter is required for all data transactions.' });
-  }
+if (typeof username !== 'string' || !username.trim()) {
+  return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
+}
 
   switch (method) {
     case 'GET':
