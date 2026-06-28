@@ -127,6 +127,23 @@ export class ConsensusEngine {
     agentBreakdown: Record<string, number>;
     compiledFeedback: string[];
   }> {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('volt_consensus_weights');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          for (const agent of this.agents) {
+            if (agent instanceof SeniorSecurityAgent && parsed.security !== undefined) agent.weight = parsed.security;
+            if (agent instanceof SeniorQATesterAgent && parsed.qa !== undefined) agent.weight = parsed.qa;
+            if (agent instanceof SeniorUIAgent && parsed.ui !== undefined) agent.weight = parsed.ui;
+            if (agent instanceof SeniorArchitectAgent && parsed.arch !== undefined) agent.weight = parsed.arch;
+          }
+        } catch (e) {
+          console.error('Failed to parse consensus weights:', e);
+        }
+      }
+    }
+
     let compositeScore = 0;
     const agentBreakdown: Record<string, number> = {};
     const compiledFeedback: string[] = [];
