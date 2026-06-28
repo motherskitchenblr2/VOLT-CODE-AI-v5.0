@@ -896,9 +896,9 @@ const App: React.FC = () => {
     }
   };
 
-  const handleAgentQuickAction = (actionType: 'analyze' | 'security' | 'performance' | 'explain' | 'fix') => {
+  const handleAgentQuickAction = (actionType: 'analyze' | 'diagnose' | 'security' | 'performance' | 'explain' | 'fix') => {
     let promptText = '';
-    if (actionType === 'analyze') {
+    if (actionType === 'analyze' || actionType === 'diagnose') {
       promptText = 'Please perform a full code diagnosis and outline any logic, syntax, or styling issues.';
     } else if (actionType === 'security') {
       promptText = 'Scan the current workspace code for potential security vulnerabilities like XSS, injections, unsafe regex, or credentials leaks.';
