@@ -23,7 +23,7 @@ interface ResponsiveContainerProps {
   terminal: React.ReactNode;
   diagnostics: React.ReactNode;
   currentView: string;
-  setCurrentView: (view: any) => void;
+  setCurrentView: (view: string) => void;
 }
 
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
