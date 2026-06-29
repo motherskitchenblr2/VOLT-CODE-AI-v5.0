@@ -2910,6 +2910,8 @@ const allFixed = issues.reduce((acc, issue) => {
         content={renderContent()}
         terminal={renderTerminalPanel()}
         diagnostics={renderDiagnosticsColumn()}
+        currentView={currentView}
+        setCurrentView={setCurrentView}
       />
 
       {renderFloatingAgentButton()}
