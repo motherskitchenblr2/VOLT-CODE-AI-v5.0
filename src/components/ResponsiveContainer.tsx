@@ -26,6 +26,21 @@ interface ResponsiveContainerProps {
   setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin') => void;
 }
 
+interface GearWatermarkProps {
+  animateClass: string;
+}
+
+const GearWatermark: React.FC<GearWatermarkProps> = ({ animateClass }) => (
+  <svg 
+    className={`absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 pointer-events-none z-0 ${animateClass}`} 
+    viewBox="0 0 100 100" 
+    fill="currentColor"
+  >
+    <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
+    <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
+  </svg>
+);
+
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   sidebar,
   content,
@@ -54,10 +69,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               <Shield className="w-6 h-6 text-[#FF3B30]" />
             </div>
             {/* Gear Watermark */}
-            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-            </svg>
+            <GearWatermark animateClass="animate-spin-slow" />
           </div>
         )}
 
@@ -76,10 +88,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               <AlertTriangle className="w-6 h-6 text-[#3B82F6]" />
             </div>
             {/* Gear Watermark */}
-            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-reverse-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-            </svg>
+            <GearWatermark animateClass="animate-spin-reverse-slow" />
           </div>
         )}
 
@@ -98,10 +107,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               <TrendingUp className="w-6 h-6 text-[#FF9F0A]" />
             </div>
             {/* Gear Watermark */}
-            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-            </svg>
+            <GearWatermark animateClass="animate-spin-slow" />
           </div>
         )}
 
@@ -120,10 +126,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               <Activity className="w-6 h-6 text-[#10B981]" />
             </div>
             {/* Gear Watermark */}
-            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-reverse-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-            </svg>
+            <GearWatermark animateClass="animate-spin-reverse-slow" />
           </div>
         )}
       </div>
