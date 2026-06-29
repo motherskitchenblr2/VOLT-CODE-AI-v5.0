@@ -132,6 +132,10 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/60">
               {content}
             </div>
+            <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70">
+              <h4 className="text-xs text-[#FF5F00] font-bold uppercase tracking-wider mb-3">Live Telemetry Diagnostics</h4>
+              {diagnostics}
+            </div>
             <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/80">
               {terminal}
             </div>
