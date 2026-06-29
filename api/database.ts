@@ -1,5 +1,5 @@
 import { connectToDatabase } from './utils/db';
-import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel } from '../src/models/Schemas';
+import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas';
 
 export default async function handler(req: any, res: any) {
   try {
@@ -59,6 +59,37 @@ if (typeof username !== 'string' || !username.trim()) {
           return res.status(500).json({ error: 'Failed to fetch audit logs', details: err.message });
         }
       }
+      if (action === 'getDeployments') {
+        try {
+          const deployments = await DeploymentModel.find({ username }).sort({ createdAt: -1 }).limit(50);
+          return res.status(200).json(deployments);
+        } catch (err: any) {
+          return res.status(500).json({ error: 'Failed to fetch deployments', details: err.message });
+        }
+      }
+      if (action === 'getWorkflowTasks') {
+        try {
+          const tasks = await WorkflowTaskModel.find({ username }).sort({ createdAt: -1 }).limit(100);
+          return res.status(200).json(tasks);
+        } catch (err: any) {
+          return res.status(500).json({ error: 'Failed to fetch workflow tasks', details: err.message });
+        }
+      }
+      if (action === 'getWorkspaceInfo') {
+        try {
+          let workspace = await WorkspaceModel.findOne({ username });
+          if (!workspace) {
+            workspace = await WorkspaceModel.create({
+              username,
+              repoPath: 'motherskitchenblr2/VOLT-CODE-AI-v5.0',
+              activeBranch: 'main'
+            });
+          }
+          return res.status(200).json(workspace);
+        } catch (err: any) {
+          return res.status(500).json({ error: 'Failed to fetch workspace info', details: err.message });
+        }
+      }
       return res.status(400).json({ error: 'Invalid GET action' });
 
     case 'POST':
@@ -106,6 +137,34 @@ if (typeof username !== 'string' || !username.trim()) {
           return res.status(201).json(newCheckpoint);
         } catch (err: any) {
           return res.status(500).json({ error: 'Failed to save checkpoint', details: err.message });
+        }
+      }
+      if (action === 'saveDeployment') {
+        try {
+          const newDeployment = await DeploymentModel.create({ username, ...req.body });
+          return res.status(201).json(newDeployment);
+        } catch (err: any) {
+          return res.status(500).json({ error: 'Failed to save deployment', details: err.message });
+        }
+      }
+      if (action === 'saveWorkflowTask') {
+        try {
+          const newTask = await WorkflowTaskModel.create({ username, ...req.body });
+          return res.status(201).json(newTask);
+        } catch (err: any) {
+          return res.status(500).json({ error: 'Failed to save workflow task', details: err.message });
+        }
+      }
+      if (action === 'saveWorkspaceInfo') {
+        try {
+          const updatedWorkspace = await WorkspaceModel.findOneAndUpdate(
+            { username },
+            { ...req.body },
+            { new: true, upsert: true }
+          );
+          return res.status(200).json(updatedWorkspace);
+        } catch (err: any) {
+          return res.status(500).json({ error: 'Failed to save workspace info', details: err.message });
         }
       }
       return res.status(400).json({ error: 'Invalid POST action' });

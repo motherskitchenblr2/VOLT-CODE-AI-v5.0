@@ -208,3 +208,141 @@ export class JuniorWorker {
     return data.fixedCode || code;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Triage Agent & Multi-Agent DAG Orchestrator (v6.1)
+// ---------------------------------------------------------------------------
+
+export class TriageAgent {
+  public triage(taskDescription: string): {
+    requiresLinter: boolean;
+    requiresSecurityScan: boolean;
+    requiresTests: boolean;
+    subtasks: string[];
+  } {
+    const desc = (taskDescription || '').toLowerCase();
+    const subtasks: string[] = ['Generate primary code patch'];
+    let requiresLinter = false;
+    let requiresSecurityScan = false;
+    let requiresTests = false;
+
+    if (desc.includes('syntax') || desc.includes('linter') || desc.includes('fix') || desc.includes('error')) {
+      requiresLinter = true;
+      subtasks.push('Audit AST structure and verify JS/Python environment isolation');
+    }
+    if (desc.includes('security') || desc.includes('leak') || desc.includes('key') || desc.includes('credentials') || desc.includes('safe')) {
+      requiresSecurityScan = true;
+      subtasks.push('Scan for secret keys, eval statement vectors, and XSS leaks');
+    }
+    if (desc.includes('test') || desc.includes('verify') || desc.includes('assert') || desc.includes('check')) {
+      requiresTests = true;
+      subtasks.push('Synthesize unit assertions and verification files');
+    }
+
+    return { requiresLinter, requiresSecurityScan, requiresTests, subtasks };
+  }
+}
+
+export interface OrchestratorResult {
+  success: boolean;
+  finalCode: string;
+  history: Array<{
+    attempt: number;
+    score: number;
+    feedback: string[];
+  }>;
+  subtasks: string[];
+}
+
+export class MultiAgentOrchestrator {
+  private consensusEngine = new ConsensusEngine();
+  private triageAgent = new TriageAgent();
+
+  public async runOrchestration(
+    taskDescription: string,
+    originalCode: string,
+    username: string,
+    keys: Record<string, string>,
+    context?: any
+  ): Promise<OrchestratorResult> {
+    // 1. Triage Phase
+    const triageReport = this.triageAgent.triage(taskDescription);
+    const history: Array<{ attempt: number; score: number; feedback: string[] }> = [];
+    
+    await this.logWorkflowTask(username, `triage_${Date.now()}`, 'COMPLETED', `Triaged: subtasks = [${triageReport.subtasks.join(', ')}]`, context?.filePath || 'unknown');
+
+    let currentCode = originalCode;
+    let attempts = 0;
+    const maxAttempts = 3;
+    let success = false;
+
+    // 2. Self-Correction DAG Execution loop
+    while (attempts < maxAttempts) {
+      attempts++;
+      const currentAttemptId = `attempt_${attempts}_${Date.now()}`;
+      await this.logWorkflowTask(username, currentAttemptId, 'RUNNING', `Starting patch generation attempt ${attempts}`, context?.filePath || 'unknown');
+
+      // Spawn Junior Workers in Parallel
+      const workers: Promise<string>[] = [];
+      const generator = new JuniorWorker(`generator_${attempts}`, 'CodeGenerator');
+      workers.push(generator.execute(
+        `Attempt ${attempts}. Generate code to solve: ${taskDescription}. Previous feedback if any: ${history.map(h => h.feedback.join(' ')).join('. ')}`,
+        currentCode,
+        keys
+      ));
+
+      if (triageReport.requiresLinter) {
+        const linter = new JuniorWorker(`linter_${attempts}`, 'LinterFixer');
+        workers.push(linter.execute(`Ensure no syntax issues in: ${taskDescription}`, currentCode, keys));
+      }
+
+      // Execute all workers concurrently (dynamic parallel threads)
+      const results = await Promise.all(workers);
+      const patchedCode = results[0];
+
+      // Run Consensus Matrix checks
+      const evalResult = await this.consensusEngine.evaluateCodePatch(patchedCode, context);
+      
+      history.push({
+        attempt: attempts,
+        score: evalResult.compositeScore,
+        feedback: evalResult.compiledFeedback
+      });
+
+      if (evalResult.passed) {
+        currentCode = patchedCode;
+        success = true;
+        await this.logWorkflowTask(username, currentAttemptId, 'COMPLETED', `Consensus passed with score ${evalResult.compositeScore}/100`, context?.filePath || 'unknown');
+        break;
+      } else {
+        currentCode = patchedCode;
+        await this.logWorkflowTask(username, currentAttemptId, 'FAILED', `Consensus rejected with score ${evalResult.compositeScore}/100. Feedback: ${evalResult.compiledFeedback.join('; ')}`, context?.filePath || 'unknown');
+      }
+    }
+
+    return {
+      success,
+      finalCode: currentCode,
+      history,
+      subtasks: triageReport.subtasks
+    };
+  }
+
+  private async logWorkflowTask(username: string, taskId: string, status: string, logs: string, targetFile: string) {
+    try {
+      await fetch(`/api/database?action=saveWorkflowTask&username=${encodeURIComponent(username)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskId,
+          agentSpecialty: 'Orchestrator',
+          status,
+          logs,
+          targetFile
+        })
+      });
+    } catch (e) {
+      console.error('Failed to log workflow task to DB:', e);
+    }
+  }
+}

@@ -59,6 +59,7 @@ interface AdminCenterProps {
   onRestoreCheckpoint: (checkpointId: string) => Promise<void>;
   enableSentinel: boolean;
   onToggleSentinel: () => void;
+  username: string;
 }
 
 export const AdminCenter: React.FC<AdminCenterProps> = ({
@@ -76,10 +77,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   checkpoints,
   onRestoreCheckpoint,
   enableSentinel,
-  onToggleSentinel
+  onToggleSentinel,
+  username
 }) => {
   // Navigation
-  const [activeAdminTab, setActiveAdminTab] = useState<'status' | 'providers' | 'performance' | 'audit' | 'secret'>('status');
+  const [activeAdminTab, setActiveAdminTab] = useState<'status' | 'providers' | 'performance' | 'audit' | 'secret' | 'deployment'>('status');
 
   // Security Credentials Access Lock
   const [isUnlocked, setIsUnlocked] = useState(() => {
@@ -109,6 +111,57 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
   const [selectedCheckpointId, setSelectedCheckpointId] = useState('');
   const [isPinging, setIsPinging] = useState<Record<string, boolean>>({});
+
+  const [deployments, setDeployments] = useState<any[]>([]);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [deployLogs, setDeployLogs] = useState('');
+  const [selectedTarget, setSelectedTarget] = useState<'STAGING' | 'PRODUCTION'>('STAGING');
+
+  const fetchDeployments = async () => {
+    try {
+      const res = await fetch(`/api/database?action=getDeployments&username=${encodeURIComponent(username)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDeployments(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch deployments:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeAdminTab === 'deployment') {
+      fetchDeployments();
+    }
+  }, [activeAdminTab, username]);
+
+  const handleDeploy = async () => {
+    setIsDeploying(true);
+    setDeployLogs('Initializing deployment request...\n');
+    try {
+      const res = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username,
+          target: selectedTarget
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDeployLogs(prev => prev + data.buildLogs);
+        fetchDeployments();
+        onRefreshLogs();
+      } else {
+        const err = await res.json();
+        setDeployLogs(prev => prev + `[ERROR] Deployment failed: ${err.error || 'Server error'}\n`);
+      }
+    } catch (e: any) {
+      setDeployLogs(prev => prev + `[ERROR] Network error: ${e.message || e}\n`);
+    } finally {
+      setIsDeploying(false);
+    }
+  };
 
   // Auto-Refresh loop for AI providers
   useEffect(() => {
@@ -295,7 +348,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             { id: 'providers', label: 'AI Provider Registry', icon: Cpu },
             { id: 'performance', label: 'Performance Optimizer', icon: Sparkles },
             { id: 'audit', label: 'Audit Logs', icon: Database },
-            { id: 'secret', label: 'Secret Console', icon: Key }
+            { id: 'secret', label: 'Secret Console', icon: Key },
+            { id: 'deployment', label: 'Deployment Console', icon: GitBranch }
           ] as const).map(tab => (
             <button
               key={tab.id}
@@ -814,6 +868,104 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   SAVE KEY
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeAdminTab === 'deployment' && (
+        <div className="space-y-6 font-mono text-white select-text">
+          <div className="p-6 bg-[#121212] border border-white/10 rounded-3xl space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-wider text-[#FF5F00] flex items-center gap-2">
+              <GitBranch className="w-5 h-5 text-[#FF5F00]" />
+              Production Deployment Control Console
+            </h3>
+            <p className="text-[11px] text-white/60 text-left">
+              Trigger staging and production edge compilations. The deployment engine will run syntax checks, tsc compilations, and verify telemetry tests.
+            </p>
+
+            <div className="flex gap-4 items-center flex-wrap pt-2">
+              <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-2.5 rounded-xl">
+                <span className="text-[10px] uppercase font-bold text-white/50">TARGET:</span>
+                <select
+                  value={selectedTarget}
+                  onChange={(e) => setSelectedTarget(e.target.value as any)}
+                  className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
+                >
+                  <option value="STAGING" className="bg-[#121212] text-white font-bold">STAGING ENVIRONMENT</option>
+                  <option value="PRODUCTION" className="bg-[#121212] text-white font-bold">PRODUCTION ENVIRONMENT</option>
+                </select>
+              </div>
+
+              <button
+                onClick={handleDeploy}
+                disabled={isDeploying}
+                className="px-6 py-2.5 bg-[#FF5F00] hover:bg-[#FF7A00] text-black font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg active:scale-[0.985] disabled:opacity-50"
+              >
+                {isDeploying ? 'BUILDING BUNDLE...' : 'TRIGGER DEPLOYMENT'}
+              </button>
+            </div>
+
+            {/* Build Log Outputs */}
+            {deployLogs && (
+              <div className="mt-4 p-4 bg-black border border-white/15 rounded-2xl space-y-2">
+                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest">Build Output Logs</div>
+                <pre className="text-[10px] text-green-400 overflow-x-auto max-h-60 leading-relaxed font-mono whitespace-pre-wrap select-text text-left selection:bg-green-700 selection:text-white">
+                  {deployLogs}
+                </pre>
+              </div>
+            )}
+          </div>
+
+          {/* Deployment History Table */}
+          <div className="p-6 bg-[#121212] border border-white/10 rounded-3xl space-y-4">
+            <div className="font-black uppercase tracking-wider text-sm text-white flex items-center gap-2">
+              <Database className="w-5 h-5 text-white" />
+              Historical Deployment Registry
+            </div>
+            
+            <div className="overflow-x-auto bg-black/30 border border-white/10 rounded-2xl">
+              {deployments.length === 0 ? (
+                <div className="text-center py-8 text-white/30 text-xs">No deployments logged in this workspace environment.</div>
+              ) : (
+                <table className="w-full text-left text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-white/10 text-white/40 uppercase tracking-wider text-[10px]">
+                      <th className="p-4">Target</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">Commit SHA</th>
+                      <th className="p-4">Latency</th>
+                      <th className="p-4">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deployments.map((d) => (
+                      <tr key={d._id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="p-4 font-bold">
+                          <span className={`px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest ${
+                            d.target === 'PRODUCTION' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
+                          }`}>
+                            {d.target}
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <span className={`font-bold flex items-center gap-1.5 ${
+                            d.status === 'SUCCESS' ? 'text-green-400' : d.status === 'FAILED' ? 'text-red-400' : 'text-yellow-400'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              d.status === 'SUCCESS' ? 'bg-green-400' : d.status === 'FAILED' ? 'bg-red-400' : 'bg-yellow-400 animate-pulse'
+                            }`} />
+                            {d.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-white/70 truncate max-w-[120px]">{d.gitCommitSha}</td>
+                        <td className="p-4 text-white/60">{d.latency ? `${d.latency}ms` : 'N/A'}</td>
+                        <td className="p-4 text-white/50">{new Date(d.createdAt).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
