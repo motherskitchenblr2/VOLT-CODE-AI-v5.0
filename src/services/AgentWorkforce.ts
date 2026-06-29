@@ -53,7 +53,7 @@ export class SeniorQATesterAgent extends SeniorAgent {
     super('Senior QA Tester Specialist', 'Types & Test Assertions', 0.25);
   }
 
-  async verify(code: string): Promise<VerificationResult> {
+  async verify(code: string, context?: any): Promise<VerificationResult> {
     const feedback: string[] = [];
     let score = 100;
 
@@ -64,6 +64,18 @@ export class SeniorQATesterAgent extends SeniorAgent {
     if (code.includes('console.log') && !code.includes('console.error')) {
       feedback.push('[QA] Development residue: console.log should be cleaned before production deployments.');
       score -= 5;
+    }
+
+    const isPython = (context?.language === 'python') || 
+                     (context?.filePath && context.filePath.endsWith('.py')) ||
+                     ((code.includes('def ') || code.includes('import ')) && code.includes(':') && !code.includes('const ') && !code.includes('function '));
+    if (isPython) {
+      const forbidden = ['const ', 'let ', 'function ', 'require(', '==='];
+      const found = forbidden.filter(k => code.includes(k));
+      if (found.length > 0) {
+        feedback.push(`[QA] [CRITICAL] Python code contains out-of-bounds JS syntax keywords: ${found.map(f => f.trim()).join(', ')}`);
+        score = 0; // Force reject
+      }
     }
 
     return { passed: score >= 85, score, feedback };

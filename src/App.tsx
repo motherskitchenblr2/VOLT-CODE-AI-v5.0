@@ -625,16 +625,20 @@ const App: React.FC = () => {
     setIsScanning(false);
 
     try {
+      const activeLanguage = language === 'auto' ? detectedLanguage : language;
+      const isJSorTS = activeLanguage === 'javascript' || activeLanguage === 'typescript';
+      const activeSkill = (!isJSorTS && selectedSkill === 'Syntax Repair') ? 'Bug Isolation' : selectedSkill;
+
       addLog(`Sending fetch payload to OpenRouter Gateway for evaluation...`, 'info');
       const res = await fetch('/api/openrouter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           code,
-          language: language === 'auto' ? detectedLanguage : language,
+          language: activeLanguage,
           model: selectedModel.id,
           agentMode,
-          skill: selectedSkill,
+          skill: activeSkill,
           plugin: selectedPlugin
         })
       });
@@ -665,10 +669,11 @@ const App: React.FC = () => {
         return;
       }
 
-      // v6.0 Quality Consensus Engine evaluation
       const cycles = repoIntelligence.current.detectCircularDependencies();
       const evalResult = await consensusEngine.current.evaluateCodePatch(data.fixedCode || code, {
-        circularCycles: cycles.length
+        circularCycles: cycles.length,
+        filePath: loadedFilePath,
+        language: activeLanguage
       });
 
       setConsensusScore(evalResult.compositeScore);
@@ -692,7 +697,6 @@ const App: React.FC = () => {
       addLog(`Analysis complete. Consensus composite score: ${evalResult.compositeScore}/100 (${evalResult.passed ? 'PASSED' : 'REJECTED'}). Model: ${data.modelUsed || selectedModel.id}`, evalResult.passed ? 'success' : 'warn');
       showToast(`Analysis complete! Consensus score: ${evalResult.compositeScore}/100`, evalResult.passed ? 'success' : 'warn');
       
-      const activeLanguage = language === 'auto' ? detectedLanguage : language;
       if (autoApplyFixes && data.fixedCode && evalResult.passed) {
         const targetPath = loadedFilePath || `temp_editor_code.${activeLanguage === 'python' ? 'py' : activeLanguage === 'javascript' ? 'js' : activeLanguage === 'yaml' ? 'yaml' : 'txt'}`;
         await createCheckpoint(targetPath, code);
