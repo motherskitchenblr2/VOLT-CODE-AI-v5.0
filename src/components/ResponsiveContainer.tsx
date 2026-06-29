@@ -23,7 +23,7 @@ interface ResponsiveContainerProps {
   terminal: React.ReactNode;
   diagnostics: React.ReactNode;
   currentView: string;
-  setCurrentView: (view: string) => void;
+  setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin') => void;
 }
 
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
@@ -39,85 +39,93 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   const renderSkeuoCards = () => {
     return (
       <div className="space-y-4">
-        {/* Card 1: Active Threats */}
-        <div className="relative overflow-hidden machined-plate border-l-4 border-[#FF3B30] p-5 flex items-center justify-between red-neon-glow">
-          <div className="space-y-1 z-10">
-            <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Active Threats</span>
-            <div className="text-3xl font-black text-[#FF3B30]">3</div>
-            <div className="flex items-center gap-1.5 text-xs text-[#FF3B30]/80 font-bold">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF3B30] animate-ping"></span>
-              Declining
+        {/* Card 1: Active Threats (Shown for security, activity) */}
+        {(activeTab === 'security' || activeTab === 'activity') && (
+          <div className="relative overflow-hidden machined-plate border-l-4 border-[#FF3B30] p-5 flex items-center justify-between red-neon-glow">
+            <div className="space-y-1 z-10">
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Active Threats</span>
+              <div className="text-3xl font-black text-[#FF3B30]">3</div>
+              <div className="flex items-center gap-1.5 text-xs text-[#FF3B30]/80 font-bold">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF3B30] animate-ping"></span>
+                Declining
+              </div>
             </div>
+            <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
+              <Shield className="w-6 h-6 text-[#FF3B30]" />
+            </div>
+            {/* Gear Watermark */}
+            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
+              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
+            </svg>
           </div>
-          <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
-            <Shield className="w-6 h-6 text-[#FF3B30]" />
-          </div>
-          {/* Gear Watermark */}
-          <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-            <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-          </svg>
-        </div>
+        )}
 
-        {/* Card 2: Blocked Attacks */}
-        <div className="relative overflow-hidden machined-plate border-l-4 border-[#3B82F6] p-5 flex items-center justify-between blue-neon-glow">
-          <div className="space-y-1 z-10">
-            <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Blocked Attacks</span>
-            <div className="text-3xl font-black text-[#3B82F6]">67</div>
-            <div className="flex items-center gap-1.5 text-xs text-[#3B82F6]/80 font-bold">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#3B82F6]"></span>
-              Improving
+        {/* Card 2: Blocked Attacks (Shown for security, activity) */}
+        {(activeTab === 'security' || activeTab === 'activity') && (
+          <div className="relative overflow-hidden machined-plate border-l-4 border-[#3B82F6] p-5 flex items-center justify-between blue-neon-glow">
+            <div className="space-y-1 z-10">
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Blocked Attacks</span>
+              <div className="text-3xl font-black text-[#3B82F6]">67</div>
+              <div className="flex items-center gap-1.5 text-xs text-[#3B82F6]/80 font-bold">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#3B82F6]"></span>
+                Improving
+              </div>
             </div>
+            <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
+              <AlertTriangle className="w-6 h-6 text-[#3B82F6]" />
+            </div>
+            {/* Gear Watermark */}
+            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-reverse-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
+              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
+            </svg>
           </div>
-          <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
-            <AlertTriangle className="w-6 h-6 text-[#3B82F6]" />
-          </div>
-          {/* Gear Watermark */}
-          <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-reverse-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-            <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-          </svg>
-        </div>
+        )}
 
-        {/* Card 3: Today's Threats */}
-        <div className="relative overflow-hidden machined-plate border-l-4 border-[#FF9F0A] p-5 flex items-center justify-between orange-neon-glow">
-          <div className="space-y-1 z-10">
-            <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Today's Threats</span>
-            <div className="text-3xl font-black text-[#FF9F0A]">1</div>
-            <div className="flex items-center gap-1.5 text-xs text-[#FF9F0A]/80 font-bold">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF9F0A]"></span>
-              Stable
+        {/* Card 3: Today's Threats (Shown for performance, activity) */}
+        {(activeTab === 'performance' || activeTab === 'activity') && (
+          <div className="relative overflow-hidden machined-plate border-l-4 border-[#FF9F0A] p-5 flex items-center justify-between orange-neon-glow">
+            <div className="space-y-1 z-10">
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Today's Threats</span>
+              <div className="text-3xl font-black text-[#FF9F0A]">1</div>
+              <div className="flex items-center gap-1.5 text-xs text-[#FF9F0A]/80 font-bold">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF9F0A]"></span>
+                Stable
+              </div>
             </div>
+            <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
+              <TrendingUp className="w-6 h-6 text-[#FF9F0A]" />
+            </div>
+            {/* Gear Watermark */}
+            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
+              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
+            </svg>
           </div>
-          <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
-            <TrendingUp className="w-6 h-6 text-[#FF9F0A]" />
-          </div>
-          {/* Gear Watermark */}
-          <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-            <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-          </svg>
-        </div>
+        )}
 
-        {/* Card 4: Detection Rate */}
-        <div className="relative overflow-hidden machined-plate border-l-4 border-[#10B981] p-5 flex items-center justify-between green-neon-glow">
-          <div className="space-y-1 z-10">
-            <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Detection Rate</span>
-            <div className="text-3xl font-black text-[#10B981]">104%</div>
-            <div className="flex items-center gap-1.5 text-xs text-[#10B981]/80 font-bold">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
-              Improving
+        {/* Card 4: Detection Rate (Shown for performance, activity) */}
+        {(activeTab === 'performance' || activeTab === 'activity') && (
+          <div className="relative overflow-hidden machined-plate border-l-4 border-[#10B981] p-5 flex items-center justify-between green-neon-glow">
+            <div className="space-y-1 z-10">
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Detection Rate</span>
+              <div className="text-3xl font-black text-[#10B981]">104%</div>
+              <div className="flex items-center gap-1.5 text-xs text-[#10B981]/80 font-bold">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
+                Improving
+              </div>
             </div>
+            <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
+              <Activity className="w-6 h-6 text-[#10B981]" />
+            </div>
+            {/* Gear Watermark */}
+            <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-reverse-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
+              <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
+              <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
+            </svg>
           </div>
-          <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-xl bg-[#242426] border border-white/5 shadow-inner">
-            <Activity className="w-6 h-6 text-[#10B981]" />
-          </div>
-          {/* Gear Watermark */}
-          <svg className="absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 animate-spin-reverse-slow pointer-events-none z-0" viewBox="0 0 100 100" fill="currentColor">
-            <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-            <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3 5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
-          </svg>
-        </div>
+        )}
       </div>
     );
   };
@@ -125,7 +133,14 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   const renderMobileContent = () => {
     switch (currentView) {
       case 'sentinel':
-        return renderSkeuoCards();
+        return (
+          <div className="space-y-4">
+            {renderSkeuoCards()}
+            <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70">
+              {content}
+            </div>
+          </div>
+        );
       case 'editor':
         return (
           <div className="space-y-4">
