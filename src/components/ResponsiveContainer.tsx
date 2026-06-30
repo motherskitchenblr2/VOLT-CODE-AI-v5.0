@@ -23,7 +23,7 @@ interface ResponsiveContainerProps {
   terminal: React.ReactNode;
   diagnostics: React.ReactNode;
   currentView: string;
-  setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal') => void;
+  setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss') => void;
 }
 
 interface GearWatermarkProps {
@@ -164,6 +164,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
       case 'settings':
       case 'github':
       case 'admin':
+      case 'boss':
       default:
         return (
           <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70 min-h-[300px]">
@@ -427,12 +428,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                 History
               </button>
               <button 
-                onClick={() => setCurrentView('settings')}
+                onClick={() => setCurrentView('boss')}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'settings' || currentView === 'admin' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
+                  currentView === 'boss' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
                 }`}
               >
-                Settings
+                Boss
               </button>
             </div>
           </div>

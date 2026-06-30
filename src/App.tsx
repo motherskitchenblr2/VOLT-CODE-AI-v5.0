@@ -27,7 +27,9 @@ import {
   Folder,
   File,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Crown,
+  Loader2
 } from 'lucide-react';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Analytics } from '@vercel/analytics/react';
@@ -78,7 +80,7 @@ interface DiffLine {
   lineNumFixed?: number;
 }
 
-type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal';
+type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss';
 type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
 
 export interface ModelConfig {
@@ -336,6 +338,13 @@ const App: React.FC = () => {
     { role: 'agent', content: 'Hello! I am the VOLT Agentic Orchestrator v5.0. I can analyze, explain, audit, and fix your code in real-time. Choose a quick action or ask me anything!' }
   ]);
   const [agentInput, setAgentInput] = useState('');
+
+  // Boss Chat State (v6.1 Boss of the App Cockpit)
+  const [bossMessages, setBossMessages] = useState<Array<{ role: 'user' | 'agent', content: string }>>([
+    { role: 'agent', content: "Welcome. I am the VOLT AI Agent Head—the core orchestrator and Boss of this code mechanic platform. Volt AI is the ultimate Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp. Explain your target programming task, and I will recommend the absolute best AI model configuration, outline the workforce workflow, and run code optimizations." }
+  ]);
+  const [bossInput, setBossInput] = useState('');
+  const [isBossLoading, setIsBossLoading] = useState(false);
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -922,6 +931,49 @@ const allFixed = issues.reduce((acc, issue) => {
       addLog(`[AGENT] Query failed: ${err.message}`, 'error');
     } finally {
       setAgentStatus('idle');
+    }
+  };
+
+  const sendBossMessage = async (text: string) => {
+    if (!text.trim()) return;
+
+    setBossMessages(prev => [...prev, { role: 'user', content: text }]);
+    setBossInput('');
+    setIsBossLoading(true);
+    addLog(`[BOSS] Core orchestrator aligning AI models...`, 'info');
+
+    try {
+      const res = await fetch('/api/openrouter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language: language === 'auto' ? detectedLanguage : language,
+          model: selectedModel.id,
+          agentMode,
+          skill: selectedSkill,
+          plugin: selectedPlugin,
+          customPrompt: text,
+          isBossChat: true
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Gateway status ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data && data.summary) {
+        setBossMessages(prev => [...prev, { role: 'agent', content: data.summary }]);
+        addLog(`[BOSS] Core orchestrator responded.`, 'success');
+      } else {
+        throw new Error('Invalid response structure from core orchestrator.');
+      }
+    } catch (err: any) {
+      setBossMessages(prev => [...prev, { role: 'agent', content: `Volt AI Core connection failure: ${err.message}` }]);
+      addLog(`[BOSS] Core communication failed: ${err.message}`, 'error');
+    } finally {
+      setIsBossLoading(false);
     }
   };
 
@@ -1761,6 +1813,18 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
+            onClick={() => setCurrentView('boss')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
+              currentView === 'boss'
+                ? 'bg-[#FF5F00] text-black font-bold'
+                : 'hover:bg-white/5 text-[#FF5F00]'
+            }`}
+          >
+            <Crown className="w-5 h-5" />
+            BOSS COCKPIT
+          </div>
+
+          <div
             onClick={() => setCurrentView('settings')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === 'settings'
@@ -2248,6 +2312,124 @@ const allFixed = issues.reduce((acc, issue) => {
           onToggleSentinel={() => setEnableSentinel(!enableSentinel)}
           username={username}
         />
+      );
+    }
+
+    if (currentView === 'boss') {
+      return (
+        <div className="p-4 md:p-8 flex flex-col h-full overflow-hidden bg-gradient-to-br from-[#0F0F10] to-[#050505] select-text">
+          <div className="flex justify-between items-center border-b border-[#FF5F00]/30 pb-4 mb-4 select-none shrink-0">
+            <div>
+              <div className="text-xl md:text-2xl font-black flex items-center gap-3 text-white tracking-widest">
+                <Crown className="text-[#FF5F00] animate-pulse" />
+                VOLT AI AGENT HEAD
+              </div>
+              <div className="text-[10px] md:text-xs text-[#FF5F00]/80 mt-1 uppercase font-bold tracking-wider">
+                Supreme Core Orchestrator & Code Mechanic Command Cockpit
+              </div>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#FF5F00]/10 border border-[#FF5F00]/40 rounded-xl text-[10px] font-black text-[#FF5F00]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5F00] animate-ping"></span>
+              ORCHESTRATOR ONLINE
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
+            {/* Chat column */}
+            <div className="flex-1 flex flex-col h-full bg-black/60 rounded-2xl border border-[#FF5F00]/15 overflow-hidden shadow-2xl relative">
+              
+              {/* Chat Feed */}
+              <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                {bossMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-xs md:text-sm leading-relaxed shadow-lg ${
+                      msg.role === 'user' 
+                        ? 'bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] text-black font-extrabold' 
+                        : 'bg-[#141416] text-white border border-[#FF5F00]/25'
+                    }`}>
+                      {msg.role === 'agent' && (
+                        <div className="text-[10px] text-[#FF5F00] font-black uppercase tracking-wider mb-1 flex items-center gap-1.5 select-none">
+                          <Bot className="w-3.5 h-3.5" />
+                          Volt AI Boss
+                        </div>
+                      )}
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+                {isBossLoading && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[80%] rounded-2xl px-5 py-3.5 bg-[#141416] text-white/50 border border-white/5 text-xs md:text-sm flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-[#FF5F00]" />
+                      Aligning neural weights and selecting AI models...
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Input form */}
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  sendBossMessage(bossInput);
+                }}
+                className="p-4 border-t border-white/5 bg-[#0D0D0E] flex gap-3 select-none shrink-0"
+              >
+                <input
+                  type="text"
+                  value={bossInput}
+                  onChange={(e) => setBossInput(e.target.value)}
+                  placeholder="Ask the Agent Head to delegate tasks, refine code, or recommend a model..."
+                  className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5F00] text-white"
+                />
+                <button 
+                  type="submit"
+                  disabled={isBossLoading}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] hover:opacity-95 text-black font-black text-xs flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(255,95,0,0.3)] disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  SEND
+                </button>
+              </form>
+            </div>
+
+            {/* Models recommendation index column */}
+            <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 overflow-y-auto">
+              
+              {/* Mission Statement */}
+              <div className="machined-plate p-5 border border-[#FF5F00]/20 bg-black/45 space-y-3 shadow-xl">
+                <div className="text-[10px] text-[#FF5F00] uppercase font-black tracking-widest flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                  Volt AI Mission
+                </div>
+                <p className="text-xs text-white/70 leading-relaxed font-mono">
+                  Volt AI is a state-of-the-art Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp. Engineered as a complete Code Mechanic, it automates parallel testing, AST compliance checks, and cross-language runtime boundaries.
+                </p>
+              </div>
+
+              {/* Model Decision Matrix */}
+              <div className="machined-plate p-5 border border-white/5 space-y-4 shadow-xl">
+                <div className="text-[10px] text-white/50 uppercase font-black tracking-widest">
+                  Model Recommendation Matrix
+                </div>
+                
+                <div className="space-y-3">
+                  {[
+                    { name: 'DeepSeek-R1', task: 'Logical derivation, math, structural diagnostics', color: 'border-l-4 border-blue-500' },
+                    { name: 'Qwen-2.5-Coder', task: 'Multi-file code generation, auto-completion', color: 'border-l-4 border-green-500' },
+                    { name: 'Llama-3.3-70B', task: 'General-purpose reviews, auditing, summaries', color: 'border-l-4 border-purple-500' },
+                    { name: 'NVIDIA Nemotron', task: 'Strict instruction adherence, system guardrails', color: 'border-l-4 border-orange-500' }
+                  ].map(m => (
+                    <div key={m.name} className={`p-3 bg-black/40 rounded-xl space-y-1.5 ${m.color}`}>
+                      <div className="text-xs font-extrabold text-white">{m.name}</div>
+                      <div className="text-[10px] text-white/50 leading-relaxed font-mono">{m.task}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       );
     }
 
