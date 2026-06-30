@@ -23,7 +23,7 @@ interface ResponsiveContainerProps {
   terminal: React.ReactNode;
   diagnostics: React.ReactNode;
   currentView: string;
-  setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin') => void;
+  setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal') => void;
 }
 
 interface GearWatermarkProps {
@@ -139,24 +139,25 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         return (
           <div className="space-y-4">
             {renderSkeuoCards()}
-            <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70">
-              {content}
-            </div>
           </div>
         );
       case 'editor':
         return (
-          <div className="space-y-4">
-            <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/60">
-              {content}
-            </div>
-            <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70">
-              <h4 className="text-xs text-[#FF5F00] font-bold uppercase tracking-wider mb-3">Live Telemetry Diagnostics</h4>
-              {diagnostics}
-            </div>
-            <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/80">
-              {terminal}
-            </div>
+          <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/60 min-h-[400px]">
+            {content}
+          </div>
+        );
+      case 'diagnostics':
+        return (
+          <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70 min-h-[400px]">
+            <h4 className="text-xs text-[#FF5F00] font-bold uppercase tracking-wider mb-3">Live Telemetry Diagnostics</h4>
+            {diagnostics}
+          </div>
+        );
+      case 'terminal':
+        return (
+          <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/85 min-h-[350px]">
+            {terminal}
           </div>
         );
       case 'history':
@@ -398,22 +399,24 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                 <RefreshCw className={`w-2.5 h-2.5 ${currentView === 'sentinel' ? 'animate-spin' : ''}`} />
               </button>
               <button 
-                onClick={() => alert('TACTICAL TELEMETRY ARMED')}
-                className="py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button footer-btn-row1-inactive cursor-pointer"
+                onClick={() => setCurrentView('diagnostics')}
+                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
+                  currentView === 'diagnostics' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row1-inactive'
+                }`}
               >
-                Activate
+                Diagnostics
               </button>
             </div>
             
             {/* Row 2 footer controls */}
             <div className="grid grid-cols-3 gap-2">
               <button 
-                onClick={() => setCurrentView('github')}
+                onClick={() => setCurrentView('terminal')}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'github' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
+                  currentView === 'terminal' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
                 }`}
               >
-                Modules
+                Terminal
               </button>
               <button 
                 onClick={() => setCurrentView('history')}
@@ -426,7 +429,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               <button 
                 onClick={() => setCurrentView('settings')}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'settings' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
+                  currentView === 'settings' || currentView === 'admin' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
                 }`}
               >
                 Settings

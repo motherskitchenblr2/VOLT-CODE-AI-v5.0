@@ -78,7 +78,7 @@ interface DiffLine {
   lineNumFixed?: number;
 }
 
-type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin';
+type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal';
 type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
 
 export interface ModelConfig {
@@ -2374,8 +2374,41 @@ const allFixed = issues.reduce((acc, issue) => {
             }}
           />
 
+          {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
+          <div className="md:hidden p-4 border-t border-[#FF5F00]/15 bg-black/45 flex flex-col gap-2 select-none w-full shrink-0">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={analyzeCode}
+                disabled={isAnalyzing || isSystemHalted}
+                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black border border-[#FF5F00] text-[#FF5F00] text-xs font-bold disabled:opacity-60 transition-all cursor-pointer"
+              >
+                <Bug className="w-4 h-4" />
+                {isAnalyzing ? 'ANALYZING...' : 'RUN AI'}
+              </button>
+              
+              <button
+                onClick={() => setShowAgentModal(true)}
+                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold transition-all cursor-pointer"
+              >
+                <Brain className="w-4 h-4" />
+                WORKSPACE
+              </button>
+            </div>
+
+            {fixedCode && (
+              <button
+                id="fix-all-btn-mobile"
+                onClick={applyAllFixes}
+                className="w-full py-3.5 flex items-center justify-center gap-2 rounded-xl bg-[#FF5F00] text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
+              >
+                <Zap className="w-4 h-4" />
+                APPLY ALL PATCHES ({issues.length})
+              </button>
+            )}
+          </div>
+
           {/* Action Overlay buttons */}
-          <div className="absolute bottom-6 right-6 flex gap-3 flex-wrap justify-end select-none">
+          <div className="hidden md:flex absolute bottom-6 right-6 gap-3 flex-wrap justify-end select-none">
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
@@ -2564,7 +2597,7 @@ const allFixed = issues.reduce((acc, issue) => {
         animate={{ opacity: 1, y: 0 }}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.98 }}
-        className="fixed bottom-7 left-[18rem] z-[65] flex items-center gap-3 px-5 py-3 rounded-full bg-[#FF5F00] text-black font-extrabold shadow-[0_0_30px_rgba(255,95,0,0.45)] cursor-pointer select-none"
+        className="hidden lg:flex fixed bottom-7 left-[18rem] z-[65] items-center gap-3 px-5 py-3 rounded-full bg-[#FF5F00] text-black font-extrabold shadow-[0_0_30px_rgba(255,95,0,0.45)] cursor-pointer select-none"
       >
         <Bot className="w-5 h-5 animate-bounce" />
         AGENT
