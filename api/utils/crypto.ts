@@ -1,10 +1,10 @@
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '';
 
 // Production Grade Key Security Check
-if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
+if (ENCRYPTION_KEY.length < 32) {
   throw new Error('[CRYPTO FATAL] ENCRYPTION_KEY environment variable is either missing or too short (must be at least 32 bytes). Build initialization terminated.');
 }
 

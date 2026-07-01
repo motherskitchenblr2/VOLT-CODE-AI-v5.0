@@ -13,12 +13,38 @@ interface GroqResponse {
   };
 }
 
+function detectLanguage(codeStr: string): string {
+  if (!codeStr || !codeStr.trim()) return 'unknown';
+  if (
+    codeStr.includes('yaml-language-server') ||
+    codeStr.includes('rules:') ||
+    codeStr.includes('reviews:') ||
+    codeStr.includes('early_access:') ||
+    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) && !codeStr.includes('{') && !codeStr.includes('}'))
+  ) {
+    return 'yaml';
+  }
+  if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
+  if (codeStr.includes('#include') || codeStr.includes('int main')) return 'cpp';
+  if (codeStr.includes('<html') || codeStr.includes('<div') || codeStr.includes('<!DOCTYPE html>')) return 'html';
+  if (codeStr.includes('{') && codeStr.includes('}') && codeStr.includes(':')) return 'css';
+  if (codeStr.includes('const ') || codeStr.includes('let ') || codeStr.includes('function ') || codeStr.includes('console.log')) return 'javascript';
+  return 'unknown';
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys } = req.body || {};
+  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys, isBossChat } = req.body || {};
+
+  const activeLanguage = (language === 'auto' || !language) ? detectLanguage(code || '') : language;
+  const isJSorTS = activeLanguage === 'javascript' || activeLanguage === 'typescript';
+  let activeSkill = skill;
+  if (!isJSorTS && activeSkill === 'Syntax Repair') {
+    activeSkill = 'Bug Isolation';
+  }
 
   let sanitizedModel = '';
   if (model !== undefined && model !== null) {
@@ -60,7 +86,7 @@ export default async function handler(req: any, res: any) {
       .replace(/ignore\s+previous\s+instructions|system\s+prompt|reset\s+instructions/gi, '[INJECTION REMOVED]');
   }
 
-  if (!code) {
+  if (!code && !isBossChat) {
     return res.status(400).json({ error: 'Missing code' });
   }
 
@@ -153,9 +179,37 @@ export default async function handler(req: any, res: any) {
     'Regression Guard': 'Focus: check if fix introduces new bugs or breaks existing code.',
   };
 
-  const systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
-${skillMap[skill] || 'Focus: all bug types equally.'}
+  let pythonGuardrailPrompt = '';
+  if (activeLanguage === 'python') {
+    pythonGuardrailPrompt = `
+[CRITICAL IMMUTABLE CONSTRAINT FOR PYTHON FILES]
+- The target code is Python. You MUST NOT use or inject any JavaScript, Node.js, or CommonJS structures or syntax.
+- DO NOT use JS keywords like 'const', 'let', 'function', or '==='.
+- DO NOT rewrite Python imports (e.g., 'import time') as CommonJS requires (e.g., 'const time = require(...)').
+- DO NOT change Python dictionary accesses (e.g., 'session_data["role"]') into JavaScript bracketless property accesses (e.g., 'session_data.role').
+- DO NOT wrap Python functions (defined with 'def') inside JavaScript functions.
+- Keep all modifications idiomatic and syntactically valid in Python.
+`;
+  }
+
+  let systemPrompt = '';
+  if (isBossChat) {
+    systemPrompt = `You are the VOLT AI Agent Head, the supreme core orchestrator and 'boss' of the VOLT AI platform.
+Your mission is to represent VOLT AI: an Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp—a complete Agentic AI-powered Code Mechanic.
+When the user talks to you, you must communicate with authority and deep technical expertise.
+Specifically:
+1. Understand the user's request.
+2. Recommend the exact AI model (e.g. DeepSeek-R1 for reasoning, Llama-3.3-70B for general tasks, Qwen-2.5-Coder for code generation, Nemotron for instruction following) that fits the user's coding needs.
+3. Keep the vision of VOLT AI as a powerful agentic compiler mechanic front and center.
+4. Return ONLY valid JSON in the format:
+{
+  "summary": "Your conversational reply here, explaining your reasoning and model choices"
+}`;
+  } else {
+    systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
+${skillMap[activeSkill] || 'Focus: all bug types equally.'}
 ${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
+${pythonGuardrailPrompt}
 
 Output schema:
 {
@@ -182,10 +236,16 @@ Rules:
 - Medium=perf/smell
 - Low=style
 - Truncate fixedCode if >200 lines`;
+  }
 
-  let userPrompt = `Language: ${language || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
-  if (sanitizedCustomPrompt) {
-    userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
+  let userPrompt = '';
+  if (isBossChat) {
+    userPrompt = `User Message: "${sanitizedCustomPrompt || 'Introduce yourself'}"\nActive Editor Code Context:\n${code || 'No code in editor'}`;
+  } else {
+    userPrompt = `Language: ${activeLanguage || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
+    if (sanitizedCustomPrompt) {
+      userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
+    }
   }
 
   try {

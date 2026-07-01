@@ -140,7 +140,75 @@ const AuditLogSchema: Schema = new Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// 5. Deployment Schema (v6.1)
+export interface IDeployment extends Document {
+  username: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILED';
+  target: 'STAGING' | 'PRODUCTION';
+  gitCommitSha: string;
+  buildLogs: string;
+  latency: number;
+  creator: string;
+  createdAt: Date;
+}
+
+const DeploymentSchema: Schema = new Schema({
+  username: { type: String, required: true, index: true },
+  status: { type: String, enum: ['PENDING', 'IN_PROGRESS', 'SUCCESS', 'FAILED'], default: 'PENDING' },
+  target: { type: String, enum: ['STAGING', 'PRODUCTION'], required: true },
+  gitCommitSha: { type: String, default: '' },
+  buildLogs: { type: String, default: '' },
+  latency: { type: Number, default: 0 },
+  creator: { type: String, default: 'SYSTEM' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// 6. Workflow Task Schema (v6.1)
+export interface IWorkflowTask extends Document {
+  username: string;
+  taskId: string;
+  agentSpecialty: string;
+  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  logs: string;
+  targetFile: string;
+  createdAt: Date;
+}
+
+const WorkflowTaskSchema: Schema = new Schema({
+  username: { type: String, required: true, index: true },
+  taskId: { type: String, required: true, unique: true },
+  agentSpecialty: { type: String, required: true },
+  status: { type: String, enum: ['PENDING', 'RUNNING', 'COMPLETED', 'FAILED'], default: 'PENDING' },
+  logs: { type: String, default: '' },
+  targetFile: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// 7. Workspace Schema (v6.1)
+export interface IWorkspace extends Document {
+  username: string;
+  repoPath: string;
+  activeBranch: string;
+  lintErrors: number;
+  averageTime: number;
+  totalTokensUsed: number;
+  updatedAt: Date;
+}
+
+const WorkspaceSchema: Schema = new Schema({
+  username: { type: String, required: true, unique: true },
+  repoPath: { type: String, required: true },
+  activeBranch: { type: String, default: 'main' },
+  lintErrors: { type: Number, default: 0 },
+  averageTime: { type: Number, default: 0 },
+  totalTokensUsed: { type: Number, default: 0 },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 export const SessionModel = mongoose.models.Session || mongoose.model<ISession>('Session', SessionSchema);
 export const CheckpointModel = mongoose.models.Checkpoint || mongoose.model<ICheckpoint>('Checkpoint', CheckpointSchema);
 export const UserSettingsModel = mongoose.models.UserSettings || mongoose.model<IUserSettings>('UserSettings', UserSettingsSchema);
 export const AuditLogModel = mongoose.models.AuditLog || mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);
+export const DeploymentModel = mongoose.models.Deployment || mongoose.model<IDeployment>('Deployment', DeploymentSchema);
+export const WorkflowTaskModel = mongoose.models.WorkflowTask || mongoose.model<IWorkflowTask>('WorkflowTask', WorkflowTaskSchema);
+export const WorkspaceModel = mongoose.models.Workspace || mongoose.model<IWorkspace>('Workspace', WorkspaceSchema);

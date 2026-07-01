@@ -10,5 +10,5 @@
     "outDir": "../node_modules/.tmp/api",
     "strict": true
   },
-  "include": ["openrouter.ts"]
+  "include": ["openrouter.ts", "utils/**/*.ts"]
 }
