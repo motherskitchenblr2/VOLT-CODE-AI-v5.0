@@ -954,7 +954,13 @@ const allFixed = issues.reduce((acc, issue) => {
           skill: selectedSkill,
           plugin: selectedPlugin,
           customPrompt: text,
-          isBossChat: true
+          isBossChat: true,
+          keys: {
+            groq: groqKey,
+            openrouter: openrouterKey,
+            nvidia: nvidiaKey,
+            huggingface: huggingfaceKey
+          }
         })
       });
 
