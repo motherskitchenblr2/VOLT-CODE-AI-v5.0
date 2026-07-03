@@ -18,7 +18,8 @@ export default defineConfig(async () => {
         output: {
           manualChunks(id: string) {
             if (id.includes('node_modules')) {
-              if (id.endsWith('.css') || id.endsWith('.scss') || id.endsWith('.sass') || id.endsWith('.less')) {
+              const cleanId = id.split('?')[0];
+              if (/\.(?:css|scss|sass|less)$/i.test(cleanId)) {
                 return;
               }
               if (id.includes('framer-motion')) {
