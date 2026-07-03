@@ -18,13 +18,16 @@ export default defineConfig(async () => {
         output: {
           manualChunks(id: string) {
             if (id.includes('node_modules')) {
+              if (id.endsWith('.css') || id.endsWith('.scss') || id.endsWith('.sass') || id.endsWith('.less')) {
+                return;
+              }
               if (id.includes('framer-motion')) {
                 return 'vendor-framer';
               }
               if (id.includes('highlight.js')) {
                 return 'vendor-highlight';
               }
-              if (id.includes('react') || id.includes('react-dom')) {
+              if (id.includes('/react/') || id.includes('/react-dom/')) {
                 return 'vendor-react';
               }
               return 'vendor';
