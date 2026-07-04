@@ -24,7 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           files=$(ls artifact*)
-          echo "hashes=$(sha256sum $files | base64 -w0)" >> "${GITHUB_OUTPUT}"
+          echo "digests=$(sha256sum $files | base64 -w0)" >> "${GITHUB_OUTPUT}"
 
   provenance:
     needs: [build]
@@ -32,31 +32,16 @@ jobs:
       actions: read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.4.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.2.0
     with:
-      base64-subjects: "${{ needs.build.outputs.digests }}"
+      subjects: "${{ needs.build.outputs.digests }}"
       upload-assets: true
 
   notify-vercel:
-    needs: [provenance]            # runs after provenance succeeds
+    needs: [provenance]
     runs-on: ubuntu-latest
     steps:
       - name: Notify Vercel
         uses: vercel/repository-dispatch/actions/status@v1
         with:
           name: "Vercel - volt-code-ai-v5-0: lint"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
