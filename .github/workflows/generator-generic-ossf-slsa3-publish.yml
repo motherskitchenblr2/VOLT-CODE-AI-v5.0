@@ -32,9 +32,9 @@ jobs:
       actions: read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.3.0   # ← updated version
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.6.0
     with:
-      subjects: "${{ needs.build.outputs.digests }}"      # input name unchanged
+      subjects: "${{ needs.build.outputs.digests }}"
       upload-assets: true
 
   notify-vercel:
