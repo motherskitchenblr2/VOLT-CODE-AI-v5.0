@@ -1,0 +1,2415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VOLT AI — Mission Control Dashboard</title>
+  <!-- Industrial Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS VARIABLES - CYBER INDUSTRIAL DESIGN SYSTEM */
+    :root {
+      --bg-color: #111214;
+      --panel-bg: #1B1D22;
+      --border-color: #2B2E36;
+      --border-focus: #FF6A00;
+      --primary-orange: #FF6A00;
+      --highlight-orange: #FF9F0A;
+      --color-success: #00C853;
+      --color-warning: #FFC107;
+      --color-danger: #F44336;
+      --color-info: #29B6F6;
+      --text-color: #F5F5F5;
+      --text-muted: #A0A4AE;
+      --sidebar-width: 250px;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-tech: 'Share Tech Mono', sans-serif;
+      --font-sans: 'Inter', sans-serif;
+      --glow-shadow: 0 0 10px rgba(255, 106, 0, 0.15);
+    }
+
+    [data-theme="light"] {
+      --bg-color: #F0F2F5;
+      --panel-bg: #FFFFFF;
+      --border-color: #D2D6DC;
+      --border-focus: #FF6A00;
+      --primary-orange: #E65F00;
+      --highlight-orange: #FF8F00;
+      --color-success: #10B981;
+      --color-warning: #F59E0B;
+      --color-danger: #EF4444;
+      --color-info: #3B82F6;
+      --text-color: #1F2937;
+      --text-muted: #4B5563;
+      --glow-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* GLOBAL RESET & ACCESSIBILITY */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      outline: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-sans);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* TYPOGRAPHY */
+    h1, h2, h3, h4, .tech-txt {
+      font-family: var(--font-tech);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .mono-txt {
+      font-family: var(--font-mono);
+    }
+
+    /* APP CONTAINER LAYOUT */
+    .app-container {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--panel-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      flex-shrink: 0;
+      z-index: 50;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary-orange), var(--highlight-orange));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-family: var(--font-tech);
+      font-size: 18px;
+      box-shadow: var(--glow-shadow);
+    }
+
+    .sidebar-title {
+      font-size: 18px;
+      color: var(--text-color);
+      font-weight: 700;
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+
+    .menu-item:hover, .menu-item.active {
+      color: var(--text-color);
+      background-color: rgba(255, 106, 0, 0.08);
+      border-color: rgba(255, 106, 0, 0.25);
+    }
+
+    .menu-item.active {
+      border-color: var(--primary-orange);
+      box-shadow: var(--glow-shadow);
+      font-weight: 600;
+    }
+
+    .menu-item svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      transition: stroke 0.2s ease;
+    }
+
+    .menu-item.active svg {
+      stroke: var(--primary-orange);
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* MAIN CONTENT VIEWPORT */
+    .viewport {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* HEADER */
+    .header {
+      height: 64px;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--panel-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-tab-title {
+      font-size: 20px;
+      color: var(--text-color);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* STOPWATCH TRACKER */
+    .tracker-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .tracker-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-danger);
+      animation: pulse 1.5s infinite;
+    }
+
+    .tracker-dot.paused {
+      background-color: var(--text-muted);
+      animation: none;
+    }
+
+    .tracker-btn {
+      background: none;
+      border: none;
+      color: var(--primary-orange);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+
+    .tracker-btn:hover {
+      background-color: rgba(255, 106, 0, 0.15);
+    }
+
+    .tracker-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    /* AUTO-SAVE STATUS */
+    .save-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--color-success);
+      font-family: var(--font-mono);
+    }
+
+    /* CONTENT SCROLL AREA */
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .tab-view {
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+      animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-view.active {
+      display: flex;
+    }
+
+    /* STEEL PANEL CARDS */
+    .panel {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--glow-shadow);
+      transition: border-color 0.2s ease;
+    }
+
+    .panel:hover {
+      border-color: rgba(255, 106, 0, 0.2);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      margin-bottom: 4px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-header-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: rgba(0, 0, 0, 0.15);
+      color: var(--text-color);
+      cursor: pointer;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn:hover {
+      background-color: rgba(255, 106, 0, 0.1);
+      border-color: var(--primary-orange);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-orange);
+      border-color: var(--primary-orange);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--highlight-orange);
+      border-color: var(--highlight-orange);
+      box-shadow: var(--glow-shadow);
+    }
+
+    .btn-danger {
+      border-color: var(--color-danger);
+      color: var(--color-danger);
+    }
+
+    .btn-danger:hover {
+      background-color: rgba(244, 67, 54, 0.1);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    /* INPUTS & SELECTS */
+    .input-field, .select-field, .textarea-field {
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-color);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-field:focus, .select-field:focus, .textarea-field:focus {
+      border-color: var(--primary-orange);
+    }
+
+    /* CHECKLISTS */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      background-color: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .checklist-item:hover {
+      border-color: rgba(255, 106, 0, 0.15);
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    .checkbox-container {
+      display: block;
+      position: relative;
+      padding-left: 24px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 13px;
+      color: var(--text-color);
+      flex: 1;
+    }
+
+    .checkbox-container input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .checkmark {
+      position: absolute;
+      top: 2px;
+      left: 0;
+      height: 16px;
+      width: 16px;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .checkbox-container:hover input ~ .checkmark {
+      border-color: var(--primary-orange);
+    }
+
+    .checkbox-container input:checked ~ .checkmark {
+      background-color: var(--primary-orange);
+      border-color: var(--primary-orange);
+    }
+
+    .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    .checkbox-container input:checked ~ .checkmark:after {
+      display: block;
+    }
+
+    .checkbox-container .checkmark:after {
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .checkbox-container input:checked ~ .checkbox-label {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .checkbox-label {
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .checklist-badge {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .badge-todo { background-color: rgba(160, 164, 174, 0.15); color: var(--text-muted); }
+    .badge-progress { background-color: rgba(41, 182, 246, 0.15); color: var(--color-info); }
+    .badge-complete { background-color: rgba(0, 200, 83, 0.15); color: var(--color-success); }
+
+    /* DASHBOARD GRID CONFIG */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      box-shadow: var(--glow-shadow);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background-color: rgba(255, 106, 0, 0.1);
+      border: 1px solid rgba(255, 106, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-orange);
+    }
+
+    .stat-info {
+      flex: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-family: var(--font-tech);
+      color: var(--text-color);
+      margin-top: 2px;
+    }
+
+    /* TELEMETRY CIRCULAR CHARTS */
+    .circular-progress-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px;
+    }
+
+    .circular-chart {
+      width: 140px;
+      height: 140px;
+    }
+
+    .circle-bg {
+      fill: none;
+      stroke: var(--border-color);
+      stroke-width: 2.8;
+    }
+
+    .circle-progress {
+      fill: none;
+      stroke: var(--primary-orange);
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.5s ease;
+    }
+
+    .percentage-text {
+      font-family: var(--font-tech);
+      font-size: 9px;
+      fill: var(--text-color);
+      text-anchor: middle;
+      font-weight: bold;
+    }
+
+    /* AI INTERACTIVE MATRIX */
+    .ai-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .ai-matrix th, .ai-matrix td {
+      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    .ai-matrix th {
+      background-color: rgba(0, 0, 0, 0.2);
+      color: var(--text-muted);
+      font-family: var(--font-tech);
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .ai-matrix td {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .ai-toggle-cell {
+      text-align: center;
+    }
+
+    .matrix-toggle {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--primary-orange);
+    }
+
+    /* BUG KANBAN BOARD */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      min-height: 400px;
+    }
+
+    .kanban-col {
+      background-color: rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .kanban-col-header {
+      font-family: var(--font-tech);
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .bug-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--text-muted);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .bug-card:hover {
+      border-color: var(--primary-orange);
+    }
+
+    .bug-card.priority-critical { border-left-color: var(--color-danger); }
+    .bug-card.priority-high { border-left-color: var(--highlight-orange); }
+    .bug-card.priority-medium { border-left-color: var(--color-warning); }
+    .bug-card.priority-low { border-left-color: var(--color-info); }
+
+    .bug-card-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-color);
+    }
+
+    .bug-card-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+
+    .bug-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ROADMAP MILESTONES */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      padding-left: 20px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      bottom: 4px;
+      width: 2px;
+      background-color: var(--border-color);
+    }
+
+    .timeline-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      left: -20px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--border-color);
+      border: 2px solid var(--bg-color);
+      transition: background-color 0.2s;
+    }
+
+    .timeline-item.active .timeline-marker {
+      background-color: var(--primary-orange);
+      box-shadow: var(--glow-shadow);
+    }
+
+    .timeline-title {
+      font-family: var(--font-tech);
+      font-size: 14px;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeline-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* DYNAMIC IDEA CARDS */
+    .ideas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .idea-card {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .idea-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .idea-pin-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .idea-pin-btn.pinned {
+      color: var(--primary-orange);
+    }
+
+    .idea-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-color);
+    }
+
+    .idea-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .idea-tag {
+      font-size: 9px;
+      font-family: var(--font-mono);
+      background-color: rgba(255, 106, 0, 0.08);
+      border: 1px solid rgba(255, 106, 0, 0.2);
+      color: var(--primary-orange);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* TOAST SYSTEM */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background-color: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--primary-orange);
+      color: var(--text-color);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: auto;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.6; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .sidebar, .header, .toast-container, .btn, input, select, textarea {
+        display: none !important;
+      }
+      .viewport {
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .content-area {
+        overflow: visible !important;
+        padding: 0 !important;
+      }
+      .tab-view {
+        display: flex !important;
+      }
+      .panel {
+        border: 1px solid #000000 !important;
+        page-break-inside: avoid;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">V</div>
+        <div class="sidebar-title tech-txt">Volt OS</div>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <a class="menu-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a class="menu-item" data-tab="repository">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Repository
+        </a>
+        <a class="menu-item" data-tab="architecture">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          Architecture
+        </a>
+        <a class="menu-item" data-tab="frontend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Frontend
+        </a>
+        <a class="menu-item" data-tab="backend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          Backend
+        </a>
+        <a class="menu-item" data-tab="ai">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          Artificial Intelligence
+        </a>
+        <a class="menu-item" data-tab="security">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Security
+        </a>
+        <a class="menu-item" data-tab="testing">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Testing
+        </a>
+        <a class="menu-item" data-tab="deployment">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Deployment
+        </a>
+        <a class="menu-item" data-tab="bugs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          Bug Tracker
+        </a>
+        <a class="menu-item" data-tab="ideas">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          Ideas Vault
+        </a>
+        <a class="menu-item" data-tab="roadmap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Roadmap
+        </a>
+        <a class="menu-item" data-tab="changelog">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Changelog
+        </a>
+        <a class="menu-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+        <a class="menu-item" data-tab="about">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          About System
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div>OS: v5.1-RC2</div>
+        <div id="save-indicator" class="save-badge">✔ SAVED</div>
+      </div>
+    </aside>
+
+    <!-- CONTENT AREA -->
+    <main class="viewport">
+      
+      <!-- TOP STATUS HEADER -->
+      <header class="header">
+        <div class="header-left">
+          <h2 id="current-view-title" class="header-tab-title">Dashboard</h2>
+        </div>
+        
+        <div class="header-right">
+          <!-- Stopwatch Active Task Telemetry -->
+          <div class="tracker-box">
+            <div id="tracker-pulse" class="tracker-dot paused"></div>
+            <div id="tracker-task-label" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">NO ACTIVE TASK</div>
+            <div id="tracker-timer">00:00:00</div>
+            <button id="tracker-toggle-btn" class="tracker-btn" title="Toggle active tracking">
+              <svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2; width: 14px; height: 14px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button id="tracker-reset-btn" class="tracker-btn" title="Reset tracking session">
+              <svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2; width: 14px; height: 14px;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- SCROLL CONTAINER FOR THE WORKSPACES -->
+      <div class="content-area">
+
+        <!-- 1. DASHBOARD OVERVIEW -->
+        <section id="view-dashboard" class="tab-view active">
+          
+          <div class="dashboard-grid">
+            <!-- Telemetry overall completion -->
+            <div class="panel" style="align-items: center; justify-content: center;">
+              <h3 class="panel-title">System Metrics</h3>
+              <div class="circular-progress-container">
+                <svg viewBox="0 0 36 36" class="circular-chart">
+                  <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  <path id="overall-chart-progress" class="circle-progress" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  <text id="overall-percentage" x="18" y="20.35" class="percentage-text">0%</text>
+                </svg>
+                <div class="stat-label">Overall Completion</div>
+              </div>
+            </div>
+            
+            <!-- Overall Stats -->
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-info">
+                  <div class="stat-label">Active Sprint</div>
+                  <div id="dash-active-sprint" class="stat-value">Sprint 1</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">🔧</div>
+                <div class="stat-info">
+                  <div class="stat-label">Pending Bugs</div>
+                  <div id="dash-pending-bugs" class="stat-value">0</div>
+                </div>
+              </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-info">
+                  <div class="stat-label">Project Health</div>
+                  <div id="dash-project-health" class="stat-value">100%</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">📁</div>
+                <div class="stat-info">
+                  <div class="stat-label">Last Saved</div>
+                  <div id="dash-last-saved" class="stat-value">Never</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Active Target Directives</h3>
+            </div>
+            <div class="checklist">
+              <div class="checklist-item">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="dash-check-1" class="persist-check" data-id="dash-check-1">
+                  <span class="checkmark"></span>
+                  <span class="checkbox-label">Finalize Vercel edge database schema configurations</span>
+                </label>
+              </div>
+              <div class="checklist-item">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="dash-check-2" class="persist-check" data-id="dash-check-2">
+                  <span class="checkmark"></span>
+                  <span class="checkbox-label">Verify multi-agent orchestrator validation gates</span>
+                </label>
+              </div>
+              <div class="checklist-item">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="dash-check-3" class="persist-check" data-id="dash-check-3">
+                  <span class="checkmark"></span>
+                  <span class="checkbox-label">Optimise React stylesheet manualChunks in Vite bundle</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. REPOSITORY AUDIT -->
+        <section id="view-repository" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Repository Audit Matrix</h3>
+            </div>
+            <div class="checklist" id="repo-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. ARCHITECTURE -->
+        <section id="view-architecture" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Directory Architecture Checkpoint</h3>
+            </div>
+            <div class="checklist" id="arch-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. FRONTEND -->
+        <section id="view-frontend" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Frontend Component Directives</h3>
+            </div>
+            <div class="checklist" id="frontend-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. BACKEND -->
+        <section id="view-backend" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Backend Architecture Audits</h3>
+            </div>
+            <div class="checklist" id="backend-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. ARTIFICIAL INTELLIGENCE -->
+        <section id="view-ai" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">AI Integration Matrix</h3>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="ai-matrix">
+                <thead>
+                  <tr>
+                    <th>AI Provider / Engine</th>
+                    <th style="text-align: center;">Installed</th>
+                    <th style="text-align: center;">Configured</th>
+                    <th style="text-align: center;">Tested</th>
+                    <th style="text-align: center;">Optimised</th>
+                    <th style="text-align: center;">Production</th>
+                  </tr>
+                </thead>
+                <tbody id="ai-matrix-body">
+                  <!-- JS dynamically populates this rows matrix -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. SECURITY -->
+        <section id="view-security" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Security & Cryptographic Guardrails</h3>
+            </div>
+            <div class="checklist" id="security-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. TESTING -->
+        <section id="view-testing" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Testing Framework Checkpoints</h3>
+            </div>
+            <div class="checklist" id="testing-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. DEPLOYMENT -->
+        <section id="view-deployment" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">CI/CD & Deployment Target Matrix</h3>
+            </div>
+            <div class="checklist" id="deployment-checklist">
+              <!-- Checkboxes dynamically populated in JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. BUG TRACKER -->
+        <section id="view-bugs" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Add Active System Bug</h3>
+            </div>
+            <form id="new-bug-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="stat-label">Bug Summary</label>
+                <input type="text" id="bug-title" class="input-field" placeholder="Brief issue description..." required>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="stat-label">Category</label>
+                <select id="bug-priority" class="select-field">
+                  <option value="critical">CRITICAL</option>
+                  <option value="high" selected>HIGH</option>
+                  <option value="medium">MEDIUM</option>
+                  <option value="low">LOW</option>
+                </select>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="stat-label">Assignee / Layer</label>
+                <input type="text" id="bug-assignee" class="input-field" placeholder="e.g. LinterFixer, CoreOS..." required>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">File Bug</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">System Bug Vault</h3>
+              <div class="panel-header-action">
+                <input type="text" id="bug-search" class="input-field" placeholder="Search bugs..." style="max-width: 200px;">
+              </div>
+            </div>
+            
+            <div class="kanban-board">
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span>TODO</span>
+                  <span id="bug-count-todo" class="mono-txt">(0)</span>
+                </div>
+                <div id="bugs-todo" class="bug-list" style="flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
+              </div>
+              
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span>WORKING</span>
+                  <span id="bug-count-working" class="mono-txt">(0)</span>
+                </div>
+                <div id="bugs-working" class="bug-list" style="flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
+              </div>
+
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span>REVIEW</span>
+                  <span id="bug-count-review" class="mono-txt">(0)</span>
+                </div>
+                <div id="bugs-review" class="bug-list" style="flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
+              </div>
+
+              <div class="kanban-col">
+                <div class="kanban-col-header">
+                  <span>COMPLETED</span>
+                  <span id="bug-count-completed" class="mono-txt">(0)</span>
+                </div>
+                <div id="bugs-completed" class="bug-list" style="flex: 1; display: flex; flex-direction: column; gap: 10px;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. IDEAS VAULT -->
+        <section id="view-ideas" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Add Innovation Idea</h3>
+            </div>
+            <form id="new-idea-form" style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label class="stat-label">Idea Title</label>
+                  <input type="text" id="idea-title" class="input-field" placeholder="Title of the concept..." required>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label class="stat-label">Tags (comma-separated)</label>
+                  <input type="text" id="idea-tags" class="input-field" placeholder="e.g. AI, UX, Performance">
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="stat-label">Description</label>
+                <textarea id="idea-desc" class="textarea-field" rows="3" placeholder="Explain the concept structure..." required></textarea>
+              </div>
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">Catalog Idea</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Idea Matrix</h3>
+              <div class="panel-header-action">
+                <input type="text" id="idea-search" class="input-field" placeholder="Search ideas..." style="max-width: 200px;">
+              </div>
+            </div>
+            <div class="ideas-grid" id="ideas-container">
+              <!-- JS dynamically populates cards here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. ROADMAP -->
+        <section id="view-roadmap" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Project Sprint & Milestone Targets</h3>
+            </div>
+            <div class="timeline" id="roadmap-timeline">
+              <!-- Roadmap milestones populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. CHANGELOG -->
+        <section id="view-changelog" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Add Changelog Entry</h3>
+            </div>
+            <form id="new-changelog-form" style="display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label class="stat-label">Version</label>
+                  <input type="text" id="change-version" class="input-field" placeholder="e.g. v6.2-RC1" required>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label class="stat-label">Type</label>
+                  <select id="change-type" class="select-field">
+                    <option value="ADDED">ADDED</option>
+                    <option value="CHANGED">CHANGED</option>
+                    <option value="FIXED" selected>FIXED</option>
+                    <option value="REMOVED">REMOVED</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label class="stat-label">Changelog Summary</label>
+                <input type="text" id="change-summary" class="input-field" placeholder="Specify changes..." required>
+              </div>
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary">Log Update</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Release Changelog Vault</h3>
+            </div>
+            <div class="checklist" id="changelog-list">
+              <!-- Dynamically populated changelog events -->
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. SETTINGS -->
+        <section id="view-settings" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">Operational Settings</h3>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                  <div style="font-weight: 600;">Theme Selection</div>
+                  <div class="stat-label">Toggle between dark charcoal and light industrial themes</div>
+                </div>
+                <button id="theme-toggle-btn" class="btn">Toggle Theme</button>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                  <div style="font-weight: 600;">Export System State Backup</div>
+                  <div class="stat-label">Download all local storage checklist entries as a single JSON file</div>
+                </div>
+                <button id="export-backup-btn" class="btn btn-primary">Export JSON</button>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                  <div style="font-weight: 600;">Import System State Backup</div>
+                  <div class="stat-label">Load local storage checklist entries from a JSON file</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <input type="file" id="import-backup-file" style="display: none;" accept=".json">
+                  <button id="import-backup-btn" class="btn">Choose File</button>
+                </div>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div>
+                  <div style="font-weight: 600;">Generate Printed Report</div>
+                  <div class="stat-label">Print the current Mission Control state to PDF or printer</div>
+                </div>
+                <button id="print-report-btn" class="btn">Print Report</button>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px;">
+                <div>
+                  <div style="font-weight: 600; color: var(--color-danger);">System Reset</div>
+                  <div class="stat-label">Clear all local storage variables and restore default parameters</div>
+                </div>
+                <button id="reset-storage-btn" class="btn btn-danger btn-sm">Clear Storage</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 15. ABOUT SYSTEM -->
+        <section id="view-about" class="tab-view">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">System Architecture Overview</h3>
+            </div>
+            <div style="line-height: 1.6; font-size: 13px; display: flex; flex-direction: column; gap: 16px;">
+              <p>
+                <strong>VOLT Mission Control Dashboard v3.0</strong> is a zero-dependency, self-contained HTML5 operations dashboard.
+                It acts as the single source of truth for repository checks, developer tasks, release progress, and bug triage.
+              </p>
+              
+              <div class="panel" style="background-color: rgba(0,0,0,0.2); border-color: rgba(255,106,0,0.15); padding: 14px;">
+                <h4 style="color: var(--primary-orange); margin-bottom: 8px;">Keyboard Hotkeys</h4>
+                <ul style="list-style-type: square; padding-left: 20px; font-family: var(--font-mono); font-size: 11px;">
+                  <li><strong>Esc</strong> — Close active modals & clear input selections</li>
+                  <li><strong>Ctrl + S</strong> — Trigger system backup download</li>
+                  <li><strong>Alt + Number</strong> — Quickly swap views (Alt+1 for Dashboard, Alt+2 for Repo, etc.)</li>
+                </ul>
+              </div>
+
+              <p>
+                All data resides inside local storage and will persist automatically. Offline functionality is fully integrated.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- CORE JS LOGIC -->
+  <script>
+    // -------------------------------------------------------------------------
+    // 1. DATA DIRECTIVES & CHECKLIST SCHEMAS
+    // -------------------------------------------------------------------------
+    const CHECKLIST_SCHEMAS = {
+      repository: [
+        { id: "repo-audit", text: "Perform complete git branch structure verification" },
+        { id: "pkg-audit", text: "Validate package.json packages for duplicate dependencies" },
+        { id: "dep-audit", text: "Verify local build configuration matches lock files" },
+        { id: "ts-audit", text: "Audit tsconfig.json configurations for type boundaries" },
+        { id: "react-audit", text: "Analyze React module hooks and dependencies" },
+        { id: "tailwind-audit", text: "Verify CSS/Tailwind compiler compatibility" },
+        { id: "vite-audit", text: "Confirm Vite builds produce optimized module chunks" },
+        { id: "folder-audit", text: "Audit workspace layout for dead code files" },
+        { id: "security-audit", text: "Scan repo assets for credential and token leak paths" },
+        { id: "perf-audit", text: "Audit load times, bundle outputs, and minification states" }
+      ],
+      architecture: [
+        { id: "arch-structure", text: "Verify project directories align with specifications" },
+        { id: "arch-pages", text: "Verify all page router endpoints load successfully" },
+        { id: "arch-layouts", text: "Confirm responsive containers adapt on mobile viewports" },
+        { id: "arch-components", text: "Document modular visual components" },
+        { id: "arch-hooks", text: "Audit custom hooks for state sync closures" },
+        { id: "arch-services", text: "Confirm data workforce service APIs execute cleanly" },
+        { id: "arch-types", text: "Review TypeScript interface models and schemas" }
+      ],
+      frontend: [
+        { id: "fe-landing", text: "Ensure Landing page loads instantly with full branding logo" },
+        { id: "fe-dashboard", text: "Connect telemetry cards to real data logs" },
+        { id: "fe-workspace", text: "Confirm split terminal panel works without layout breakage" },
+        { id: "fe-chat", text: "Implement chat console text stream parser" },
+        { id: "fe-diff", text: "Verify green/red lines are highlighted inside Diff visualizer" }
+      ],
+      backend: [
+        { id: "be-auth", text: "Configure secure serverless route authentication" },
+        { id: "be-database", text: "Wire DB endpoints to save/query telemetry statistics" },
+        { id: "be-storage", text: "Implement session vault cleanup rules" },
+        { id: "be-logging", text: "Validate edge logger output formats" }
+      ],
+      security: [
+        { id: "sec-env", text: "Verify all secrets are read from serverless env profiles" },
+        { id: "sec-rbac", text: "Confirm access key validation rules reject invalid inputs" },
+        { id: "sec-csp", text: "Set content security policy headers on edge responses" }
+      ],
+      testing: [
+        { id: "test-unit", text: "Verify all 94 unit assertions tests pass successfully" },
+        { id: "test-integration", text: "Execute multi-agent workspace workflow checks" },
+        { id: "test-coverage", text: "Achieve at least 85% linter rule compliance score" }
+      ],
+      deployment: [
+        { id: "dep-vercel", text: "Verify production deployment compiles on Vercel" },
+        { id: "dep-actions", text: "Update GitHub Actions workflow to run Vite builds" },
+        { id: "dep-rollback", text: "Confirm edge deployment versions can rollback cleanly" }
+      ]
+    };
+
+    const AI_PROVIDERS = [
+      "OpenAI", "Claude", "Gemini", "Qwen", "GLM", "DeepSeek", "Kimi", "Mistral", "Flux", "Wan", "ComfyUI", "Automatic1111", "OpenRouter", "Ollama"
+    ];
+
+    const ROADMAP_MILESTONES = [
+      { id: "sprint-1", title: "Sprint 1", desc: "Core workspace and layout structure alignment" },
+      { id: "sprint-2", title: "Sprint 2", desc: "OpenRouter gateway integration and model tests" },
+      { id: "sprint-3", title: "Sprint 3", desc: "Multi-agent orchestrator validation checks" },
+      { id: "sprint-4", title: "Sprint 4", desc: "Production build compilation and edge audits" },
+      { id: "v5.0", title: "Version 5.0", desc: "Agentic fixing hub release" },
+      { id: "v5.1", title: "Version 5.1", desc: "Vercel edge schemas configuration upgrade" },
+      { id: "v5.2", title: "Version 5.2", desc: "Advanced telemetry analytics integration" },
+      { id: "v6.0", title: "Version 6.0", desc: "Enterprise scale and failure resilience release" }
+    ];
+
+    // -------------------------------------------------------------------------
+    // 2. STATE MANAGEMENT
+    // -------------------------------------------------------------------------
+    let voltState = {
+      checklists: {},
+      aiMatrix: {},
+      bugs: [],
+      ideas: [],
+      changelog: [
+        { id: "ch-1", version: "v5.1-RC2", type: "FIXED", summary: "Strip query params from manualChunks IDs inside vite.config.ts" },
+        { id: "ch-2", version: "v5.1-RC1", type: "FIXED", summary: "Added manualChunks vendor splitting to prevent bundle chunk size warnings" },
+        { id: "ch-3", version: "v5.0-Final", type: "ADDED", summary: "Implemented VOLT AI Boss Cockpit chat panel interface" }
+      ],
+      tracker: {
+        active: false,
+        taskName: "NO ACTIVE TASK",
+        seconds: 0,
+        lastUpdated: null
+      },
+      theme: "dark"
+    };
+
+    // Initialize Default States if empty
+    function initDefaultState() {
+      const stored = localStorage.getItem("volt_mission_control_state");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          // Defensive merge to prevent crashes if loading partial or older state schemas
+          voltState = {
+            checklists: parsed.checklists || {},
+            aiMatrix: parsed.aiMatrix || {},
+            bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+            ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+            changelog: Array.isArray(parsed.changelog) ? parsed.changelog : [],
+            tracker: {
+              active: false,
+              taskName: "NO ACTIVE TASK",
+              seconds: 0,
+              lastUpdated: null,
+              ...(parsed.tracker || {})
+            },
+            theme: parsed.theme || "dark"
+          };
+          return;
+        } catch (e) {
+          console.error("Failed to parse stored state. Restoring default.", e);
+        }
+      }
+      
+      // Seed default checklists
+      Object.keys(CHECKLIST_SCHEMAS).forEach(tab => {
+        CHECKLIST_SCHEMAS[tab].forEach(item => {
+          voltState.checklists[item.id] = false;
+        });
+      });
+
+      // Seed AI Provider checks
+      AI_PROVIDERS.forEach(provider => {
+        voltState.aiMatrix[provider] = {
+          installed: false,
+          configured: false,
+          tested: false,
+          optimised: false,
+          production: false
+        };
+      });
+
+      // Seed Default Bugs
+      voltState.bugs = [
+        { id: "bug-1", title: "TS7006 error inside manualChunks", priority: "critical", assignee: "LinterFixer", status: "completed" },
+        { id: "bug-2", title: "Exposed GitHub PAT in workflow warning", priority: "critical", assignee: "SecurityAgent", status: "completed" }
+      ];
+
+      // Seed Default Ideas
+      voltState.ideas = [
+        { id: "id-1", title: "Vercel edge telemetry charts dashboard", desc: "Integrate charts showing response times and token logs using SVG progress rings.", tags: ["UX", "Telemetry"], pinned: true }
+      ];
+
+      saveState();
+    }
+
+    function saveState() {
+      localStorage.setItem("volt_mission_control_state", JSON.stringify(voltState));
+      updateDashboardTelemetry();
+      
+      const saveIndicator = document.getElementById("save-indicator");
+      if (saveIndicator) {
+        saveIndicator.textContent = "✔ SAVED";
+        saveIndicator.style.color = "var(--color-success)";
+      }
+      
+      const dashLastSaved = document.getElementById("dash-last-saved");
+      if (dashLastSaved) {
+        dashLastSaved.textContent = new Date().toLocaleTimeString();
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. UI RENDER ENGINE
+    // -------------------------------------------------------------------------
+    function showToast(message) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      container.appendChild(toast);
+      
+      // Trigger animation
+      setTimeout(() => toast.classList.add("show"), 10);
+      
+      // Auto cleanup
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function updateDashboardTelemetry() {
+      // Calculate overall completion progress
+      let totalItems = 0;
+      let completedItems = 0;
+
+      // Count checklists
+      Object.keys(voltState.checklists).forEach(id => {
+        totalItems++;
+        if (voltState.checklists[id]) completedItems++;
+      });
+
+      // Count AI checkboxes
+      Object.keys(voltState.aiMatrix).forEach(provider => {
+        Object.keys(voltState.aiMatrix[provider]).forEach(key => {
+          totalItems++;
+          if (voltState.aiMatrix[provider][key]) completedItems++;
+        });
+      });
+
+      const percentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+      
+      // Update Progress SVG ring
+      const progressRing = document.getElementById("overall-chart-progress");
+      const percentageText = document.getElementById("overall-percentage");
+      if (progressRing && percentageText) {
+        percentageText.textContent = `${percentage}%`;
+        const radius = 15.9155;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (percentage / 100) * circumference;
+        progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressRing.style.strokeDashoffset = offset;
+      }
+
+      // Update Health Index based on bugs
+      const pendingBugsCount = voltState.bugs.filter(b => b.status !== 'completed').length;
+      const dashPendingBugs = document.getElementById("dash-pending-bugs");
+      if (dashPendingBugs) dashPendingBugs.textContent = pendingBugsCount;
+
+      const health = Math.max(0, 100 - (pendingBugsCount * 15));
+      const dashProjectHealth = document.getElementById("dash-project-health");
+      if (dashProjectHealth) {
+        dashProjectHealth.textContent = `${health}%`;
+        dashProjectHealth.style.color = health < 70 ? "var(--color-danger)" : (health < 90 ? "var(--color-warning)" : "var(--color-success)");
+      }
+    }
+
+    function renderChecklist(containerId, items) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = "";
+
+      items.forEach(item => {
+        const isChecked = voltState.checklists[item.id] || false;
+        
+        const wrapper = document.createElement("div");
+        wrapper.className = "checklist-item";
+        
+        const label = document.createElement("label");
+        label.className = "checkbox-container";
+        
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.checked = isChecked;
+        input.dataset.id = item.id;
+        input.addEventListener("change", (e) => {
+          voltState.checklists[item.id] = e.target.checked;
+          saveState();
+        });
+
+        const spanMark = document.createElement("span");
+        spanMark.className = "checkmark";
+
+        const spanText = document.createElement("span");
+        spanText.className = "checkbox-label";
+        spanText.textContent = item.text;
+
+        label.appendChild(input);
+        label.appendChild(spanMark);
+        label.appendChild(spanText);
+        
+        const badge = document.createElement("span");
+        badge.className = `checklist-badge ${isChecked ? 'badge-complete' : 'badge-todo'}`;
+        badge.textContent = isChecked ? 'COMPLETE' : 'TODO';
+        
+        // Dynamically toggle badge type on input
+        input.addEventListener("change", (e) => {
+          badge.className = `checklist-badge ${e.target.checked ? 'badge-complete' : 'badge-todo'}`;
+          badge.textContent = e.target.checked ? 'COMPLETE' : 'TODO';
+        });
+
+        wrapper.appendChild(label);
+        wrapper.appendChild(badge);
+        container.appendChild(wrapper);
+      });
+    }
+
+    function renderAIMatrix() {
+      const body = document.getElementById("ai-matrix-body");
+      if (!body) return;
+      body.innerHTML = "";
+
+      AI_PROVIDERS.forEach(provider => {
+        const data = voltState.aiMatrix[provider] || { installed: false, configured: false, tested: false, optimised: false, production: false };
+        const row = document.createElement("tr");
+
+        const nameCell = document.createElement("td");
+        nameCell.className = "mono-txt";
+        nameCell.textContent = provider;
+        row.appendChild(nameCell);
+
+        const keys = ["installed", "configured", "tested", "optimised", "production"];
+        keys.forEach(key => {
+          const cell = document.createElement("td");
+          cell.className = "ai-toggle-cell";
+
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.className = "matrix-toggle";
+          cb.checked = data[key] || false;
+          cb.addEventListener("change", (e) => {
+            if (!voltState.aiMatrix[provider]) voltState.aiMatrix[provider] = {};
+            voltState.aiMatrix[provider][key] = e.target.checked;
+            saveState();
+          });
+
+          cell.appendChild(cb);
+          row.appendChild(cell);
+        });
+
+        body.appendChild(row);
+      });
+    }
+
+    function renderBugs() {
+      const lists = {
+        todo: document.getElementById("bugs-todo"),
+        working: document.getElementById("bugs-working"),
+        review: document.getElementById("bugs-review"),
+        completed: document.getElementById("bugs-completed")
+      };
+
+      Object.keys(lists).forEach(key => {
+        if (lists[key]) lists[key].innerHTML = "";
+      });
+
+      const filterText = document.getElementById("bug-search")?.value.toLowerCase() || "";
+
+      let counts = { todo: 0, working: 0, review: 0, completed: 0 };
+
+      voltState.bugs.forEach(bug => {
+        if (filterText && !bug.title.toLowerCase().includes(filterText) && !bug.assignee.toLowerCase().includes(filterText)) {
+          return;
+        }
+
+        counts[bug.status]++;
+        
+        const card = document.createElement("div");
+        card.className = `bug-card priority-${bug.priority}`;
+        card.draggable = true;
+        card.dataset.id = bug.id;
+        
+        // Drag and drop event listeners
+        card.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", bug.id);
+        });
+
+        const title = document.createElement("div");
+        title.className = "bug-card-title";
+        title.textContent = bug.title;
+
+        const desc = document.createElement("div");
+        desc.className = "bug-card-desc";
+        desc.textContent = `Assignee: ${bug.assignee}`;
+
+        const meta = document.createElement("div");
+        meta.className = "bug-card-meta";
+        
+        const pBadge = document.createElement("span");
+        pBadge.textContent = bug.priority.toUpperCase();
+        pBadge.style.fontWeight = "bold";
+        pBadge.style.color = bug.priority === 'critical' ? 'var(--color-danger)' : (bug.priority === 'high' ? 'var(--highlight-orange)' : 'var(--text-muted)');
+        
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn btn-danger btn-sm";
+        deleteBtn.textContent = "🗑";
+        deleteBtn.style.padding = "2px 6px";
+        deleteBtn.addEventListener("click", () => {
+          voltState.bugs = voltState.bugs.filter(b => b.id !== bug.id);
+          saveState();
+          renderBugs();
+          showToast("Bug resolved/removed from archive");
+        });
+
+        meta.appendChild(pBadge);
+        meta.appendChild(deleteBtn);
+
+        card.appendChild(title);
+        card.appendChild(desc);
+        card.appendChild(meta);
+
+        if (lists[bug.status]) {
+          lists[bug.status].appendChild(card);
+        }
+      });
+
+      // Update header counters
+      Object.keys(counts).forEach(key => {
+        const counter = document.getElementById(`bug-count-${key}`);
+        if (counter) counter.textContent = `(${counts[key]})`;
+      });
+    }
+
+    function renderIdeas() {
+      const container = document.getElementById("ideas-container");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const filterText = document.getElementById("idea-search")?.value.toLowerCase() || "";
+
+      // Sort pinned ideas to the top
+      const sortedIdeas = [...voltState.ideas].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+      sortedIdeas.forEach(idea => {
+        if (filterText && !idea.title.toLowerCase().includes(filterText) && !idea.desc.toLowerCase().includes(filterText)) {
+          return;
+        }
+
+        const card = document.createElement("div");
+        card.className = "idea-card";
+
+        const header = document.createElement("div");
+        header.className = "idea-card-header";
+        
+        const title = document.createElement("div");
+        title.className = "idea-title";
+        title.textContent = idea.title;
+        
+        const pinBtn = document.createElement("button");
+        pinBtn.className = `idea-pin-btn ${idea.pinned ? 'pinned' : ''}`;
+        pinBtn.textContent = "📌";
+        pinBtn.title = idea.pinned ? "Unpin idea" : "Pin idea to top";
+        pinBtn.addEventListener("click", () => {
+          idea.pinned = !idea.pinned;
+          saveState();
+          renderIdeas();
+        });
+
+        header.appendChild(title);
+        header.appendChild(pinBtn);
+
+        const desc = document.createElement("p");
+        desc.style.fontSize = "12px";
+        desc.style.color = "var(--text-muted)";
+        desc.textContent = idea.desc;
+
+        const tagsContainer = document.createElement("div");
+        tagsContainer.className = "idea-tags";
+        
+        if (idea.tags && Array.isArray(idea.tags)) {
+          idea.tags.forEach(tag => {
+            const tagSpan = document.createElement("span");
+            tagSpan.className = "idea-tag";
+            tagSpan.textContent = tag;
+            tagsContainer.appendChild(tagSpan);
+          });
+        }
+
+        const actionRow = document.createElement("div");
+        actionRow.style.display = "flex";
+        actionRow.style.justifyContent = "flex-end";
+        actionRow.style.marginTop = "8px";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn btn-danger btn-sm";
+        deleteBtn.textContent = "Remove";
+        deleteBtn.addEventListener("click", () => {
+          voltState.ideas = voltState.ideas.filter(i => i.id !== idea.id);
+          saveState();
+          renderIdeas();
+          showToast("Idea removed from vault");
+        });
+        actionRow.appendChild(deleteBtn);
+
+        card.appendChild(header);
+        card.appendChild(desc);
+        card.appendChild(tagsContainer);
+        card.appendChild(actionRow);
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderRoadmap() {
+      const timeline = document.getElementById("roadmap-timeline");
+      if (!timeline) return;
+      timeline.innerHTML = "";
+
+      ROADMAP_MILESTONES.forEach(milestone => {
+        const item = document.createElement("div");
+        item.className = "timeline-item";
+        
+        // Estimate milestone completion state dynamically
+        const isCompleted = voltState.checklists[`dash-check-${milestone.id}`] || false;
+        
+        const marker = document.createElement("div");
+        marker.className = "timeline-marker";
+
+        const title = document.createElement("div");
+        title.className = "timeline-title";
+        title.textContent = milestone.title;
+
+        // Custom checkbox for roadmap milestone completeness
+        const checkLabel = document.createElement("label");
+        checkLabel.className = "checkbox-container";
+        checkLabel.style.fontSize = "14px";
+        checkLabel.style.fontWeight = "bold";
+        
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = voltState.checklists[`road-${milestone.id}`] || false;
+        cb.addEventListener("change", (e) => {
+          voltState.checklists[`road-${milestone.id}`] = e.target.checked;
+          if (e.target.checked) {
+            item.classList.add("active");
+          } else {
+            item.classList.remove("active");
+          }
+          saveState();
+        });
+
+        if (cb.checked) {
+          item.classList.add("active");
+        }
+
+        const spanMark = document.createElement("span");
+        spanMark.className = "checkmark";
+
+        const spanText = document.createElement("span");
+        spanText.className = "checkbox-label";
+        spanText.textContent = milestone.title;
+
+        checkLabel.appendChild(cb);
+        checkLabel.appendChild(spanMark);
+        checkLabel.appendChild(spanText);
+
+        const desc = document.createElement("div");
+        desc.className = "timeline-desc";
+        desc.textContent = milestone.desc;
+
+        item.appendChild(marker);
+        item.appendChild(checkLabel);
+        item.appendChild(desc);
+        timeline.appendChild(item);
+      });
+    }
+
+    function renderChangelog() {
+      const container = document.getElementById("changelog-list");
+      if (!container) return;
+      container.innerHTML = "";
+
+      voltState.changelog.forEach(change => {
+        const item = document.createElement("div");
+        item.className = "checklist-item";
+        
+        const details = document.createElement("div");
+        details.style.flex = "1";
+        
+        const versionSpan = document.createElement("span");
+        versionSpan.className = "mono-txt";
+        versionSpan.style.fontWeight = "bold";
+        versionSpan.style.marginRight = "10px";
+        versionSpan.textContent = `[${change.version}]`;
+
+        const typeSpan = document.createElement("span");
+        typeSpan.className = `checklist-badge ${change.type === 'ADDED' ? 'badge-complete' : (change.type === 'FIXED' ? 'badge-progress' : 'badge-todo')}`;
+        typeSpan.textContent = change.type;
+        typeSpan.style.marginRight = "10px";
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = change.summary;
+
+        details.appendChild(versionSpan);
+        details.appendChild(typeSpan);
+        details.appendChild(textSpan);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn btn-danger btn-sm";
+        deleteBtn.textContent = "🗑";
+        deleteBtn.addEventListener("click", () => {
+          voltState.changelog = voltState.changelog.filter(c => c.id !== change.id);
+          saveState();
+          renderChangelog();
+          showToast("Changelog entry removed");
+        });
+
+        item.appendChild(details);
+        item.appendChild(deleteBtn);
+        container.appendChild(item);
+      });
+    }
+
+    // -------------------------------------------------------------------------
+    // 4. STOPWATCH CONTROLLERS
+    // -------------------------------------------------------------------------
+    let stopwatchInterval = null;
+
+    function formatTime(totalSeconds) {
+      const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+      const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+      const secs = (totalSeconds % 60).toString().padStart(2, '0');
+      return `${hrs}:${mins}:${secs}`;
+    }
+
+    function toggleTracker() {
+      const label = document.getElementById("tracker-task-label");
+      const pulse = document.getElementById("tracker-pulse");
+      const toggleBtn = document.getElementById("tracker-toggle-btn");
+
+      if (voltState.tracker.active) {
+        // Pause stopwatch
+        voltState.tracker.active = false;
+        clearInterval(stopwatchInterval);
+        pulse.classList.add("paused");
+        toggleBtn.innerHTML = `<svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2; width: 14px; height: 14px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+        showToast("Session stopwatch paused");
+      } else {
+        // Prompt for task if default
+        if (voltState.tracker.taskName === "NO ACTIVE TASK") {
+          const task = prompt("Specify active task directive name:") || "General System Optimization";
+          voltState.tracker.taskName = task;
+          label.textContent = task;
+        }
+
+        // Start stopwatch
+        voltState.tracker.active = true;
+        pulse.classList.remove("paused");
+        toggleBtn.innerHTML = `<svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2; width: 14px; height: 14px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+        
+        stopwatchInterval = setInterval(() => {
+          voltState.tracker.seconds++;
+          document.getElementById("tracker-timer").textContent = formatTime(voltState.tracker.seconds);
+          if (voltState.tracker.seconds % 30 === 0) saveState(); // auto save state values periodically
+        }, 1000);
+
+        showToast("Session stopwatch started");
+      }
+      saveState();
+    }
+
+    function resetTracker() {
+      voltState.tracker.active = false;
+      voltState.tracker.seconds = 0;
+      voltState.tracker.taskName = "NO ACTIVE TASK";
+      clearInterval(stopwatchInterval);
+
+      document.getElementById("tracker-timer").textContent = "00:00:00";
+      document.getElementById("tracker-task-label").textContent = "NO ACTIVE TASK";
+      document.getElementById("tracker-pulse").classList.add("paused");
+      document.getElementById("tracker-toggle-btn").innerHTML = `<svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2; width: 14px; height: 14px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+      
+      saveState();
+      showToast("Stopwatch reset");
+    }
+
+    // Restore stopwatch state on page load
+    function restoreTracker() {
+      const label = document.getElementById("tracker-task-label");
+      const pulse = document.getElementById("tracker-pulse");
+      const timer = document.getElementById("tracker-timer");
+      const toggleBtn = document.getElementById("tracker-toggle-btn");
+
+      // Clear any existing interval to prevent duplicate running timers
+      if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+      }
+
+      label.textContent = voltState.tracker.taskName;
+      timer.textContent = formatTime(voltState.tracker.seconds);
+
+      if (voltState.tracker.active) {
+        pulse.classList.remove("paused");
+        toggleBtn.innerHTML = `<svg viewBox="0 0 24 24" style="stroke: currentColor; fill: none; stroke-width: 2; width: 14px; height: 14px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+        stopwatchInterval = setInterval(() => {
+          voltState.tracker.seconds++;
+          timer.textContent = formatTime(voltState.tracker.seconds);
+        }, 1000);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // 5. EVENT CONTROLLERS & ACTIONS
+    // -------------------------------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      initDefaultState();
+
+      // Set initial theme
+      document.documentElement.setAttribute("data-theme", voltState.theme);
+
+      // Render all checklists
+      renderChecklist("repo-checklist", CHECKLIST_SCHEMAS.repository);
+      renderChecklist("arch-checklist", CHECKLIST_SCHEMAS.architecture);
+      renderChecklist("frontend-checklist", CHECKLIST_SCHEMAS.frontend);
+      renderChecklist("backend-checklist", CHECKLIST_SCHEMAS.backend);
+      renderChecklist("security-checklist", CHECKLIST_SCHEMAS.security);
+      renderChecklist("testing-checklist", CHECKLIST_SCHEMAS.testing);
+      renderChecklist("deployment-checklist", CHECKLIST_SCHEMAS.deployment);
+      
+      // Render AI Matrix, Kanban board, timeline and release notes
+      renderAIMatrix();
+      renderBugs();
+      renderIdeas();
+      renderRoadmap();
+      renderChangelog();
+      restoreTracker();
+      updateDashboardTelemetry();
+
+      // Navigation handler
+      const menuItems = document.querySelectorAll(".menu-item");
+      menuItems.forEach(item => {
+        item.addEventListener("click", () => {
+          menuItems.forEach(i => i.classList.remove("active"));
+          item.classList.add("active");
+
+          const tabId = item.getAttribute("data-tab");
+          document.querySelectorAll(".tab-view").forEach(view => {
+            view.classList.remove("active");
+          });
+          document.getElementById(`view-${tabId}`).classList.add("active");
+          document.getElementById("current-view-title").textContent = item.textContent.trim();
+        });
+      });
+
+      // Stopwatch Event bindings
+      document.getElementById("tracker-toggle-btn").addEventListener("click", toggleTracker);
+      document.getElementById("tracker-reset-btn").addEventListener("click", resetTracker);
+
+      // Bug Tracker Submit Handler
+      document.getElementById("new-bug-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = document.getElementById("bug-title").value.trim();
+        const priority = document.getElementById("bug-priority").value;
+        const assignee = document.getElementById("bug-assignee").value.trim();
+
+        if (title && assignee) {
+          const bug = {
+            id: `bug-${Date.now()}`,
+            title,
+            priority,
+            assignee,
+            status: "todo"
+          };
+          voltState.bugs.push(bug);
+          saveState();
+          renderBugs();
+          document.getElementById("new-bug-form").reset();
+          showToast("Bug catalogued in Todo list");
+        }
+      });
+
+      // Live search for bugs
+      document.getElementById("bug-search").addEventListener("input", renderBugs);
+
+      // Kanban Drag and Drop setup
+      const bugLists = document.querySelectorAll(".bug-list");
+      bugLists.forEach(list => {
+        list.addEventListener("dragover", (e) => {
+          e.preventDefault();
+        });
+
+        list.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const id = e.dataTransfer.getData("text/plain");
+          const bug = voltState.bugs.find(b => b.id === id);
+          if (bug) {
+            const targetColId = list.id.replace("bugs-", "");
+            bug.status = targetColId;
+            saveState();
+            renderBugs();
+            showToast(`Task status updated to ${targetColId.toUpperCase()}`);
+          }
+        });
+      });
+
+      // Idea Submit Handler
+      document.getElementById("new-idea-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = document.getElementById("idea-title").value.trim();
+        const rawTags = document.getElementById("idea-tags").value.trim();
+        const desc = document.getElementById("idea-desc").value.trim();
+
+        if (title && desc) {
+          const tags = rawTags ? rawTags.split(",").map(t => t.trim().toUpperCase()).filter(Boolean) : [];
+          const idea = {
+            id: `id-${Date.now()}`,
+            title,
+            desc,
+            tags,
+            pinned: false
+          };
+          voltState.ideas.push(idea);
+          saveState();
+          renderIdeas();
+          document.getElementById("new-idea-form").reset();
+          showToast("Idea stored in vault");
+        }
+      });
+
+      document.getElementById("idea-search").addEventListener("input", renderIdeas);
+
+      // Changelog Submit Handler
+      document.getElementById("new-changelog-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const version = document.getElementById("change-version").value.trim();
+        const type = document.getElementById("change-type").value;
+        const summary = document.getElementById("change-summary").value.trim();
+
+        if (version && summary) {
+          const change = {
+            id: `ch-${Date.now()}`,
+            version,
+            type,
+            summary
+          };
+          voltState.changelog.unshift(change); // add to top
+          saveState();
+          renderChangelog();
+          document.getElementById("new-changelog-form").reset();
+          showToast("Changelog released and archived");
+        }
+      });
+
+      // Theme toggle configuration
+      document.getElementById("theme-toggle-btn").addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const nextTheme = currentTheme === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        voltState.theme = nextTheme;
+        saveState();
+        showToast(`Theme switched to ${nextTheme.toUpperCase()}`);
+      });
+
+      // Backup Export JSON
+      document.getElementById("export-backup-btn").addEventListener("click", () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(voltState, null, 2));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", `volt-mission-control-backup-${Date.now()}.json`);
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+        showToast("Backup JSON file download initialized");
+      });
+
+      // Backup Import File Triggers
+      document.getElementById("import-backup-btn").addEventListener("click", () => {
+        document.getElementById("import-backup-file").click();
+      });
+
+      document.getElementById("import-backup-file").addEventListener("change", (e) => {
+        const fileReader = new FileReader();
+        fileReader.onload = function(event) {
+          try {
+            const parsed = JSON.parse(event.target.result);
+            if (parsed && typeof parsed === "object") {
+              // Defensive normalization of imported state to prevent runtime crashes
+              voltState = {
+                checklists: parsed.checklists || {},
+                aiMatrix: parsed.aiMatrix || {},
+                bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+                ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+                changelog: Array.isArray(parsed.changelog) ? parsed.changelog : [],
+                tracker: {
+                  active: false,
+                  taskName: "NO ACTIVE TASK",
+                  seconds: 0,
+                  lastUpdated: null,
+                  ...(parsed.tracker || {})
+                },
+                theme: parsed.theme || "dark"
+              };
+              saveState();
+              
+              // Full Re-render
+              renderChecklist("repo-checklist", CHECKLIST_SCHEMAS.repository);
+              renderChecklist("arch-checklist", CHECKLIST_SCHEMAS.architecture);
+              renderChecklist("frontend-checklist", CHECKLIST_SCHEMAS.frontend);
+              renderChecklist("backend-checklist", CHECKLIST_SCHEMAS.backend);
+              renderChecklist("security-checklist", CHECKLIST_SCHEMAS.security);
+              renderChecklist("testing-checklist", CHECKLIST_SCHEMAS.testing);
+              renderChecklist("deployment-checklist", CHECKLIST_SCHEMAS.deployment);
+              renderAIMatrix();
+              renderBugs();
+              renderIdeas();
+              renderRoadmap();
+              renderChangelog();
+              restoreTracker();
+              updateDashboardTelemetry();
+              
+              // Set theme
+              document.documentElement.setAttribute("data-theme", voltState.theme);
+
+              showToast("System State restored successfully");
+            }
+          } catch (err) {
+            alert("Failed to parse JSON backup file!");
+          }
+        };
+        if (e.target.files && e.target.files.length > 0) {
+          fileReader.readAsText(e.target.files[0]);
+        }
+      });
+
+      // Print Report
+      document.getElementById("print-report-btn").addEventListener("click", () => {
+        window.print();
+      });
+
+      // Clear Storage
+      document.getElementById("reset-storage-btn").addEventListener("click", () => {
+        if (confirm("Are you sure you want to clear all data? This will reset all checklist entries.")) {
+          localStorage.removeItem("volt_mission_control_state");
+          location.reload();
+        }
+      });
+    });
+
+    // -------------------------------------------------------------------------
+    // 6. GLOBAL HOTKEYS & ACCESSIBILITY CONTROLS
+    // -------------------------------------------------------------------------
+    document.addEventListener("keydown", (e) => {
+      // Escape blurs active inputs without destructively resetting all form data
+      if (e.key === "Escape") {
+        if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "SELECT")) {
+          document.activeElement.blur();
+        }
+        showToast("Selections blurred");
+      }
+
+      // Ctrl + S triggers JSON export
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        document.getElementById("export-backup-btn").click();
+      }
+
+      // Alt + 1-9 swaps navigation tabs
+      if (e.altKey && e.key >= '1' && e.key <= '9') {
+        e.preventDefault();
+        const index = parseInt(e.key) - 1;
+        const menuItems = document.querySelectorAll(".menu-item");
+        if (menuItems[index]) {
+          menuItems[index].click();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
