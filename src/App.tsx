@@ -487,7 +487,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedSessions = localStorage.getItem('codeSessions');
     if (savedSessions) {
-      setSessions(JSON.parse(savedSessions));
+      try {
+        setSessions(JSON.parse(savedSessions));
+      } catch (err) {
+        console.error('Failed to parse saved sessions from localStorage:', err);
+      }
     }
     const detected = detectLanguage(code, loadedFilePath);
     setDetectedLanguage(detected);

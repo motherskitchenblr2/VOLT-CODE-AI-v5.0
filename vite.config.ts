@@ -28,7 +28,7 @@ export default defineConfig(async () => {
               if (id.includes('highlight.js')) {
                 return 'vendor-highlight';
               }
-              if (/[\\/](?:react|react-dom|react-router|react-router-dom)[\\/]/.test(id)) {
+              if (/[\\/]node_modules[\\/](?:react|react-dom|react-router|react-router-dom)[\\/]/.test(id)) {
                 return 'vendor-react';
               }
               return 'vendor';
