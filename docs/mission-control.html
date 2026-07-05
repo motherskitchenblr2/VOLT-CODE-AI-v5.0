@@ -2364,11 +2364,12 @@
     // 6. GLOBAL HOTKEYS & ACCESSIBILITY CONTROLS
     // -------------------------------------------------------------------------
     document.addEventListener("keydown", (e) => {
-      // Escape closes inputs
+      // Escape blurs active inputs without destructively resetting all form data
       if (e.key === "Escape") {
-        document.querySelectorAll("form").forEach(f => f.reset());
-        document.querySelectorAll("input").forEach(i => i.blur());
-        showToast("Inputs cleared and selections blurred");
+        if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "SELECT")) {
+          document.activeElement.blur();
+        }
+        showToast("Selections blurred");
       }
 
       // Ctrl + S triggers JSON export
