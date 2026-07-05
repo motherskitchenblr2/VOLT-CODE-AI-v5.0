@@ -2281,7 +2281,9 @@
         const dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);
         dlAnchorElem.setAttribute("download", `volt-mission-control-backup-${Date.now()}.json`);
+        document.body.appendChild(dlAnchorElem);
         dlAnchorElem.click();
+        dlAnchorElem.remove();
         showToast("Backup JSON file download initialized");
       });
 
