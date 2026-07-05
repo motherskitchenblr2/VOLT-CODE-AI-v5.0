@@ -2341,7 +2341,9 @@
             alert("Failed to parse JSON backup file!");
           }
         };
-        fileReader.readAsText(e.target.files[0]);
+        if (e.target.files && e.target.files.length > 0) {
+          fileReader.readAsText(e.target.files[0]);
+        }
       });
 
       // Print Report
