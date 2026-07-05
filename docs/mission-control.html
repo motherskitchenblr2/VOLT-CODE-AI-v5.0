@@ -1563,7 +1563,23 @@
       const stored = localStorage.getItem("volt_mission_control_state");
       if (stored) {
         try {
-          voltState = JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          // Defensive merge to prevent crashes if loading partial or older state schemas
+          voltState = {
+            checklists: parsed.checklists || {},
+            aiMatrix: parsed.aiMatrix || {},
+            bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+            ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+            changelog: Array.isArray(parsed.changelog) ? parsed.changelog : [],
+            tracker: {
+              active: false,
+              taskName: "NO ACTIVE TASK",
+              seconds: 0,
+              lastUpdated: null,
+              ...(parsed.tracker || {})
+            },
+            theme: parsed.theme || "dark"
+          };
           return;
         } catch (e) {
           console.error("Failed to parse stored state. Restoring default.", e);
@@ -2109,6 +2125,12 @@
       const pulse = document.getElementById("tracker-pulse");
       const timer = document.getElementById("tracker-timer");
       const toggleBtn = document.getElementById("tracker-toggle-btn");
+
+      // Clear any existing interval to prevent duplicate running timers
+      if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+      }
 
       label.textContent = voltState.tracker.taskName;
       timer.textContent = formatTime(voltState.tracker.seconds);
