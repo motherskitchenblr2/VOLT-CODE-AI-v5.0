@@ -2296,7 +2296,22 @@
           try {
             const parsed = JSON.parse(event.target.result);
             if (parsed && typeof parsed === "object") {
-              voltState = parsed;
+              // Defensive normalization of imported state to prevent runtime crashes
+              voltState = {
+                checklists: parsed.checklists || {},
+                aiMatrix: parsed.aiMatrix || {},
+                bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+                ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+                changelog: Array.isArray(parsed.changelog) ? parsed.changelog : [],
+                tracker: {
+                  active: false,
+                  taskName: "NO ACTIVE TASK",
+                  seconds: 0,
+                  lastUpdated: null,
+                  ...(parsed.tracker || {})
+                },
+                theme: parsed.theme || "dark"
+              };
               saveState();
               
               // Full Re-render
