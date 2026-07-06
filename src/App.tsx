@@ -488,7 +488,12 @@ const App: React.FC = () => {
     const savedSessions = localStorage.getItem('codeSessions');
     if (savedSessions) {
       try {
-        setSessions(JSON.parse(savedSessions));
+        const parsed = JSON.parse(savedSessions);
+        if (Array.isArray(parsed)) {
+          setSessions(parsed);
+        } else {
+          console.error('Saved sessions is not an array:', parsed);
+        }
       } catch (err) {
         console.error('Failed to parse saved sessions from localStorage:', err);
       }
