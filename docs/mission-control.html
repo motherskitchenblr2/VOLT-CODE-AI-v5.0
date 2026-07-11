@@ -1563,7 +1563,23 @@
       const stored = localStorage.getItem("volt_mission_control_state");
       if (stored) {
         try {
-          voltState = JSON.parse(stored);
+          const parsed = JSON.parse(stored);
+          // Defensive merge to prevent crashes if loading partial or older state schemas
+          voltState = {
+            checklists: parsed.checklists || {},
+            aiMatrix: parsed.aiMatrix || {},
+            bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+            ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+            changelog: Array.isArray(parsed.changelog) ? parsed.changelog : [],
+            tracker: {
+              active: false,
+              taskName: "NO ACTIVE TASK",
+              seconds: 0,
+              lastUpdated: null,
+              ...(parsed.tracker || {})
+            },
+            theme: parsed.theme || "dark"
+          };
           return;
         } catch (e) {
           console.error("Failed to parse stored state. Restoring default.", e);
@@ -2110,6 +2126,12 @@
       const timer = document.getElementById("tracker-timer");
       const toggleBtn = document.getElementById("tracker-toggle-btn");
 
+      // Clear any existing interval to prevent duplicate running timers
+      if (stopwatchInterval) {
+        clearInterval(stopwatchInterval);
+        stopwatchInterval = null;
+      }
+
       label.textContent = voltState.tracker.taskName;
       timer.textContent = formatTime(voltState.tracker.seconds);
 
@@ -2281,7 +2303,9 @@
         const dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", dataStr);
         dlAnchorElem.setAttribute("download", `volt-mission-control-backup-${Date.now()}.json`);
+        document.body.appendChild(dlAnchorElem);
         dlAnchorElem.click();
+        dlAnchorElem.remove();
         showToast("Backup JSON file download initialized");
       });
 
@@ -2296,7 +2320,22 @@
           try {
             const parsed = JSON.parse(event.target.result);
             if (parsed && typeof parsed === "object") {
-              voltState = parsed;
+              // Defensive normalization of imported state to prevent runtime crashes
+              voltState = {
+                checklists: parsed.checklists || {},
+                aiMatrix: parsed.aiMatrix || {},
+                bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+                ideas: Array.isArray(parsed.ideas) ? parsed.ideas : [],
+                changelog: Array.isArray(parsed.changelog) ? parsed.changelog : [],
+                tracker: {
+                  active: false,
+                  taskName: "NO ACTIVE TASK",
+                  seconds: 0,
+                  lastUpdated: null,
+                  ...(parsed.tracker || {})
+                },
+                theme: parsed.theme || "dark"
+              };
               saveState();
               
               // Full Re-render
@@ -2324,7 +2363,9 @@
             alert("Failed to parse JSON backup file!");
           }
         };
-        fileReader.readAsText(e.target.files[0]);
+        if (e.target.files && e.target.files.length > 0) {
+          fileReader.readAsText(e.target.files[0]);
+        }
       });
 
       // Print Report
@@ -2345,11 +2386,12 @@
     // 6. GLOBAL HOTKEYS & ACCESSIBILITY CONTROLS
     // -------------------------------------------------------------------------
     document.addEventListener("keydown", (e) => {
-      // Escape closes inputs
+      // Escape blurs active inputs without destructively resetting all form data
       if (e.key === "Escape") {
-        document.querySelectorAll("form").forEach(f => f.reset());
-        document.querySelectorAll("input").forEach(i => i.blur());
-        showToast("Inputs cleared and selections blurred");
+        if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA" || document.activeElement.tagName === "SELECT")) {
+          document.activeElement.blur();
+        }
+        showToast("Selections blurred");
       }
 
       // Ctrl + S triggers JSON export
