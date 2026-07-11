@@ -1,19 +1,34 @@
 import { connectToDatabase } from './utils/db';
 import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas';
 
-export default async function handler(req: any, res: any) {
+type ApiRequest = {
+  method?: string;
+  query: Record<string, string | string[] | undefined>;
+  body?: Record<string, unknown>;
+};
+
+type ApiResponse = {
+  status: (code: number) => ApiResponse;
+  json: (payload: unknown) => ApiResponse;
+  setHeader: (name: string, value: string[]) => void;
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : 'Unknown error';
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   try {
     await connectToDatabase();
-  } catch (error: any) {
-    return res.status(500).json({ error: 'Database connection failed', details: error.message });
+  } catch (error: unknown) {
+    return res.status(500).json({ error: 'Database connection failed', details: getErrorMessage(error) });
   }
 
   const { method } = req;
   const { action, username } = req.query;
 
-if (typeof username !== 'string' || !username.trim()) {
-  return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
-}
+  if (typeof username !== 'string' || !username.trim()) {
+    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
+  }
 
   switch (method) {
     case 'GET':
@@ -21,8 +36,8 @@ if (typeof username !== 'string' || !username.trim()) {
         try {
           const sessions = await SessionModel.find({ username }).sort({ createdAt: -1 }).limit(50);
           return res.status(200).json(sessions);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch sessions', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch sessions', details: getErrorMessage(err) });
         }
       }
       if (action === 'getSettings') {
@@ -39,40 +54,40 @@ if (typeof username !== 'string' || !username.trim()) {
             });
           }
           return res.status(200).json(settings);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch settings', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch settings', details: getErrorMessage(err) });
         }
       }
       if (action === 'getCheckpoints') {
         try {
           const checkpoints = await CheckpointModel.find({ username }).sort({ createdAt: -1 });
           return res.status(200).json(checkpoints);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch checkpoints', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch checkpoints', details: getErrorMessage(err) });
         }
       }
       if (action === 'getAuditLogs') {
         try {
           const logs = await AuditLogModel.find({ username }).sort({ createdAt: -1 }).limit(100);
           return res.status(200).json(logs);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch audit logs', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch audit logs', details: getErrorMessage(err) });
         }
       }
       if (action === 'getDeployments') {
         try {
           const deployments = await DeploymentModel.find({ username }).sort({ createdAt: -1 }).limit(50);
           return res.status(200).json(deployments);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch deployments', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch deployments', details: getErrorMessage(err) });
         }
       }
       if (action === 'getWorkflowTasks') {
         try {
           const tasks = await WorkflowTaskModel.find({ username }).sort({ createdAt: -1 }).limit(100);
           return res.status(200).json(tasks);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch workflow tasks', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch workflow tasks', details: getErrorMessage(err) });
         }
       }
       if (action === 'getWorkspaceInfo') {
@@ -86,8 +101,8 @@ if (typeof username !== 'string' || !username.trim()) {
             });
           }
           return res.status(200).json(workspace);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to fetch workspace info', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to fetch workspace info', details: getErrorMessage(err) });
         }
       }
       return res.status(400).json({ error: 'Invalid GET action' });
@@ -103,8 +118,8 @@ if (typeof username !== 'string' || !username.trim()) {
             status: 'SUCCESS'
           });
           return res.status(201).json(newSession);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to save session', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save session', details: getErrorMessage(err) });
         }
       }
       if (action === 'saveSettings') {
@@ -121,8 +136,8 @@ if (typeof username !== 'string' || !username.trim()) {
             status: 'SUCCESS'
           });
           return res.status(200).json(updatedSettings);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to save settings', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save settings', details: getErrorMessage(err) });
         }
       }
       if (action === 'saveCheckpoint') {
@@ -135,24 +150,24 @@ if (typeof username !== 'string' || !username.trim()) {
             status: 'SUCCESS'
           });
           return res.status(201).json(newCheckpoint);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to save checkpoint', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save checkpoint', details: getErrorMessage(err) });
         }
       }
       if (action === 'saveDeployment') {
         try {
           const newDeployment = await DeploymentModel.create({ username, ...req.body });
           return res.status(201).json(newDeployment);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to save deployment', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save deployment', details: getErrorMessage(err) });
         }
       }
       if (action === 'saveWorkflowTask') {
         try {
           const newTask = await WorkflowTaskModel.create({ username, ...req.body });
           return res.status(201).json(newTask);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to save workflow task', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save workflow task', details: getErrorMessage(err) });
         }
       }
       if (action === 'saveWorkspaceInfo') {
@@ -163,8 +178,8 @@ if (typeof username !== 'string' || !username.trim()) {
             { new: true, upsert: true }
           );
           return res.status(200).json(updatedWorkspace);
-        } catch (err: any) {
-          return res.status(500).json({ error: 'Failed to save workspace info', details: err.message });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save workspace info', details: getErrorMessage(err) });
         }
       }
       return res.status(400).json({ error: 'Invalid POST action' });
