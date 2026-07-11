@@ -11,10 +11,9 @@ permissions:
 
 jobs:
   security-gate:
-    name: Security Review (Audit + Lint + SAST + Secrets)
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
+    name: Security Review (Audit + Lint + SAST + Secrets)
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,14 +33,11 @@ jobs:
       - name: Lint (policy enforcement)
         run: npm run lint
 
-      - name: Run Semgrep (SAST)
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/security-audit
-            p/secrets
-            p/owasp-top-ten
-          generateSarif: "1"
+      - name: Install Semgrep
+        run: python -m pip install --upgrade pip semgrep
+
+      - name: Run Semgrep (SARIF)
+        run: semgrep --config p/security-audit --config p/secrets --config p/owasp-top-ten --sarif --output semgrep.sarif .
 
       - name: Upload Semgrep SARIF
         if: always()
@@ -50,7 +46,7 @@ jobs:
           sarif_file: semgrep.sarif
 
       - name: Run Trivy (fs vuln + secret + misconfig)
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
@@ -58,7 +54,7 @@ jobs:
           output: trivy-results.sarif
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
-          exit-code: 1
+          exit-code: "1"
 
       - name: Upload Trivy SARIF
         if: always()
