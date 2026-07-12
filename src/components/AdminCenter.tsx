@@ -180,9 +180,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     return () => clearInterval(interval);
   }, [autoRefreshRate, providers, onRefreshProviderHealth]);
 
-  const [runtimeSecretKey, setRuntimeSecretKey] = useState(() => {
-    return sessionStorage.getItem('volt_admin_secret_key') || 'admin123';
-  });
+  const [runtimeSecretKey, setRuntimeSecretKey] = useState('admin123');
 
   // Auth operations
   const handleUnlock = () => {
@@ -207,7 +205,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     const trimmedKey = newSecretKey.trim();
     if (!trimmedKey) return;
     setRuntimeSecretKey(trimmedKey);
-    sessionStorage.setItem('volt_admin_secret_key', trimmedKey);
     setNewSecretKey('');
     alert('Administrator passcode updated successfully for this session!');
   };
