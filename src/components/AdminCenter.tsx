@@ -180,7 +180,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     return () => clearInterval(interval);
   }, [autoRefreshRate, providers, onRefreshProviderHealth]);
 
-  const [runtimeSecretKey, setRuntimeSecretKey] = useState('');
+  const [runtimeSecretKey, setRuntimeSecretKey] = useState(() => {
+    return sessionStorage.getItem('volt_admin_secret_key') || 'admin123';
+  });
 
   // Auth operations
   const handleUnlock = () => {
