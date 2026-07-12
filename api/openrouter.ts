@@ -39,6 +39,7 @@ export default async function handler(req: any, res: any) {
 
   const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys, isBossChat } = req.body || {};
 
+  // --- 1. Language Detection ---
   const activeLanguage = (language === 'auto' || !language) ? detectLanguage(code || '') : language;
   const isJSorTS = activeLanguage === 'javascript' || activeLanguage === 'typescript';
   let activeSkill = skill;
@@ -46,6 +47,7 @@ export default async function handler(req: any, res: any) {
     activeSkill = 'Bug Isolation';
   }
 
+  // --- 2. Model Sanitization ---
   let sanitizedModel = '';
   if (model !== undefined && model !== null) {
     if (typeof model !== 'string') {
@@ -54,7 +56,7 @@ export default async function handler(req: any, res: any) {
     sanitizedModel = model.trim();
   }
 
-  // Input Sanitization & Validation
+  // --- 3. Plugin Validation ---
   const allowedPlugins = [
     'Test Runner',
     'Console Trace',
@@ -75,6 +77,7 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  // --- 4. Custom Prompt Sanitization ---
   let sanitizedCustomPrompt = '';
   if (customPrompt) {
     const trimmed = String(customPrompt).trim();
@@ -90,15 +93,32 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Missing code' });
   }
 
-  // Determine provider dynamically if not supplied by client
+  // --- 5. Provider Detection ---
   let providerName = provider || '';
   if (!providerName) {
     if (sanitizedModel) {
-      if (sanitizedModel.includes('openrouter') || sanitizedModel.startsWith('qwen/') || sanitizedModel.startsWith('deepseek/') || sanitizedModel.includes('google/gemma-3') || sanitizedModel.includes('google/gemini')) {
+      if (
+        sanitizedModel.includes('openrouter') ||
+        sanitizedModel.startsWith('qwen/') ||
+        sanitizedModel.startsWith('deepseek/') ||
+        sanitizedModel.includes('google/gemma-3') ||
+        sanitizedModel.includes('google/gemini')
+      ) {
         providerName = 'OpenRouter';
-      } else if (sanitizedModel.includes('nvidia/') || sanitizedModel.startsWith('meta/') || sanitizedModel.includes('deepseek-ai/deepseek-r1') || sanitizedModel.includes('nvidia/nemotron')) {
+      } else if (
+        sanitizedModel.includes('nvidia/') ||
+        sanitizedModel.startsWith('meta/') ||
+        sanitizedModel.includes('deepseek-ai/deepseek-r1') ||
+        sanitizedModel.includes('nvidia/nemotron')
+      ) {
         providerName = 'NVIDIA';
-      } else if (sanitizedModel.includes('Llama-3.3') || sanitizedModel.includes('DeepSeek-R1') || sanitizedModel.includes('Mistral-7B') || sanitizedModel.startsWith('google/gemma-2') || sanitizedModel.includes('HuggingFace')) {
+      } else if (
+        sanitizedModel.includes('Llama-3.3') ||
+        sanitizedModel.includes('DeepSeek-R1') ||
+        sanitizedModel.includes('Mistral-7B') ||
+        sanitizedModel.startsWith('google/gemma-2') ||
+        sanitizedModel.includes('HuggingFace')
+      ) {
         providerName = 'HuggingFace';
       } else {
         providerName = 'Groq';
@@ -108,7 +128,7 @@ export default async function handler(req: any, res: any) {
     }
   }
 
-  // Map default model IDs if model or openrouter/auto is requested
+  // --- 6. Default Model Selection ---
   let selectedModel = sanitizedModel && sanitizedModel !== 'openrouter/auto' ? sanitizedModel : '';
   if (!selectedModel) {
     if (providerName === 'Groq') {
@@ -125,7 +145,7 @@ export default async function handler(req: any, res: any) {
     }
   }
 
-  // Resolve API Key
+  // --- 7. API Key Resolution ---
   let apiKey = '';
   if (providerName === 'Groq') {
     apiKey = keys?.groq || process.env.GROQ_API_KEY || '';
@@ -147,7 +167,7 @@ export default async function handler(req: any, res: any) {
     }
   }
 
-  // Configure target URL and headers
+  // --- 8. Configure API URL & Headers ---
   let fetchUrl = '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'
@@ -169,7 +189,7 @@ export default async function handler(req: any, res: any) {
     headers['Authorization'] = `Bearer ${apiKey}`;
   }
 
-  // Skill-based system prompt
+  // --- 9. Skill Map ---
   const skillMap: Record<string, string> = {
     'Syntax Repair': 'Focus: syntax errors, off-by-one, null access, undefined vars.',
     'Bug Isolation': 'Focus: logic bugs, wrong output, incorrect conditions, edge cases.',
@@ -179,6 +199,7 @@ export default async function handler(req: any, res: any) {
     'Regression Guard': 'Focus: check if fix introduces new bugs or breaks existing code.',
   };
 
+  // --- 10. Python Guardrail ---
   let pythonGuardrailPrompt = '';
   if (activeLanguage === 'python') {
     pythonGuardrailPrompt = `
@@ -192,23 +213,24 @@ export default async function handler(req: any, res: any) {
 `;
   }
 
-  try {
-    // Build systemPrompt and userPrompt, then immediately use them in the fetch call
-    let systemPrompt = '';
-    if (isBossChat) {
-      systemPrompt = `You are the VOLT AI Agent Head, the supreme core orchestrator and 'boss' of the VOLT AI platform.
+  // --- 11. Build System Prompt ---
+  let systemPrompt = '';
+  if (isBossChat) {
+    systemPrompt = `You are the VOLT AI Agent Head, the supreme core orchestrator and 'boss' of the VOLT AI platform.
+
 Your mission is to represent VOLT AI: an Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp—a complete Agentic AI-powered Code Mechanic.
 When the user talks to you, you must communicate with authority and deep technical expertise.
 Specifically:
 1. Understand the user's request.
-2. Recommend the exact AI model (e.g. DeepSeek-R1 for reasoning, Llama-3.3-70B for general tasks, Qwen-2.5-Coder for code generation, Nemotron for instruction following) that fits the user's code.
+2. Recommend the exact AI model (e.g. DeepSeek-R1 for reasoning, Llama-3.3-70B for general tasks, Qwen-2.5-Coder for code generation, Nemotron for instruction following) that fits the user's coding challenge.
 3. Keep the vision of VOLT AI as a powerful agentic compiler mechanic front and center.
 4. Return ONLY valid JSON in the format:
 {
   "summary": "Your conversational reply here, explaining your reasoning and model choices"
 }`;
-    } else {
-      systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
+  } else {
+    systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
+
 ${skillMap[activeSkill] || 'Focus: all bug types equally.'}
 ${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
 ${pythonGuardrailPrompt}
@@ -238,18 +260,21 @@ Rules:
 - Medium=perf/smell
 - Low=style
 - Truncate fixedCode if >200 lines`;
-    }
+  }
 
-    let userPrompt = '';
-    if (isBossChat) {
-      userPrompt = `User Message: "${sanitizedCustomPrompt || 'Introduce yourself'}"\nActive Editor Code Context:\n${code || 'No code in editor'}`;
-    } else {
-      userPrompt = `Language: ${activeLanguage || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
-      if (sanitizedCustomPrompt) {
-        userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
-      }
+  // --- 12. Build User Prompt ---
+  let userPrompt = '';
+  if (isBossChat) {
+    userPrompt = `User Message: "${sanitizedCustomPrompt || 'Introduce yourself'}"\nActive Editor Code Context:\n${code || 'No code in editor'}`;
+  } else {
+    userPrompt = `Language: ${activeLanguage || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
+    if (sanitizedCustomPrompt) {
+      userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
     }
+  }
 
+  // --- 13. Execute API Call ---
+  try {
     const response = await fetch(fetchUrl, {
       method: 'POST',
       headers,
@@ -268,7 +293,7 @@ Rules:
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: 'OpenRouter error',
+        error: 'API error',
         details: data
       });
     }
@@ -283,6 +308,7 @@ Rules:
       });
     }
 
+    // --- 14. Parse JSON Response ---
     let parsed;
     try {
       parsed = JSON.parse(text);
@@ -305,7 +331,7 @@ Rules:
       }
     }
 
-    // Normalize keys to support both Groq/snake_case and frontend camelCase structures
+    // --- 15. Normalize Response Keys ---
     if (parsed) {
       if (parsed.fixed_code && !parsed.fixedCode) {
         parsed.fixedCode = parsed.fixed_code;
