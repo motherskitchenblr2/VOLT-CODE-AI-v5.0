@@ -11,7 +11,6 @@ import {
   Play, 
   History, 
   Settings, 
-  Github, 
   Wrench, 
   HelpCircle, 
   RefreshCw 
