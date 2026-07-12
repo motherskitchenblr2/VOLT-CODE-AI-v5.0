@@ -284,7 +284,7 @@ Rules:
 
     if (!response.ok) {
       return res.status(response.status).json({
-        error: 'API error',
+        error: 'OpenRouter error',
         details: data
       });
     }
