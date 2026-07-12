@@ -12,6 +12,7 @@ permissions:
   pull-requests: write
   contents: write
   checks: write
+  workflows: write
 
 jobs:
   code-quality:
