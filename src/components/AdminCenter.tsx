@@ -207,6 +207,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     const trimmedKey = newSecretKey.trim();
     if (!trimmedKey) return;
     setRuntimeSecretKey(trimmedKey);
+    sessionStorage.setItem('volt_admin_secret_key', trimmedKey);
     setNewSecretKey('');
     alert('Administrator passcode updated successfully for this session!');
   };
