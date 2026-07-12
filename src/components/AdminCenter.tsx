@@ -180,9 +180,17 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     return () => clearInterval(interval);
   }, [autoRefreshRate, providers, onRefreshProviderHealth]);
 
+  const [runtimeSecretKey, setRuntimeSecretKey] = useState('admin123');
+
   // Auth operations
   const handleUnlock = () => {
-    const correctKey = localStorage.getItem('volt_admin_secret_key') || 'admin123';
+    const correctKey = runtimeSecretKey;
+    if (!correctKey) {
+      setErrorMsg('NO ADMIN PASSCODE SET FOR THIS SESSION');
+      setTimeout(() => setErrorMsg(''), 3000);
+      return;
+    }
+
     if (enteredKey === correctKey) {
       setIsUnlocked(true);
       sessionStorage.setItem('volt_admin_session_unlocked', 'true');
@@ -194,10 +202,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   };
 
   const handleChangeSecretKey = () => {
-    if (!newSecretKey.trim()) return;
-    localStorage.setItem('volt_admin_secret_key', newSecretKey.trim());
+    const trimmedKey = newSecretKey.trim();
+    if (!trimmedKey) return;
+    setRuntimeSecretKey(trimmedKey);
     setNewSecretKey('');
-    alert('Administrator passcode updated successfully!');
+    alert('Administrator passcode updated successfully for this session!');
   };
 
   // Provider Ping trigger
