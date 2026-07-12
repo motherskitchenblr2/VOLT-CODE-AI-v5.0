@@ -94,11 +94,11 @@ export default async function handler(req: any, res: any) {
   let providerName = provider || '';
   if (!providerName) {
     if (sanitizedModel) {
-      if (sanitizedModel.includes('openrouter') || sanitizedModel.startsWith('qwen/') || sanitizedModel.startsWith('deepseek/') || sanitizedModel.includes('google/gemma-3') || sanitizedModel.includes('meta-llama/')) {
+      if (sanitizedModel.includes('openrouter') || sanitizedModel.startsWith('qwen/') || sanitizedModel.startsWith('deepseek/') || sanitizedModel.includes('google/gemma-3') || sanitizedModel.includes('google/gemma-2')) {
         providerName = 'OpenRouter';
       } else if (sanitizedModel.includes('nvidia/') || sanitizedModel.startsWith('meta/') || sanitizedModel.includes('deepseek-ai/deepseek-r1') || sanitizedModel.includes('nvidia/nemotron')) {
         providerName = 'NVIDIA';
-      } else if (sanitizedModel.includes('Llama-3.3') || sanitizedModel.includes('DeepSeek-R1') || sanitizedModel.includes('Mistral-7B') || sanitizedModel.startsWith('google/gemma-2') || sanitizedModel.startsWith('Qwen/')) {
+      } else if (sanitizedModel.includes('Llama-3.3') || sanitizedModel.includes('DeepSeek-R1') || sanitizedModel.includes('Mistral-7B') || sanitizedModel.startsWith('google/gemma-2')) {
         providerName = 'HuggingFace';
       } else {
         providerName = 'Groq';
@@ -192,21 +192,28 @@ export default async function handler(req: any, res: any) {
 `;
   }
 
-  let systemPrompt = '';
-  if (isBossChat) {
-    systemPrompt = `You are the VOLT AI Agent Head, the supreme core orchestrator and 'boss' of the VOLT AI platform.
+  try {
+    const response = await fetch(fetchUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: [
+          {
+            role: 'system',
+            content: isBossChat
+              ? `You are the VOLT AI Agent Head, the supreme core orchestrator and 'boss' of the VOLT AI platform.
 Your mission is to represent VOLT AI: an Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp—a complete Agentic AI-powered Code Mechanic.
 When the user talks to you, you must communicate with authority and deep technical expertise.
 Specifically:
 1. Understand the user's request.
-2. Recommend the exact AI model (e.g. DeepSeek-R1 for reasoning, Llama-3.3-70B for general tasks, Qwen-2.5-Coder for code generation, Nemotron for instruction following) that fits the user's coding needs.
+2. Recommend the exact AI model (e.g. DeepSeek-R1 for reasoning, Llama-3.3-70B for general tasks, Qwen-2.5-Coder for code generation, Nemotron for instruction following) that fits the user's coding challenge.
 3. Keep the vision of VOLT AI as a powerful agentic compiler mechanic front and center.
 4. Return ONLY valid JSON in the format:
 {
   "summary": "Your conversational reply here, explaining your reasoning and model choices"
-}`;
-  } else {
-    systemPrompt = `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
+}`
+              : `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
 ${skillMap[activeSkill] || 'Focus: all bug types equally.'}
 ${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
 ${pythonGuardrailPrompt}
@@ -235,28 +242,14 @@ Rules:
 - High=wrong output
 - Medium=perf/smell
 - Low=style
-- Truncate fixedCode if >200 lines`;
-  }
-
-  let userPrompt = '';
-  if (isBossChat) {
-    userPrompt = `User Message: "${sanitizedCustomPrompt || 'Introduce yourself'}"\nActive Editor Code Context:\n${code || 'No code in editor'}`;
-  } else {
-    userPrompt = `Language: ${activeLanguage || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}`;
-    if (sanitizedCustomPrompt) {
-      userPrompt += `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.`;
-    }
-  }
-
-  try {
-    const response = await fetch(fetchUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: selectedModel,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+- Truncate fixedCode if >200 lines`
+          },
+          {
+            role: 'user',
+            content: isBossChat
+              ? `User Message: "${sanitizedCustomPrompt || 'Introduce yourself'}"\nActive Editor Code Context:\n${code || 'No code in editor'}`
+              : `Language: ${activeLanguage || 'auto'}\nMode: ${agentMode || 'assist'}\n\nCode:\n${code}${sanitizedCustomPrompt ? `\n\nUser Question/Instruction:\n${sanitizedCustomPrompt}\nPlease address this instruction specifically in your JSON "summary" response output.` : ''}`
+          }
         ],
         temperature: 0.1,
         max_tokens: 2048
