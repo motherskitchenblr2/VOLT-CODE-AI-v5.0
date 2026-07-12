@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .vite-source-tags.js
+coverage/
+lint-report.json
+
