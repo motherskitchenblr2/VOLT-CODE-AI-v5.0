@@ -22,15 +22,6 @@ export default defineConfig(async () => {
               if (/\.(?:css|scss|sass|less)$/i.test(cleanId)) {
                 return;
               }
-              if (id.includes('framer-motion')) {
-                return 'vendor-framer';
-              }
-              if (id.includes('highlight.js')) {
-                return 'vendor-highlight';
-              }
-              if (id.includes('/react/') || id.includes('/react-dom/')) {
-                return 'vendor-react';
-              }
               return 'vendor';
             }
           }
