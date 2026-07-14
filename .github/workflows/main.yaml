@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
   contents: write
   checks: write
-  workflows: write
+  # Removed: workflows: write   <-- invalid key
 
 jobs:
   code-quality:
@@ -32,7 +32,6 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      # Code Linting
       - name: Install dependencies
         run: npm ci
 
@@ -40,17 +39,14 @@ jobs:
         id: lint
         run: npm run lint -- --format json > lint-report.json 2>&1 || true
 
-      # Auto-format code
       - name: Auto-format with Prettier
         id: format
         run: npx prettier --write . --check || true
 
-      # Run tests
       - name: Run tests
         id: test
         run: npm test -- --coverage 2>&1 || true
 
-      # Commit auto-corrections if on PR
       - name: Commit auto-fixes
         if: github.event_name == 'pull_request'
         run: |
@@ -64,7 +60,6 @@ jobs:
             git push
           fi
 
-      # Post results as PR comment
       - name: Comment on PR with results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v9
@@ -146,4 +141,3 @@ jobs:
               repo: context.repo.repo,
               body: stats
             });
-            
