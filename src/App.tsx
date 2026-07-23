@@ -29,7 +29,9 @@ import {
   AlertCircle,
   RefreshCw,
   Crown,
-  Loader2
+  Loader2,
+  Users,
+  GitPullRequest
 } from 'lucide-react';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Analytics } from '@vercel/analytics/react';
@@ -40,6 +42,9 @@ import { VisualDiff } from './components/VisualDiff';
 import { AdminCenter } from './components/AdminCenter';
 import { TerminalPanel } from './components/TerminalPanel';
 import { GitHubWorkspace } from './components/GitHubWorkspace';
+import { MeetingPanel } from './components/MeetingPanel';
+import { PRReviewDashboard } from './components/PRReviewDashboard';
+import { BossGuidancePanel } from './components/BossGuidancePanel';
 
 import { PerformanceOptimizer, OptimizerReport } from './services/PerformanceOptimizer';
 import { ProviderRegistry, ProviderState } from './services/ProviderRegistry';
@@ -80,7 +85,7 @@ interface DiffLine {
   lineNumFixed?: number;
 }
 
-type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss';
+type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss' | 'meeting' | 'pr-review';
 type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
 
 export interface ModelConfig {
@@ -1779,6 +1784,30 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
+            onClick={() => setCurrentView('meeting')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
+              currentView === 'meeting'
+                ? 'bg-blue-600 text-white font-bold'
+                : 'hover:bg-white/5 text-blue-400'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            MEETING PANEL
+          </div>
+
+          <div
+            onClick={() => setCurrentView('pr-review')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
+              currentView === 'pr-review'
+                ? 'bg-orange-600 text-white font-bold'
+                : 'hover:bg-white/5 text-orange-400'
+            }`}
+          >
+            <GitPullRequest className="w-5 h-5" />
+            PR REVIEW
+          </div>
+
+          <div
             onClick={() => setCurrentView('settings')}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === 'settings'
@@ -2387,6 +2416,57 @@ const allFixed = issues.reduce((acc, issue) => {
       );
     }
 
+    // Meeting Panel View
+    if (currentView === 'meeting') {
+      return (
+        <div className="w-full h-full">
+          <MeetingPanel onClose={() => setCurrentView('editor')} />
+        </div>
+      );
+    }
+
+    // PR Review Dashboard View
+    if (currentView === 'pr-review') {
+      // Sample PRs for demonstration
+      const samplePRs: PullRequest[] = [
+        {
+          id: '1',
+          prNumber: 123,
+          gitHubUrl: 'https://github.com/motherskitchenblr2/VOLT-CODE-AI-v5.0/pull/123',
+          title: 'Security: Fix API credential leakage',
+          description: 'Removed hardcoded API keys from environment and implemented secure key management system',
+          branch: 'agent/security/fix-credentials-2024-07-23',
+          createdBy: 'agent-security',
+          createdAt: new Date(),
+          status: 'open',
+          meetingId: 'meeting-001',
+          taskId: 'task-001',
+          agentDiscussions: 'Security Agent identified hardcoded credentials and proposed a secure vault implementation'
+        }
+      ];
+
+      return (
+        <div className="w-full h-full">
+          <PRReviewDashboard
+            pullRequests={samplePRs}
+            onMerge={async (prId, prNumber) => {
+              console.log(`Merged PR #${prNumber}`);
+              addLog(`User merged PR #${prNumber}`, 'success');
+            }}
+            onSquash={async (prId, prNumber) => {
+              console.log(`Squashed PR #${prNumber}`);
+              addLog(`User squashed PR #${prNumber}`, 'success');
+            }}
+            onIgnore={async (prId, prNumber) => {
+              console.log(`Ignored PR #${prNumber}`);
+              addLog(`User ignored PR #${prNumber}`, 'info');
+            }}
+            language="en"
+          />
+        </div>
+      );
+    }
+
     // Default Editor View
     return (
       <div className="flex flex-col h-full overflow-hidden">
@@ -2564,6 +2644,26 @@ const allFixed = issues.reduce((acc, issue) => {
             >
               <Crown className="w-5 h-5" />
               BOSS COCKPIT
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={() => setCurrentView('meeting')}
+              className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-blue-600/60 text-blue-400 font-semibold hover:bg-black transition-all cursor-pointer"
+            >
+              <Users className="w-5 h-5" />
+              MEETING PANEL
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.015 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={() => setCurrentView('pr-review')}
+              className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-orange-600/60 text-orange-400 font-semibold hover:bg-black transition-all cursor-pointer"
+            >
+              <GitPullRequest className="w-5 h-5" />
+              PR REVIEW
             </motion.button>
 
             {fixedCode && (
