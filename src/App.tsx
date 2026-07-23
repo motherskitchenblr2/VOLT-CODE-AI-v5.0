@@ -194,7 +194,7 @@ const App: React.FC = () => {
   const [showDiff, setShowDiff] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showAgentModal, setShowAgentModal] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState('dev_user');
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -333,11 +333,7 @@ const App: React.FC = () => {
     tokensConsumed: 0
   });
 
-  // Agent Chat State
-  const [agentMessages, setAgentMessages] = useState<{ role: 'user' | 'agent', content: string }[]>([
-    { role: 'agent', content: 'Hello! I am the VOLT Agentic Orchestrator v5.0. I can analyze, explain, audit, and fix your code in real-time. Choose a quick action or ask me anything!' }
-  ]);
-  const [agentInput, setAgentInput] = useState('');
+
 
   // Boss Chat State (v6.1 Boss of the App Cockpit)
   const [bossMessages, setBossMessages] = useState<Array<{ role: 'user' | 'agent', content: string }>>([
@@ -863,7 +859,6 @@ const allFixed = issues.reduce((acc, issue) => {
       }
       if (e.key === 'Escape') {
         setShowDiff(false);
-        setShowAgentModal(false);
         setShowLoginModal(false);
         setShowShortcutsCheatSheet(false);
       }
@@ -885,54 +880,7 @@ const allFixed = issues.reduce((acc, issue) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [analyzeCode, applyAllFixes]);
 
-  const sendAgentMessage = async (text: string) => {
-    if (!text.trim()) return;
 
-    setAgentMessages(prev => [...prev, { role: 'user', content: text }]);
-    setAgentInput('');
-    addLog(`[AGENT] Processing custom instruction: "${text}"`, 'info');
-
-    setAgentStatus('analyzing');
-    try {
-      const res = await fetch('/api/openrouter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          language: language === 'auto' ? detectedLanguage : language,
-          model: selectedModel.id,
-          agentMode,
-          skill: selectedSkill,
-          plugin: selectedPlugin,
-          customPrompt: text
-        })
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server status ${res.status}`);
-      }
-
-      const data = await res.json();
-      if (data) {
-        if (data.issues) setIssues(data.issues);
-        if (data.fixedCode) setFixedCode(data.fixedCode);
-        if (data.tokensUsed) {
-          setTokensUsed(data.tokensUsed);
-          setPromptTokens(data.promptTokens || 0);
-          setCompletionTokens(data.completionTokens || 0);
-        }
-
-        const replySummary = data.summary || `I've analyzed the code matching your query. Found ${data.issues?.length || 0} issues. Check the main board for details.`;
-        setAgentMessages(prev => [...prev, { role: 'agent', content: replySummary }]);
-        addLog(`[AGENT] Code parsed & prompt solved.`, 'success');
-      }
-    } catch (err: any) {
-      setAgentMessages(prev => [...prev, { role: 'agent', content: `Sorry, I failed to complete that task: ${err.message}` }]);
-      addLog(`[AGENT] Query failed: ${err.message}`, 'error');
-    } finally {
-      setAgentStatus('idle');
-    }
-  };
 
   const sendBossMessage = async (text: string) => {
     if (!text.trim()) return;
@@ -2575,11 +2523,11 @@ const allFixed = issues.reduce((acc, issue) => {
               </button>
               
               <button
-                onClick={() => setShowAgentModal(true)}
+                onClick={() => setCurrentView('boss')}
                 className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold transition-all cursor-pointer"
               >
-                <Brain className="w-4 h-4" />
-                WORKSPACE
+                <Crown className="w-4 h-4" />
+                BOSS COCKPIT
               </button>
             </div>
 
@@ -2611,11 +2559,11 @@ const allFixed = issues.reduce((acc, issue) => {
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setShowAgentModal(true)}
+              onClick={() => setCurrentView('boss')}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] font-semibold hover:bg-black transition-all cursor-pointer"
             >
-              <Brain className="w-5 h-5" />
-              AGENT WORKSPACE
+              <Crown className="w-5 h-5" />
+              BOSS COCKPIT
             </motion.button>
 
             {fixedCode && (
@@ -2777,172 +2725,7 @@ const allFixed = issues.reduce((acc, issue) => {
     );
   };
 
-  const renderFloatingAgentButton = () => {
-    return (
-      <motion.button
-        onClick={() => setShowAgentModal(true)}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.98 }}
-        className="hidden lg:flex fixed bottom-7 left-[18rem] z-[65] items-center gap-3 px-5 py-3 rounded-full bg-[#FF5F00] text-black font-extrabold shadow-[0_0_30px_rgba(255,95,0,0.45)] cursor-pointer select-none"
-      >
-        <Bot className="w-5 h-5 animate-bounce" />
-        AGENT
-      </motion.button>
-    );
-  };
 
-  const renderAgentModal = () => {
-    return (
-      <AnimatePresence>
-        {showAgentModal && (
-          <div className="fixed inset-0 bg-black/85 z-[85] flex items-center justify-center p-6 select-text">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.985, y: 15 }}
-              transition={{ ease: [0.21, 0.92, 0.3, 1] }}
-              className="w-full max-w-5xl bg-[#121212] border border-[#FF5F00] rounded-3xl overflow-hidden flex flex-col h-[75vh]"
-            >
-              <div className="px-8 py-5 border-b border-[#FF5F00]/30 flex justify-between items-center select-none">
-                <div>
-                  <div className="font-bold text-2xl flex items-center gap-3">
-                    <Brain className="text-[#FF5F00]" />
-                    AGENT ORCHESTRATOR
-                  </div>
-                  <div className="text-xs text-[#FF5F00]/70 mt-1">
-                    v6.0 Conversational developer console. Direct code modification access enabled.
-                  </div>
-                </div>
-                <button onClick={() => setShowAgentModal(false)} className="cursor-pointer">
-                  <X />
-                </button>
-              </div>
-
-              <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-hidden">
-                {/* Chat feed column */}
-                <div className="lg:col-span-2 flex flex-col h-full bg-black/40 rounded-2xl border border-white/5 overflow-hidden">
-                  <div className="flex-1 p-4 overflow-y-auto space-y-4">
-                    {agentMessages.map((msg, idx) => (
-                      <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                          msg.role === 'user' ? 'bg-[#FF5F00] text-black font-semibold' : 'bg-white/10 text-white border border-white/10'
-                        }`}>
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <form 
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      sendAgentMessage(agentInput);
-                    }}
-                    className="p-3 border-t border-white/5 flex gap-2"
-                  >
-                    <input
-                      type="text"
-                      value={agentInput}
-                      onChange={(e) => setAgentInput(e.target.value)}
-                      placeholder="Ask the Agent to optimize, fix or review code..."
-                      className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#FF5F00]"
-                    />
-                    <button 
-                      type="submit"
-                      className="p-2.5 rounded-xl bg-[#FF5F00] text-black font-bold cursor-pointer"
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </form>
-                </div>
-
-                {/* Strategy, stats & action triggers */}
-                <div className="flex flex-col justify-between h-full space-y-4">
-                  <div className="rounded-2xl border border-[#FF5F00]/20 bg-black/40 p-5 space-y-3">
-                    <div className="text-sm font-bold text-[#FF5F00]">CONTEXT META</div>
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-white/60">Language:</span>
-                        <span className="font-mono text-[#FF5F00]">{detectedLanguage.toUpperCase()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/60">Model Engine:</span>
-                        <span className="font-bold">{selectedModel.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/60">Runtime Mode:</span>
-                        <span className="font-semibold text-white/95">{agentMode.toUpperCase()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Quick trigger actions */}
-                  <div className="flex-1 rounded-2xl border border-[#FF5F00]/20 bg-black/45 p-5 flex flex-col gap-2 overflow-y-auto">
-                    <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider mb-2">Command Presets</div>
-                    <button 
-                      onClick={() => handleAgentQuickAction('analyze')}
-                      className="w-full text-left p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold flex items-center gap-2 cursor-pointer"
-                    >
-                      <Bug className="w-3.5 h-3.5 text-[#FF5F00]" />
-                      Full Code Diagnosis
-                    </button>
-                    <button 
-                      onClick={() => handleAgentQuickAction('security')}
-                      className="w-full text-left p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold flex items-center gap-2 cursor-pointer"
-                    >
-                      <Shield className="w-3.5 h-3.5 text-red-400" />
-                      Security Vulnerability Scan
-                    </button>
-                    <button 
-                      onClick={() => handleAgentQuickAction('performance')}
-                      className="w-full text-left p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold flex items-center gap-2 cursor-pointer"
-                    >
-                      <Zap className="w-3.5 h-3.5 text-yellow-400" />
-                      Performance Bottleneck Check
-                    </button>
-                    <button 
-                      onClick={() => handleAgentQuickAction('explain')}
-                      className="w-full text-left p-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold flex items-center gap-2 cursor-pointer"
-                    >
-                      <Brain className="w-3.5 h-3.5 text-[#FF5F00]" />
-                      Explain Last Issue
-                    </button>
-                    <button 
-                      onClick={() => handleAgentQuickAction('fix')}
-                      className="w-full text-left p-2.5 rounded-xl bg-[#FF5F00]/10 hover:bg-[#FF5F00]/20 border border-[#FF5F00]/30 text-[#FF5F00] text-xs font-bold flex items-center gap-2 cursor-pointer"
-                    >
-                      <Wrench className="w-3.5 h-3.5" />
-                      Generate Fix Patch
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-8 py-5 border-t border-white/5 bg-black/40 flex justify-end gap-3 select-none">
-                <button
-                  onClick={() => {
-                    setCurrentView('sentinel');
-                    setShowAgentModal(false);
-                  }}
-                  className="px-6 py-2.5 rounded-xl border border-[#FF5F00]/40 text-[#FF5F00] font-semibold text-xs cursor-pointer"
-                >
-                  OPEN TELEMETRY
-                </button>
-                <button
-                  onClick={() => setShowAgentModal(false)}
-                  className="px-6 py-2.5 rounded-xl bg-[#FF5F00] text-black font-extrabold text-xs cursor-pointer"
-                >
-                  CLOSE AGENT
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    );
-  };
 
   const renderDiffModal = () => {
     return (
@@ -3197,8 +2980,6 @@ const allFixed = issues.reduce((acc, issue) => {
         setCurrentView={setCurrentView}
       />
 
-      {renderFloatingAgentButton()}
-      {renderAgentModal()}
       {renderDiffModal()}
       {renderReportDrawer()}
       {renderShortcutsModal()}
