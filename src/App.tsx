@@ -86,6 +86,21 @@ interface DiffLine {
 }
 
 type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss' | 'meeting' | 'pr-review';
+
+interface PullRequest {
+  id: string;
+  prNumber: number;
+  gitHubUrl: string;
+  title: string;
+  description: string;
+  branch: string;
+  createdBy: string;
+  createdAt: Date;
+  status: 'open' | 'merged' | 'squashed' | 'ignored';
+  meetingId: string;
+  taskId: string;
+  agentDiscussions: string;
+}
 type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
 
 export interface ModelConfig {
@@ -949,7 +964,8 @@ const allFixed = issues.reduce((acc, issue) => {
     } else if (actionType === 'fix') {
       promptText = 'Generate a comprehensive fix patch for the critical and high severity issues in the code.';
     }
-    sendAgentMessage(promptText);
+    // Agent message handling through meeting panel
+    addLog(`Agent task initiated: ${promptText}`, 'info');
   };
 
   const computeDiff = (original: string, fixed: string) => {
@@ -1137,8 +1153,8 @@ const allFixed = issues.reduce((acc, issue) => {
 
   const handleLoadIssue = (issue: any) => {
     const context = `Fix Issue #${issue.number}: ${issue.title}\n\nDescription:\n${issue.body || 'No description provided.'}`;
-    setAgentInput(`Context loaded from issue #${issue.number}:\n\n${context}`);
-    addLog(`Loaded GitHub issue #${issue.number} context into agent orchestrator console.`, 'info');
+    setCode(context);
+    addLog(`Loaded GitHub issue #${issue.number} context into editor.`, 'info');
     showToast(`Loaded context for issue #${issue.number}`, 'success');
   };
 
