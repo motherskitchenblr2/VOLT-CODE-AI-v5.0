@@ -31,7 +31,10 @@ import {
   Crown,
   Loader2,
   Users,
-  GitPullRequest
+  GitPullRequest,
+  Lightbulb,
+  Toggle2,
+  Columns
 } from 'lucide-react';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Analytics } from '@vercel/analytics/react';
@@ -45,6 +48,11 @@ import { GitHubWorkspace } from './components/GitHubWorkspace';
 import { MeetingPanel } from './components/MeetingPanel';
 import { PRReviewDashboard } from './components/PRReviewDashboard';
 import { BossGuidancePanel } from './components/BossGuidancePanel';
+import { SplitEditorLayout } from './components/SplitEditorLayout';
+import { AIProviderSelector } from './components/AIProviderSelector';
+import { TODOListWidget } from './components/TODOListWidget';
+import { MeetingMinutesDisplay } from './components/MeetingMinutesDisplay';
+import { ProfessionalEditorCanvas } from './components/ProfessionalEditorCanvas';
 
 import { PerformanceOptimizer, OptimizerReport } from './services/PerformanceOptimizer';
 import { ProviderRegistry, ProviderState } from './services/ProviderRegistry';
@@ -230,6 +238,8 @@ const App: React.FC = () => {
   const [currentModelName, setCurrentModelName] = useState('');
   const [autoApplyFixes, setAutoApplyFixes] = useState(false);
   const [enableSentinel, setEnableSentinel] = useState(false);
+  const [enableAgentSuggestions, setEnableAgentSuggestions] = useState(false);
+  const [agentSuggestions, setAgentSuggestions] = useState<string[]>([]);
 
   // v5.0 Added States
   const [aboutDocPage, setAboutDocPage] = useState<'whitepaper' | 'changelog' | 'comparison'>('whitepaper');
