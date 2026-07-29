@@ -1,90 +1,31 @@
-# webpack.yaml
-version: "1.0"
+# .github/workflows/webpack.yml
+name: Webpack CI
 
-webpack:
-  mode: production   # change to 'development' for local builds
-  target: web
-  devtool: source-map
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-  entry:
-    app: ./src/index.js
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  output:
-    path: ./dist
-    filename: [name].[contenthash].js
-    clean: true       # auto-clean old builds
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  resolve:
-    extensions: [.js, .jsx, .ts, .tsx, .json]
-    alias:
-      "@": ./src
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-  module:
-    rules:
-      - test: /\.jsx?$/
-        exclude: /node_modules/
-        use:
-          - loader: babel-loader
-            options:
-              cacheDirectory: true
-              presets:
-                - "@babel/preset-env"
-                - "@babel/preset-react"
+      - name: Install dependencies (npm CLI)
+        run: npm ci
 
-      - test: /\.tsx?$/
-        exclude: /node_modules/
-        use:
-          - loader: ts-loader
+      - name: Build project with Webpack
+        run: npm run build
 
-      - test: /\.css$/
-        use:
-          - style-loader
-          - css-loader
-          - postcss-loader
-
-      - test: /\.(scss|sass)$/
-        use:
-          - style-loader
-          - css-loader
-          - postcss-loader
-          - sass-loader
-
-      - test: /\.(png|jpe?g|gif|svg)$/
-        type: asset
-        parser:
-          dataUrlCondition:
-            maxSize: 8 * 1024   # inline <8kb
-
-      - test: /\.(woff2?|eot|ttf|otf)$/
-        type: asset/resource
-
-  plugins:
-    - plugin: html-webpack-plugin
-      options:
-        template: ./public/index.html
-        inject: body
-
-    - plugin: mini-css-extract-plugin
-      options:
-        filename: [name].[contenthash].css
-
-    - plugin: webpack.DefinePlugin
-      options:
-        process.env.NODE_ENV: production
-
-    - plugin: clean-webpack-plugin
-
-  optimization:
-    splitChunks:
-      chunks: all
-    runtimeChunk: single
-    minimize: true
-    minimizer:
-      - plugin: terser-webpack-plugin
-      - plugin: css-minimizer-webpack-plugin
-
-  devServer:
-    static: ./public
-    port: 3000
-    hot: true
-    historyApiFallback: true
+      - name: Run tests
+        run: npm test
