@@ -37,7 +37,7 @@ jobs:
       id-token: write
       contents: write
     # ✅ Use a valid release tag (v2.0.0 is latest stable)
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       subjects: "${{ needs.build.outputs.digests }}"
       upload-assets: true
