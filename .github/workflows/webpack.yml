@@ -22,7 +22,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies (npm CLI)
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build project with Webpack
         run: npm run build
