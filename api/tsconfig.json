@@ -4,7 +4,7 @@
     "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.api.tsbuildinfo",
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "types": ["node"],
     "skipLibCheck": true,
     "outDir": "../node_modules/.tmp/api",
