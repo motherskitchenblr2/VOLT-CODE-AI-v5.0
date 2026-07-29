@@ -1,36 +1,90 @@
-name: Node.js CI (Vite Build & Test)
+# webpack.yaml
+version: "1.0"
 
-on:
-  push:
-    branches: [ "main", "feature/v5-agentic-upgrade" ]
-  pull_request:
-    branches: [ "main" ]
+webpack:
+  mode: production   # change to 'development' for local builds
+  target: web
+  devtool: source-map
 
-permissions:
-  contents: read
+  entry:
+    app: ./src/index.js
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+  output:
+    path: ./dist
+    filename: [name].[contenthash].js
+    clean: true       # auto-clean old builds
 
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
+  resolve:
+    extensions: [.js, .jsx, .ts, .tsx, .json]
+    alias:
+      "@": ./src
 
-    steps:
-    - uses: actions/checkout@v7
+  module:
+    rules:
+      - test: /\.jsx?$/
+        exclude: /node_modules/
+        use:
+          - loader: babel-loader
+            options:
+              cacheDirectory: true
+              presets:
+                - "@babel/preset-env"
+                - "@babel/preset-react"
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v7
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - test: /\.tsx?$/
+        exclude: /node_modules/
+        use:
+          - loader: ts-loader
 
-    - name: Install dependencies
-      run: npm ci
+      - test: /\.css$/
+        use:
+          - style-loader
+          - css-loader
+          - postcss-loader
 
-    - name: Build production package
-      run: npm run build
+      - test: /\.(scss|sass)$/
+        use:
+          - style-loader
+          - css-loader
+          - postcss-loader
+          - sass-loader
 
-    - name: Run unit assertions tests
-      run: npm run test
+      - test: /\.(png|jpe?g|gif|svg)$/
+        type: asset
+        parser:
+          dataUrlCondition:
+            maxSize: 8 * 1024   # inline <8kb
+
+      - test: /\.(woff2?|eot|ttf|otf)$/
+        type: asset/resource
+
+  plugins:
+    - plugin: html-webpack-plugin
+      options:
+        template: ./public/index.html
+        inject: body
+
+    - plugin: mini-css-extract-plugin
+      options:
+        filename: [name].[contenthash].css
+
+    - plugin: webpack.DefinePlugin
+      options:
+        process.env.NODE_ENV: production
+
+    - plugin: clean-webpack-plugin
+
+  optimization:
+    splitChunks:
+      chunks: all
+    runtimeChunk: single
+    minimize: true
+    minimizer:
+      - plugin: terser-webpack-plugin
+      - plugin: css-minimizer-webpack-plugin
+
+  devServer:
+    static: ./public
+    port: 3000
+    hot: true
+    historyApiFallback: true
