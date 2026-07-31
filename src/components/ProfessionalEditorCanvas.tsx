@@ -70,9 +70,9 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
     generateAgentSuggestions();
   }, [code, enableAgentSuggestions, generateAgentSuggestions]);
 
-  const handleCopySuggestion = (suggestion: string) => {
+  const handleCopySuggestion = (idx: number, suggestion: string) => {
     navigator.clipboard.writeText(suggestion);
-    setCopiedSuggestion(Date.now());
+    setCopiedSuggestion(idx);
     setTimeout(() => setCopiedSuggestion(null), 2000);
   };
 
@@ -191,7 +191,7 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
                         </span>
                       </div>
                       <button
-                        onClick={() => handleCopySuggestion(suggestion.suggestion)}
+                        onClick={() => handleCopySuggestion(idx, suggestion.suggestion)}
                         className="p-1 hover:bg-[#1a1a1a] rounded transition-colors"
                       >
                         {copiedSuggestion === idx ? (
