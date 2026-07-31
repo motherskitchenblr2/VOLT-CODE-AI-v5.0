@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
   contents: write
   checks: write
-  # Removed: workflows: write   <-- invalid key
+  workflows: write
 
 jobs:
   code-quality:
@@ -55,9 +55,13 @@ jobs:
           if git diff --quiet; then
             echo "No changes to commit"
           else
-            git add .
-            git commit -m "refactor: auto-format code with prettier & eslint"
-            git push
+            git add -- ':!:.github/'
+            if git diff --cached --quiet; then
+              echo "Only .github files changed, skipping commit"
+            else
+              git commit -m "refactor: auto-format code with prettier & eslint"
+              git push
+            fi
           fi
 
       - name: Comment on PR with results
