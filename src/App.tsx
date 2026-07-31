@@ -22,7 +22,6 @@ import {
   Search,
   HelpCircle,
   Send,
-  Github,
   GitBranch,
   Folder,
   File,
@@ -1848,7 +1847,7 @@ const allFixed = issues.reduce((acc, issue) => {
                 : 'hover:bg-white/5 text-[#FF5F00]'
             }`}
           >
-            <Github className="w-5 h-5" />
+            <GitBranch className="w-5 h-5" />
             GITHUB WORKSPACE
           </div>
 
