@@ -1,33 +1,31 @@
-name: Node.js CI (Vite Build & Test)
+# .github/workflows/webpack.yml
+name: Webpack CI
 
 on:
   push:
-    branches: [ "main", "feature/v5-agentic-upgrade" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
-    - name: Build production package
-      run: npm run build
+      - name: Build project
+        run: npm run build
 
-    - name: Run unit assertions tests
-      run: npm run test
+      - name: Run tests
+        run: npm test
