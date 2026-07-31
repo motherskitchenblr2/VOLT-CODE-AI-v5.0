@@ -29,7 +29,13 @@ export class RecoveryCenter {
       throw new Error(`Checkpoint ${checkpointId} not registered inside system recovery registers.`);
     }
 
-    const { content } = JSON.parse(rawData);
+    let content: string;
+    try {
+      const parsed = JSON.parse(rawData);
+      content = parsed.content ?? '';
+    } catch {
+      throw new Error(`Checkpoint ${checkpointId} data could not be parsed from local cache.`);
+    }
     this.logCallback(`[RECOVERY] Reverted workspace changes matching checkpoint ${checkpointId}.`, 'success');
     return content;
   }

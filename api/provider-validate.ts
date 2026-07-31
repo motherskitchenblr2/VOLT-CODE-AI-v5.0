@@ -1,13 +1,27 @@
-import { decrypt, encrypt } from './utils/crypto';
-import { connectToDatabase } from './utils/db';
-import { UserSettingsModel, AuditLogModel } from '../src/models/Schemas';
+import { encrypt } from './utils/crypto.js';
+import { connectToDatabase } from './utils/db.js';
+import { UserSettingsModel, AuditLogModel } from '../src/models/Schemas.js';
 
-export default async function handler(req: any, res: any) {
+type ApiRequest = {
+  method?: string;
+  body?: {
+    username?: string;
+    provider?: string;
+    keyRaw?: string;
+  };
+};
+
+type ApiResponse = {
+  status: (code: number) => ApiResponse;
+  json: (payload: unknown) => ApiResponse;
+};
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { username, provider, keyRaw } = req.body;
+  const { username, provider, keyRaw } = req.body ?? {};
   if (!username || !provider || !keyRaw) {
     return res.status(400).json({ error: 'Missing parameters: username, provider, and keyRaw are required.' });
   }

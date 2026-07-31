@@ -9,7 +9,9 @@ export default defineConfig(async () => {
     // @ts-ignore
     const m = await import('./.vite-source-tags.js');
     plugins.push(m.sourceTags());
-  } catch {}
+  } catch (err) {
+    console.warn('[VITE] .vite-source-tags.js not found, proceeding without source tags.', err);
+  }
   return {
     plugins,
     build: {

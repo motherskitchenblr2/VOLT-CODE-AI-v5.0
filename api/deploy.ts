@@ -1,7 +1,22 @@
-import { connectToDatabase } from './utils/db';
-import { DeploymentModel, AuditLogModel } from '../src/models/Schemas';
+import { connectToDatabase } from './utils/db.js';
+import { DeploymentModel, AuditLogModel } from '../src/models/Schemas.js';
 
-export default async function handler(req: any, res: any) {
+type ApiRequest = {
+  method?: string;
+  body?: {
+    username?: string;
+    target?: string;
+    gitCommitSha?: string;
+  };
+};
+
+type ApiResponse = {
+  status: (code: number) => ApiResponse;
+  json: (payload: unknown) => ApiResponse;
+  setHeader: (name: string, value: string[]) => void;
+};
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Method not allowed' });

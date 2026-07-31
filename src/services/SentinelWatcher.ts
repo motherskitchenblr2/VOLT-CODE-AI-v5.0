@@ -17,12 +17,14 @@ export class SentinelWatcher {
 
   private frameCount = 0;
   private lastFpsCheck = Date.now();
+  private rafId: number | null = null;
 
   constructor(
     private logCallback: (msg: string, type?: 'info' | 'success' | 'warn' | 'error') => void
   ) {}
 
   public startFpsMonitor() {
+    if (this.rafId !== null) return;
     const loop = () => {
       this.frameCount++;
       const now = Date.now();
@@ -35,10 +37,17 @@ export class SentinelWatcher {
           this.logCallback(`[SENTINEL] Frame rate warning: System FPS degraded to ${this.telemetry.fps}`, 'warn');
         }
       }
-      requestAnimationFrame(loop);
+      this.rafId = requestAnimationFrame(loop);
     };
     if (typeof window !== 'undefined') {
-      requestAnimationFrame(loop);
+      this.rafId = requestAnimationFrame(loop);
+    }
+  }
+
+  public stopFpsMonitor() {
+    if (this.rafId !== null && typeof window !== 'undefined') {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
     }
   }
 

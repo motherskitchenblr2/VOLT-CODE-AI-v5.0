@@ -104,7 +104,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     if (stored) {
       try {
         return JSON.parse(stored);
-      } catch {}
+      } catch (err) {
+        console.warn('[ADMIN] Failed to parse consensus weights, using defaults.', err);
+      }
     }
     return { security: 35, qa: 25, arch: 20, ui: 20 };
   });

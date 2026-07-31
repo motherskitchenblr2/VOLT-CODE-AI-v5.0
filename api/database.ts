@@ -1,5 +1,5 @@
-import { connectToDatabase } from './utils/db';
-import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas';
+import { connectToDatabase } from './utils/db.js';
+import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas.js';
 
 type ApiRequest = {
   method?: string;

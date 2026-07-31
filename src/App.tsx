@@ -77,6 +77,7 @@ import { RepairPlanner, PriorityReport } from './services/RepairPlanner';
 import { RepoIntelligence, HealthScoreDetails } from './services/RepoIntelligence';
 import { SentinelWatcher } from './services/SentinelWatcher';
 import { ConsensusEngine, MultiAgentOrchestrator } from './services/AgentWorkforce';
+import { useLiveProviderModels, ProviderAvailability } from './hooks/useLiveProviderModels';
 
 interface Session {
   id: string;
@@ -259,6 +260,19 @@ const App: React.FC = () => {
   const [groqKey, setGroqKey] = useState(localStorage.getItem('volt_groq_key') || '');
   const [nvidiaKey, setNvidiaKey] = useState(localStorage.getItem('volt_nvidia_key') || '');
   const [huggingfaceKey, setHuggingfaceKey] = useState(localStorage.getItem('volt_huggingface_key') || '');
+
+  // Live AI Provider model catalog (fetched from /api/models)
+  const {
+    availability: liveProviderAvailability,
+    loading: liveProviderLoading,
+    lastUpdated: liveProviderUpdated,
+    refresh: refreshLiveProviders
+  } = useLiveProviderModels({
+    groq: groqKey,
+    openrouter: openrouterKey,
+    nvidia: nvidiaKey,
+    huggingface: huggingfaceKey
+  });
   
   // Auto-Language Deduction Warning Modal
   const [showLangAlert, setShowLangAlert] = useState(false);
@@ -561,6 +575,9 @@ const App: React.FC = () => {
     if (enableSentinel) {
       sentinelWatcher.current.startFpsMonitor();
     }
+    return () => {
+      sentinelWatcher.current.stopFpsMonitor();
+    };
   }, [enableSentinel]);
 
   useEffect(() => {
@@ -2047,6 +2064,58 @@ const allFixed = issues.reduce((acc, issue) => {
                   className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
                 />
               </div>
+            </div>
+
+            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-lg font-bold">Live Provider Availability</div>
+                <button
+                  onClick={refreshLiveProviders}
+                  className="flex items-center gap-1.5 text-xs text-[#FF5F00] hover:text-[#FF5F00]/80 disabled:opacity-50"
+                  disabled={liveProviderLoading}
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${liveProviderLoading ? 'animate-spin' : ''}`} />
+                  {liveProviderLoading ? 'Checking...' : 'Refresh'}
+                </button>
+              </div>
+
+              {liveProviderUpdated && (
+                <p className="text-[10px] text-white/40 mb-3 font-mono">
+                  Last checked: {new Date(liveProviderUpdated).toLocaleTimeString()}
+                </p>
+              )}
+
+              {liveProviderAvailability.length === 0 ? (
+                <p className="text-xs text-white/40">
+                  No live model data yet. Add API keys above and press Refresh to load the model catalog.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {liveProviderAvailability.map((provider) => (
+                    <div
+                      key={provider.provider}
+                      className="p-3 bg-black/60 border border-white/10 rounded-xl flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            provider.connected ? 'bg-green-500 shadow-[0_0_8px_#22c55e]' : 'bg-red-500'
+                          }`}
+                        />
+                        <span className="text-sm font-bold text-white">{provider.label}</span>
+                        {provider.connected ? (
+                          <span className="text-[10px] text-green-400 font-semibold uppercase">Connected</span>
+                        ) : (
+                          <span className="text-[10px] text-red-400 font-semibold uppercase">Offline</span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-white/50 font-mono">
+                        {provider.freeCount} free / {provider.paidCount} paid
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">

@@ -38,32 +38,34 @@ export const useApiGateway = () => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second request window
 
-        const response = await fetch('/api/openrouter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...payload,
-            provider,
-            keys: {
-              groq: keys.groqKey,
-              openrouter: keys.openrouterKey,
-              nvidia: keys.nvidiaKey,
-              huggingface: keys.huggingfaceKey
-            }
-          }),
-          signal: controller.signal
-        });
+        try {
+          const response = await fetch('/api/openrouter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...payload,
+              provider,
+              keys: {
+                groq: keys.groqKey,
+                openrouter: keys.openrouterKey,
+                nvidia: keys.nvidiaKey,
+                huggingface: keys.huggingfaceKey
+              }
+            }),
+            signal: controller.signal
+          });
 
-        clearTimeout(timeoutId);
+          if (!response.ok) {
+            throw new Error(`Endpoint returned HTTP status ${response.status}`);
+          }
 
-        if (!response.ok) {
-          throw new Error(`Endpoint returned HTTP status ${response.status}`);
+          const data = await response.json();
+          setLogs(prev => [...prev, `[GATEWAY] ${provider} responded successfully.`]);
+          setLoading(false);
+          return data;
+        } finally {
+          clearTimeout(timeoutId);
         }
-
-        const data = await response.json();
-        setLogs(prev => [...prev, `[GATEWAY] ${provider} responded successfully.`]);
-        setLoading(false);
-        return data;
 
       } catch (err: any) {
         lastError = err;

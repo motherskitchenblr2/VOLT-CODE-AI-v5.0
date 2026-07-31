@@ -40,8 +40,12 @@ export const useGitBackup = (username: string) => {
     // Attempt local retrieval first
     const localBackup = localStorage.getItem(`backup_${checkpointId}`);
     if (localBackup) {
-      const { content } = JSON.parse(localBackup);
-      return content;
+      try {
+        const { content } = JSON.parse(localBackup);
+        return content;
+      } catch {
+        // Fall through to MongoDB retrieval if local cache is corrupt
+      }
     }
 
     // Fallback to MongoDB retrieval

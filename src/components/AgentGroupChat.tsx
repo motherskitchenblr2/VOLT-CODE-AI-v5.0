@@ -35,7 +35,11 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
   const handlePlayAudio = async (audioUrl?: string) => {
     if (audioUrl) {
       const audio = new Audio(audioUrl);
-      await audio.play();
+      try {
+        await audio.play();
+      } catch (err) {
+        console.warn('[AUDIO] Playback blocked or failed:', err);
+      }
     }
   };
 
