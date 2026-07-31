@@ -172,12 +172,28 @@ npm run dev
 <sub>Maintained under strict enterprise engineering parameters by <strong>Arcada Labs</strong> for the <strong>DesignArena AI</strong> cluster. All rights reserved.</sub>
 </p>
 
-```
+---
 
-### 💡 What changed in this fully upgraded version:
+## 🔐 Automated PR Security Review Gate
 
-1.  **Clean Hierarchy:** Removed the redundant `<h1>` block on line 21, ensuring your premium 3D text animation stands on its own perfectly.
-2.  **Perfect Styling Coordination:** Built a custom "Core Color Variable Manifest" table detailing exactly how `--charcoal`, `--neon-orange`, and the `RGBA` glow profiles function inside your system workspace.
-3.  **Cleaned Text:** Fixed the title spelling bug directly within the visual header layers.
+This repository includes an internal PR security workflow to auto-review changes before merge.
 
-```
+- Workflow: `.github/workflows/pr-security.yml`
+- Documentation: `docs/security-pr-gate.md`
+- Purpose: block merges when high-risk issues are detected
+
+### Security checks on each PR
+
+- Dependency audit: `npm audit --audit-level=high`
+- Lint policy enforcement: `npm run lint`
+- Semgrep SAST scan (OWASP/security/secrets rules)
+- Trivy scan for vulnerabilities, secrets, and misconfigurations
+- SARIF upload to GitHub code scanning for visibility
+
+### Merge protection recommendation
+
+Enable branch protection on `main` and require this status check:
+
+- `Security Review (Audit + Lint + SAST + Secrets)`
+
+This ensures PRs with unresolved security findings cannot be merged.
