@@ -33,7 +33,6 @@ import {
   Users,
   GitPullRequest,
   Lightbulb,
-  Toggle2,
   Columns
 } from 'lucide-react';
 import 'highlight.js/styles/atom-one-dark.css';
@@ -96,20 +95,6 @@ interface DiffLine {
 
 type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss' | 'meeting' | 'pr-review';
 
-interface PullRequest {
-  id: string;
-  prNumber: number;
-  gitHubUrl: string;
-  title: string;
-  description: string;
-  branch: string;
-  createdBy: string;
-  createdAt: Date;
-  status: 'open' | 'merged' | 'squashed' | 'ignored';
-  meetingId: string;
-  taskId: string;
-  agentDiscussions: string;
-}
 type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
 
 export interface ModelConfig {

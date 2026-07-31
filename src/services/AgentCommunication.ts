@@ -164,7 +164,6 @@ export class AgentCommunicationService {
       status: 'planned',
       assignedAgents,
       bossApproved: false,
-<<<<<<< HEAD
       suggestedSolutions: [],
     };
 
