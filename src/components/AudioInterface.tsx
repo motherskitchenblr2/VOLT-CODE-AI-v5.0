@@ -32,15 +32,12 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState<string>('');
-  const [isSupported, setIsSupported] = useState(true);
+
+  const isSupported = audioEngine ? AudioEngine.isSupported() : false;
 
   useEffect(() => {
-    if (!audioEngine) {
-      setIsSupported(false);
-      return;
-    }
+    if (!audioEngine) return;
 
-    setIsSupported(AudioEngine.isSupported());
     const unsubscribe = audioEngine.onRecordingStateChange(setRecordingState);
     return unsubscribe;
   }, [audioEngine]);

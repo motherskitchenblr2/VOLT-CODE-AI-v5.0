@@ -43,6 +43,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { ResponsiveContainer } from './components/ResponsiveContainer';
 import { VisualDiff } from './components/VisualDiff';
 import { AdminCenter } from './components/AdminCenter';
+import { PullRequest } from './services/AgentCommunication';
 import { TerminalPanel } from './components/TerminalPanel';
 import { GitHubWorkspace } from './components/GitHubWorkspace';
 import { MeetingPanel } from './components/MeetingPanel';
@@ -367,10 +368,11 @@ const App: React.FC = () => {
 
   // Boss Chat State (v6.1 Boss of the App Cockpit)
   const [bossMessages, setBossMessages] = useState<Array<{ role: 'user' | 'agent', content: string }>>([
-    { role: 'agent', content: "Welcome. I am the VOLT AI Agent Head—the core orchestrator and Boss of this code mechanic platform. Volt AI is the ultimate Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp. Explain your target programming task, and I will recommend the absolute best AI model configuration, outline the workforce workflow, and run code optimizations." }
+    { role: 'agent', content: 'Volt AI Core v6.0 Orchestrator ready. All agent modules loaded.' },
   ]);
   const [bossInput, setBossInput] = useState('');
   const [isBossLoading, setIsBossLoading] = useState(false);
+  const [agentInput, setAgentInput] = useState('');
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -959,6 +961,14 @@ const allFixed = issues.reduce((acc, issue) => {
     } finally {
       setIsBossLoading(false);
     }
+  };
+
+  const sendAgentMessage = (text: string) => {
+    if (!text.trim()) return;
+    setBossMessages(prev => [...prev, { role: 'user', content: text }]);
+    setBossInput('');
+    addLog(`[AGENT] Quick action triggered: ${text.substring(0, 60)}...`, 'info');
+    sendBossMessage(text);
   };
 
   const handleAgentQuickAction = (actionType: 'analyze' | 'diagnose' | 'security' | 'performance' | 'explain' | 'fix') => {

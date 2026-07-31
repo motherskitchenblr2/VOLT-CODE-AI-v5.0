@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AgentCommunicationService,
@@ -23,28 +24,33 @@ interface MeetingPanelProps {
 export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
   const [language, setLanguage] = useState<'en' | 'hi'>('en');
   const [communicationService] = useState(() => new AgentCommunicationService());
+  const initialized = useRef(false);
+
   const [meeting, setMeeting] = useState<Meeting | null>(null);
-  const [agentsMap, setAgentsMap] = useState<Map<string, Agent>>(new Map());
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [tasks, setTasks] = useState<MeetingTask[]>([]);
-  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<string>(bossAgent.id);
   const [showSettings, setShowSettings] = useState(false);
   const [isBossPresent, setIsBossPresent] = useState(true);
 
+  const messages = meeting?.messages ?? [];
+  const tasks = meeting?.tasks ?? [];
+  const agentsMap = useMemo(() => {
+    if (!meeting) return new Map<string, Agent>();
+    return new Map(meeting.agents.map(a => [a.id, a]));
+  }, [meeting]);
+
+  const syncMeeting = useCallback((id: string) => {
+    const synced = communicationService.getMeeting(id);
+    if (synced) setMeeting(synced);
+  }, [communicationService]);
+
   // Initialize meeting
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
     const agents = [bossAgent, ...defaultAgents];
-    const agentsMapTemp = new Map(agents.map(a => [a.id, a]));
-    setAgentsMap(agentsMapTemp);
-
     const newMeeting = communicationService.createMeeting(agents, true);
-    setMeeting(newMeeting);
-    setMessages(newMeeting.messages);
-    setTasks(newMeeting.tasks);
-    setSelectedAgent(bossAgent.id);
 
-    // Add welcome messages
-    const welcomeMessage = communicationService.addMessage(
+    communicationService.addMessage(
       newMeeting.id,
       'system',
       'System',
@@ -53,7 +59,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
       'system'
     );
 
-    const bossMessage = communicationService.addMessage(
+    communicationService.addMessage(
       newMeeting.id,
       bossAgent.id,
       bossAgent.name,
@@ -64,23 +70,8 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
       'text'
     );
 
-    setMessages([welcomeMessage, bossMessage]);
-
-    // Subscribe to updates
-    const unsubscribeMsg = communicationService.onMessageAdded((msg) => {
-      setMessages(prev => [...prev, msg]);
-    });
-
-    const unsubscribeTask = communicationService.onTaskUpdated(() => {
-      if (meeting) {
-        setTasks([...meeting.tasks]);
-      }
-    });
-
-    return () => {
-      unsubscribeMsg();
-      unsubscribeTask();
-    };
+    const synced = communicationService.getMeeting(newMeeting.id);
+    if (synced) setMeeting(synced);
   }, []);
 
   const handleSendMessage = async (content: string) => {
@@ -89,7 +80,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
     const message = communicationService.addMessage(
       meeting.id,
       selectedAgent,
-      agentsMap.get(selectedAgent)?.name || 'Unknown',
+      meeting.agents.find(a => a.id === selectedAgent)?.name || 'Unknown',
       content,
       language,
       'text'
@@ -106,7 +97,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
     const message = communicationService.addMessage(
       meeting.id,
       selectedAgent,
-      agentsMap.get(selectedAgent)?.name || 'Unknown',
+      meeting.agents.find(a => a.id === selectedAgent)?.name || 'Unknown',
       transcript || (language === 'en' ? '[Audio Message]' : '[ऑडियो संदेश]'),
       language,
       'audio',
@@ -132,14 +123,14 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
       [selectedAgent || defaultAgents[0].id]
     );
 
-    setTasks([...meeting.tasks]);
+    syncMeeting(meeting.id);
   };
 
   const handleBossApproveTask = (taskId: string) => {
     if (!meeting) return;
 
     const updatedTask = communicationService.approveTask(meeting.id, taskId);
-    setTasks([...meeting.tasks]);
+    syncMeeting(meeting.id);
 
     // Add system message
     communicationService.addMessage(
@@ -169,7 +160,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
       'in-progress'
     );
 
-    setTasks([...meeting.tasks]);
+    syncMeeting(meeting.id);
 
     communicationService.addMessage(
       meeting.id,

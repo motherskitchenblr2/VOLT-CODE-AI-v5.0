@@ -289,11 +289,11 @@ export class AudioEngine {
 
   // Check browser support
   static isSupported(): boolean {
-    if (typeof window === 'undefined') return false;
-    const hasMediaDevices = !!(navigator.mediaDevices?.getUserMedia);
-    const hasAudioContext = !!(window.AudioContext || (window as any).webkitAudioContext);
-    const hasSpeechSynthesis = 'speechSynthesis' in window;
-    return hasMediaDevices && hasAudioContext && hasSpeechSynthesis;
+    return !!(
+      (window.AudioContext || (window as any).webkitAudioContext) &&
+      typeof SpeechSynthesisUtterance !== 'undefined' &&
+      typeof navigator.mediaDevices?.getUserMedia === 'function'
+    );
   }
 }
 

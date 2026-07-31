@@ -50,15 +50,10 @@ const getRiskBadgeColor = (level: string) => {
   }
 };
 
-const getConcernIcon = (concern: string) => {
-  switch (concern) {
-    case 'rejected-critical-fix':
-      return Zap;
-    case 'approved-risky-change':
-      return AlertCircle;
-    default:
-      return MessageCircle;
-  }
+const CONCERN_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'rejected-critical-fix': Zap,
+  'approved-risky-change': AlertCircle,
+  'other': MessageCircle,
 };
 
 export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
@@ -72,7 +67,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
 
   if (!guidance) return null;
 
-  const ConcernIcon = getConcernIcon(guidance.concern);
+  const ConcernIcon = CONCERN_ICONS[guidance.concern] || MessageCircle;
 
   const concernTexts = {
     en: {
