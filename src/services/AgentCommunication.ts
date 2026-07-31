@@ -165,7 +165,6 @@ export class AgentCommunicationService {
       assignedAgents,
       bossApproved: false,
       suggestedSolutions: [],
-      tasks: []
     };
 
     meeting.tasks.push(task);

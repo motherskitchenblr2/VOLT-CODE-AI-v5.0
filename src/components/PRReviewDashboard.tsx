@@ -23,10 +23,6 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
   const [processingPr, setProcessingPr] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'merged' | 'squashed' | 'ignored'>('open');
 
-  useEffect(() => {
-    setPrs(pullRequests);
-  }, [pullRequests]);
-
   const handleMergePr = async (pr: PullRequest) => {
     setProcessingPr(pr.id);
     try {
