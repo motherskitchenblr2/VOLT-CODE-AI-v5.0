@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Menu, X, Code, Eye, GitCompare, FileText, CheckCircle2, 
-  Settings, Users, GitPullRequest, Crown, Zap, Home, MessageSquare, Plus
-} from 'lucide-react';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Menu,
+  X,
+  Code,
+  Eye,
+  GitCompare,
+  FileText,
+  CheckCircle2,
+  Settings,
+  Users,
+  GitPullRequest,
+  Crown,
+  Zap,
+  Home,
+  MessageSquare,
+  Plus,
+} from "lucide-react";
 
 interface ResponsiveMobileLayoutProps {
   code: string;
@@ -20,11 +33,13 @@ export function ResponsiveMobileLayout({
   children,
   currentView,
   onViewChange,
-  isMobile
+  isMobile,
 }: ResponsiveMobileLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'code' | 'preview' | 'compare' | 'notes'>('code');
-  const [notes, setNotes] = useState('');
+  const [activeTab, setActiveTab] = useState<
+    "code" | "preview" | "compare" | "notes"
+  >("code");
+  const [notes, setNotes] = useState("");
   const [showTodo, setShowTodo] = useState(false);
 
   if (!isMobile) {
@@ -33,11 +48,11 @@ export function ResponsiveMobileLayout({
 
   // Mobile Bottom Navigation Icons
   const bottomNavItems = [
-    { id: 'editor', label: 'Editor', icon: Code, view: 'editor' },
-    { id: 'meeting', label: 'Meeting', icon: Users, view: 'meeting' },
-    { id: 'pr', label: 'PR Review', icon: GitPullRequest, view: 'pr-review' },
-    { id: 'boss', label: 'Boss', icon: Crown, view: 'boss' },
-    { id: 'more', label: 'More', icon: Menu, view: null }
+    { id: "editor", label: "Editor", icon: Code, view: "editor" },
+    { id: "meeting", label: "Meeting", icon: Users, view: "meeting" },
+    { id: "pr", label: "PR Review", icon: GitPullRequest, view: "pr-review" },
+    { id: "boss", label: "Boss", icon: Crown, view: "boss" },
+    { id: "more", label: "More", icon: Menu, view: null },
   ];
 
   return (
@@ -66,18 +81,18 @@ export function ResponsiveMobileLayout({
         {menuOpen && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             className="bg-[#1a1a1a] border-b border-[#FF5F00]/20 overflow-hidden"
           >
             <div className="p-4 space-y-2">
               {[
-                { label: 'New Analysis', view: 'editor' },
-                { label: 'History', view: 'history' },
-                { label: 'Sentinel', view: 'sentinel' },
-                { label: 'GitHub', view: 'github' },
-                { label: 'Settings', view: 'settings' },
-                { label: 'Admin', view: 'admin' }
+                { label: "New Analysis", view: "editor" },
+                { label: "History", view: "history" },
+                { label: "Sentinel", view: "sentinel" },
+                { label: "GitHub", view: "github" },
+                { label: "Settings", view: "settings" },
+                { label: "Admin", view: "admin" },
               ].map((item) => (
                 <button
                   key={item.view}
@@ -87,8 +102,8 @@ export function ResponsiveMobileLayout({
                   }}
                   className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition-all text-left ${
                     currentView === item.view
-                      ? 'bg-[#FF5F00] text-black'
-                      : 'text-white/70 hover:bg-white/5'
+                      ? "bg-[#FF5F00] text-black"
+                      : "text-white/70 hover:bg-white/5"
                   }`}
                 >
                   {item.label}
@@ -106,18 +121,18 @@ export function ResponsiveMobileLayout({
           {/* Tab Selection */}
           <div className="flex gap-1 p-2 bg-[#0a0a0a] border-b border-[#FF5F00]/10">
             {[
-              { id: 'code', label: 'Code', icon: Code },
-              { id: 'preview', label: 'Preview', icon: Eye },
-              { id: 'compare', label: 'Compare', icon: GitCompare },
-              { id: 'notes', label: 'Notes', icon: FileText }
+              { id: "code", label: "Code", icon: Code },
+              { id: "preview", label: "Preview", icon: Eye },
+              { id: "compare", label: "Compare", icon: GitCompare },
+              { id: "notes", label: "Notes", icon: FileText },
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 onClick={() => setActiveTab(id as any)}
                 className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-bold transition-all ${
                   activeTab === id
-                    ? 'bg-[#FF5F00] text-black'
-                    : 'text-white/50 hover:text-white'
+                    ? "bg-[#FF5F00] text-black"
+                    : "text-white/50 hover:text-white"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -128,34 +143,39 @@ export function ResponsiveMobileLayout({
 
           {/* Tab Content */}
           <div className="p-3">
-            {activeTab === 'code' && (
+            {activeTab === "code" && (
               <textarea
                 value={code}
                 onChange={(e) => onCodeChange(e.target.value)}
                 spellCheck={false}
                 className="w-full h-48 bg-black/60 border border-white/10 rounded-lg p-3 font-mono text-xs text-[#EDEDED] caret-[#FF5F00] focus:border-[#FF5F00]/40 outline-none resize-none"
                 style={{
-                  fontFamily: 'ui-monospace, Menlo, Monaco, Consolas, monospace'
+                  fontFamily:
+                    "ui-monospace, Menlo, Monaco, Consolas, monospace",
                 }}
               />
             )}
 
-            {activeTab === 'preview' && (
+            {activeTab === "preview" && (
               <div className="bg-black/60 border border-white/10 rounded-lg p-3 text-xs text-white/70 max-h-48 overflow-auto">
-                <pre className="font-mono whitespace-pre-wrap break-words">{code.slice(0, 300)}</pre>
+                <pre className="font-mono whitespace-pre-wrap break-words">
+                  {code.slice(0, 300)}
+                </pre>
               </div>
             )}
 
-            {activeTab === 'compare' && (
+            {activeTab === "compare" && (
               <div className="space-y-2">
-                <div className="text-[10px] text-white/40 font-bold">Original</div>
+                <div className="text-[10px] text-white/40 font-bold">
+                  Original
+                </div>
                 <div className="bg-black/60 border border-white/10 rounded-lg p-2 font-mono text-[10px] text-white/60 max-h-20 overflow-auto">
                   {code.slice(0, 150)}...
                 </div>
               </div>
             )}
 
-            {activeTab === 'notes' && (
+            {activeTab === "notes" && (
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
@@ -179,12 +199,17 @@ export function ResponsiveMobileLayout({
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Issues', value: 5, color: 'text-red-400' },
-            { label: 'Warnings', value: 3, color: 'text-yellow-400' },
-            { label: 'Health', value: '78%', color: 'text-green-400' }
+            { label: "Issues", value: 5, color: "text-red-400" },
+            { label: "Warnings", value: 3, color: "text-yellow-400" },
+            { label: "Health", value: "78%", color: "text-green-400" },
           ].map((stat) => (
-            <div key={stat.label} className="p-3 bg-black/40 border border-white/10 rounded-lg text-center">
-              <div className={`text-lg font-bold ${stat.color}`}>{stat.value}</div>
+            <div
+              key={stat.label}
+              className="p-3 bg-black/40 border border-white/10 rounded-lg text-center"
+            >
+              <div className={`text-lg font-bold ${stat.color}`}>
+                {stat.value}
+              </div>
               <div className="text-[10px] text-white/40 mt-1">{stat.label}</div>
             </div>
           ))}
@@ -201,7 +226,7 @@ export function ResponsiveMobileLayout({
               <Plus className="w-4 h-4" />
             </button>
           </div>
-          
+
           {showTodo && (
             <div className="flex gap-2 mb-3">
               <input
@@ -217,10 +242,15 @@ export function ResponsiveMobileLayout({
 
           <div className="space-y-2">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-2 p-2 bg-black/40 rounded-lg">
+              <div
+                key={i}
+                className="flex items-center gap-2 p-2 bg-black/40 rounded-lg"
+              >
                 <CheckCircle2 className="w-4 h-4 text-green-400" />
                 <div className="flex-1 text-xs text-white/70">Task {i}</div>
-                <span className="text-[9px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded">High</span>
+                <span className="text-[9px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded">
+                  High
+                </span>
               </div>
             ))}
           </div>
@@ -234,12 +264,12 @@ export function ResponsiveMobileLayout({
             key={id}
             onClick={() => {
               if (view) onViewChange(view);
-              if (id === 'more') setMenuOpen(!menuOpen);
+              if (id === "more") setMenuOpen(!menuOpen);
             }}
             className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg text-[9px] font-bold transition-all ${
-              (view && currentView === view) || (id === 'more' && menuOpen)
-                ? 'bg-[#FF5F00]/20 text-[#FF5F00]'
-                : 'text-white/40 hover:text-white/60'
+              (view && currentView === view) || (id === "more" && menuOpen)
+                ? "bg-[#FF5F00]/20 text-[#FF5F00]"
+                : "text-white/40 hover:text-white/60"
             }`}
           >
             <Icon className="w-5 h-5" />

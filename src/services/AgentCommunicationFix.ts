@@ -16,7 +16,7 @@ export interface AgentMessage {
   to: string;
   content: string;
   timestamp: Date;
-  status: 'pending' | 'sent' | 'received' | 'failed';
+  status: "pending" | "sent" | "received" | "failed";
   retryCount: number;
   error?: string;
 }
@@ -31,7 +31,7 @@ export class AgentCommunicationFix {
    * Initialize agent communication system
    */
   static initialize(): void {
-    console.log('[AgentComm] Initializing agent communication system...');
+    console.log("[AgentComm] Initializing agent communication system...");
     // Verify all agents are registered
     // Check API connectivity
     // Initialize message queues
@@ -42,30 +42,34 @@ export class AgentCommunicationFix {
    */
   async sendAgentMessage(message: AgentMessage): Promise<boolean> {
     try {
-      console.log(`[AgentComm] Sending message from ${message.from} to ${message.to}`);
+      console.log(
+        `[AgentComm] Sending message from ${message.from} to ${message.to}`,
+      );
 
       // Check if target agent is online
       const targetHealth = await this.checkAgentHealth(message.to);
       if (!targetHealth.isOnline) {
-        console.warn(`[AgentComm] Agent ${message.to} is offline, queuing message`);
+        console.warn(
+          `[AgentComm] Agent ${message.to} is offline, queuing message`,
+        );
         return this.queueMessage(message);
       }
 
       // Verify API connectivity
       const apiReady = await this.verifyAPIConnectivity();
       if (!apiReady) {
-        console.error('[AgentComm] API connectivity failed');
+        console.error("[AgentComm] API connectivity failed");
         return false;
       }
 
       // Send with timeout
       const sent = await Promise.race([
         this.attemptSend(message),
-        this.timeout(this.messageTimeout)
+        this.timeout(this.messageTimeout),
       ]);
 
       if (sent) {
-        message.status = 'sent';
+        message.status = "sent";
         console.log(`[AgentComm] Message sent successfully: ${message.id}`);
         return true;
       }
@@ -73,19 +77,22 @@ export class AgentCommunicationFix {
       // Retry logic
       if (message.retryCount < this.retryThreshold) {
         message.retryCount++;
-        console.log(`[AgentComm] Retrying message (attempt ${message.retryCount})`);
-        await new Promise(r => setTimeout(r, 1000 * message.retryCount)); // Exponential backoff
+        console.log(
+          `[AgentComm] Retrying message (attempt ${message.retryCount})`,
+        );
+        await new Promise((r) => setTimeout(r, 1000 * message.retryCount)); // Exponential backoff
         return this.sendAgentMessage(message);
       }
 
-      message.status = 'failed';
-      message.error = 'Max retries exceeded';
-      console.error(`[AgentComm] Message failed after ${this.retryThreshold} retries`);
+      message.status = "failed";
+      message.error = "Max retries exceeded";
+      console.error(
+        `[AgentComm] Message failed after ${this.retryThreshold} retries`,
+      );
       return false;
-
     } catch (error) {
-      console.error('[AgentComm] Error sending message:', error);
-      message.status = 'failed';
+      console.error("[AgentComm] Error sending message:", error);
+      message.status = "failed";
       message.error = String(error);
       return false;
     }
@@ -105,9 +112,9 @@ export class AgentCommunicationFix {
       const startTime = Date.now();
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      const response = await fetch(`/api/agents/${agentId}/health`, { 
-        method: 'GET',
-        signal: controller.signal
+      const response = await fetch(`/api/agents/${agentId}/health`, {
+        method: "GET",
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
 
@@ -120,14 +127,15 @@ export class AgentCommunicationFix {
         lastHeartbeat: new Date(),
         responseTime,
         errorCount: isOnline ? 0 : (cached?.errorCount ?? 0) + 1,
-        messageQueue: 0 // Updated when queuing
+        messageQueue: 0, // Updated when queuing
       };
 
       this.healthChecks.set(agentId, health);
-      console.log(`[AgentComm] Health check for ${agentId}: ${isOnline ? 'ONLINE' : 'OFFLINE'} (${responseTime}ms)`);
+      console.log(
+        `[AgentComm] Health check for ${agentId}: ${isOnline ? "ONLINE" : "OFFLINE"} (${responseTime}ms)`,
+      );
 
       return health;
-
     } catch (error) {
       console.error(`[AgentComm] Health check failed for ${agentId}:`, error);
       return {
@@ -136,7 +144,7 @@ export class AgentCommunicationFix {
         lastHeartbeat: new Date(),
         responseTime: this.messageTimeout,
         errorCount: (this.healthChecks.get(agentId)?.errorCount ?? 0) + 1,
-        messageQueue: 0
+        messageQueue: 0,
       };
     }
   }
@@ -150,7 +158,9 @@ export class AgentCommunicationFix {
       targetQueue.push(message);
       this.messageQueue.set(message.to, targetQueue);
 
-      console.log(`[AgentComm] Queued message ${message.id} for ${message.to} (queue size: ${targetQueue.length})`);
+      console.log(
+        `[AgentComm] Queued message ${message.id} for ${message.to} (queue size: ${targetQueue.length})`,
+      );
 
       // Update health info
       const health = this.healthChecks.get(message.to);
@@ -160,7 +170,7 @@ export class AgentCommunicationFix {
 
       return true;
     } catch (error) {
-      console.error('[AgentComm] Queue failed:', error);
+      console.error("[AgentComm] Queue failed:", error);
       return false;
     }
   }
@@ -170,7 +180,9 @@ export class AgentCommunicationFix {
    */
   async processQueuedMessages(agentId: string): Promise<void> {
     const queue = this.messageQueue.get(agentId) || [];
-    console.log(`[AgentComm] Processing ${queue.length} queued messages for ${agentId}`);
+    console.log(
+      `[AgentComm] Processing ${queue.length} queued messages for ${agentId}`,
+    );
 
     for (const message of queue) {
       const sent = await this.sendAgentMessage(message);
@@ -189,22 +201,22 @@ export class AgentCommunicationFix {
    */
   private async attemptSend(message: AgentMessage): Promise<boolean> {
     try {
-      const response = await fetch('/api/agents/message', {
-        method: 'POST',
+      const response = await fetch("/api/agents/message", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           from: message.from,
           to: message.to,
           content: message.content,
-          messageId: message.id
-        })
+          messageId: message.id,
+        }),
       });
 
       return response.ok;
     } catch (error) {
-      console.error('[AgentComm] Send attempt failed:', error);
+      console.error("[AgentComm] Send attempt failed:", error);
       return false;
     }
   }
@@ -214,22 +226,23 @@ export class AgentCommunicationFix {
    */
   private async verifyAPIConnectivity(): Promise<boolean> {
     try {
-      console.log('[AgentComm] Verifying API connectivity...');
-      
+      console.log("[AgentComm] Verifying API connectivity...");
+
       const healthController = new AbortController();
       const healthTimeoutId = setTimeout(() => healthController.abort(), 2000);
-      const response = await fetch('/api/health', { 
-        method: 'GET',
-        signal: healthController.signal
+      const response = await fetch("/api/health", {
+        method: "GET",
+        signal: healthController.signal,
       });
       clearTimeout(healthTimeoutId);
 
       const isConnected = response.ok;
-      console.log(`[AgentComm] API connectivity: ${isConnected ? 'OK' : 'FAILED'}`);
+      console.log(
+        `[AgentComm] API connectivity: ${isConnected ? "OK" : "FAILED"}`,
+      );
       return isConnected;
-
     } catch (error) {
-      console.error('[AgentComm] API connectivity check failed:', error);
+      console.error("[AgentComm] API connectivity check failed:", error);
       return false;
     }
   }
@@ -239,7 +252,7 @@ export class AgentCommunicationFix {
    */
   private timeout(ms: number): Promise<boolean> {
     return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), ms)
+      setTimeout(() => reject(new Error("Timeout")), ms),
     );
   }
 
@@ -252,20 +265,25 @@ export class AgentCommunicationFix {
     queuedMessages: number;
     failedMessages: number;
   } {
-    const onlineAgents = Array.from(this.healthChecks.values())
-      .filter(h => h.isOnline).length;
+    const onlineAgents = Array.from(this.healthChecks.values()).filter(
+      (h) => h.isOnline,
+    ).length;
 
-    const queuedMessages = Array.from(this.messageQueue.values())
-      .reduce((acc, queue) => acc + queue.length, 0);
+    const queuedMessages = Array.from(this.messageQueue.values()).reduce(
+      (acc, queue) => acc + queue.length,
+      0,
+    );
 
-    const failedMessages = Array.from(this.messageQueue.values())
-      .reduce((acc, queue) => acc + queue.filter(m => m.status === 'failed').length, 0);
+    const failedMessages = Array.from(this.messageQueue.values()).reduce(
+      (acc, queue) => acc + queue.filter((m) => m.status === "failed").length,
+      0,
+    );
 
     return {
       totalAgents: this.healthChecks.size,
       onlineAgents,
       queuedMessages,
-      failedMessages
+      failedMessages,
     };
   }
 
@@ -273,7 +291,7 @@ export class AgentCommunicationFix {
    * Fix agent response timeout issues
    */
   static fixAgentResponseTimeout(): void {
-    console.log('[AgentComm] Applying agent response timeout fix...');
+    console.log("[AgentComm] Applying agent response timeout fix...");
     // Increase timeout values
     // Add retry exponential backoff
     // Implement message queuing
@@ -283,7 +301,7 @@ export class AgentCommunicationFix {
    * Fix agent routing issues
    */
   static fixAgentRouting(): void {
-    console.log('[AgentComm] Repairing agent routing system...');
+    console.log("[AgentComm] Repairing agent routing system...");
     // Verify routing table
     // Reset agent connections
     // Clear stale sessions
@@ -293,7 +311,7 @@ export class AgentCommunicationFix {
    * Fix API integration issues
    */
   static fixAPIIntegration(): void {
-    console.log('[AgentComm] Fixing API provider integration...');
+    console.log("[AgentComm] Fixing API provider integration...");
     // Verify all API keys
     // Test all provider endpoints
     // Validate response parsing

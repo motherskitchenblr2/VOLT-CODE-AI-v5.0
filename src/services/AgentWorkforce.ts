@@ -1,6 +1,6 @@
 export interface AgentMessage {
   sender: string;
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -14,7 +14,7 @@ export abstract class SeniorAgent {
   constructor(
     public name: string,
     public focusArea: string,
-    public weight: number // Weighted voting percentage (Gap 5)
+    public weight: number, // Weighted voting percentage (Gap 5)
   ) {}
 
   abstract verify(code: string, context?: any): Promise<VerificationResult>;
@@ -23,7 +23,7 @@ export abstract class SeniorAgent {
 // 1. Senior Security Specialist
 export class SeniorSecurityAgent extends SeniorAgent {
   constructor() {
-    super('Senior Security Specialist', 'Vulnerabilities & Key Leakage', 0.35);
+    super("Senior Security Specialist", "Vulnerabilities & Key Leakage", 0.35);
   }
 
   async verify(code: string): Promise<VerificationResult> {
@@ -31,15 +31,19 @@ export class SeniorSecurityAgent extends SeniorAgent {
     let score = 100;
 
     if (code.match(/sk-or-|gsk_|nvapi-|hf_/i)) {
-      feedback.push('[SECURITY] Unencrypted API credentials leak path identified inside source file.');
+      feedback.push(
+        "[SECURITY] Unencrypted API credentials leak path identified inside source file.",
+      );
       score -= 40;
     }
-    if (code.includes('eval(')) {
-      feedback.push('[SECURITY] Unsafe eval() execution vector detected.');
+    if (code.includes("eval(")) {
+      feedback.push("[SECURITY] Unsafe eval() execution vector detected.");
       score -= 30;
     }
-    if (code.includes('dangerouslySetInnerHTML')) {
-      feedback.push('[SECURITY] React dangerouslySetInnerHTML used. Validate sanitization parameters.');
+    if (code.includes("dangerouslySetInnerHTML")) {
+      feedback.push(
+        "[SECURITY] React dangerouslySetInnerHTML used. Validate sanitization parameters.",
+      );
       score -= 15;
     }
 
@@ -50,30 +54,40 @@ export class SeniorSecurityAgent extends SeniorAgent {
 // 2. Senior QA Tester Specialist
 export class SeniorQATesterAgent extends SeniorAgent {
   constructor() {
-    super('Senior QA Tester Specialist', 'Types & Test Assertions', 0.25);
+    super("Senior QA Tester Specialist", "Types & Test Assertions", 0.25);
   }
 
   async verify(code: string, context?: any): Promise<VerificationResult> {
     const feedback: string[] = [];
     let score = 100;
 
-    if (code.includes('any') && !code.includes('eslint-disable')) {
-      feedback.push('[QA] Loose typing: Implicit "any" type detected. Enforce strict typescript bounds.');
+    if (code.includes("any") && !code.includes("eslint-disable")) {
+      feedback.push(
+        '[QA] Loose typing: Implicit "any" type detected. Enforce strict typescript bounds.',
+      );
       score -= 15;
     }
-    if (code.includes('console.log') && !code.includes('console.error')) {
-      feedback.push('[QA] Development residue: console.log should be cleaned before production deployments.');
+    if (code.includes("console.log") && !code.includes("console.error")) {
+      feedback.push(
+        "[QA] Development residue: console.log should be cleaned before production deployments.",
+      );
       score -= 5;
     }
 
-    const isPython = (context?.language === 'python') || 
-                     (context?.filePath && context.filePath.endsWith('.py')) ||
-                     ((code.includes('def ') || code.includes('import ')) && code.includes(':') && !code.includes('const ') && !code.includes('function '));
+    const isPython =
+      context?.language === "python" ||
+      (context?.filePath && context.filePath.endsWith(".py")) ||
+      ((code.includes("def ") || code.includes("import ")) &&
+        code.includes(":") &&
+        !code.includes("const ") &&
+        !code.includes("function "));
     if (isPython) {
-      const forbidden = ['const ', 'let ', 'function ', 'require(', '==='];
-      const found = forbidden.filter(k => code.includes(k));
+      const forbidden = ["const ", "let ", "function ", "require(", "==="];
+      const found = forbidden.filter((k) => code.includes(k));
       if (found.length > 0) {
-        feedback.push(`[QA] [CRITICAL] Python code contains out-of-bounds JS syntax keywords: ${found.map(f => f.trim()).join(', ')}`);
+        feedback.push(
+          `[QA] [CRITICAL] Python code contains out-of-bounds JS syntax keywords: ${found.map((f) => f.trim()).join(", ")}`,
+        );
         score = 0; // Force reject
       }
     }
@@ -85,7 +99,7 @@ export class SeniorQATesterAgent extends SeniorAgent {
 // 3. Senior UI/UX Specialist
 export class SeniorUIAgent extends SeniorAgent {
   constructor() {
-    super('Senior UI/UX Specialist', 'Stylesheet Specificity & Overflows', 0.20);
+    super("Senior UI/UX Specialist", "Stylesheet Specificity & Overflows", 0.2);
   }
 
   async verify(code: string): Promise<VerificationResult> {
@@ -93,11 +107,15 @@ export class SeniorUIAgent extends SeniorAgent {
     let score = 100;
 
     if ((code.match(/!important/g) || []).length > 5) {
-      feedback.push('[UI/UX] Specificity inflating warning: Excessive !important markers found.');
+      feedback.push(
+        "[UI/UX] Specificity inflating warning: Excessive !important markers found.",
+      );
       score -= 20;
     }
-    if (code.includes('overflow: hidden') && !code.includes('scroll')) {
-      feedback.push('[UI/UX] Layout concern: overflow: hidden added without scroll container validation.');
+    if (code.includes("overflow: hidden") && !code.includes("scroll")) {
+      feedback.push(
+        "[UI/UX] Layout concern: overflow: hidden added without scroll container validation.",
+      );
       score -= 10;
     }
 
@@ -108,15 +126,24 @@ export class SeniorUIAgent extends SeniorAgent {
 // 4. Senior Architect Specialist
 export class SeniorArchitectAgent extends SeniorAgent {
   constructor() {
-    super('Senior Architect Specialist', 'Dependencies & Circular Imports', 0.20);
+    super(
+      "Senior Architect Specialist",
+      "Dependencies & Circular Imports",
+      0.2,
+    );
   }
 
-  async verify(code: string, context?: { circularCycles: number }): Promise<VerificationResult> {
+  async verify(
+    code: string,
+    context?: { circularCycles: number },
+  ): Promise<VerificationResult> {
     const feedback: string[] = [];
     let score = 100;
 
     if (context && context.circularCycles > 0) {
-      feedback.push(`[ARCHITECTURE] Circular dependency loops identified inside module path context.`);
+      feedback.push(
+        `[ARCHITECTURE] Circular dependency loops identified inside module path context.`,
+      );
       score -= 30;
     }
 
@@ -130,28 +157,41 @@ export class ConsensusEngine {
     new SeniorSecurityAgent(),
     new SeniorQATesterAgent(),
     new SeniorUIAgent(),
-    new SeniorArchitectAgent()
+    new SeniorArchitectAgent(),
   ];
 
-  public async evaluateCodePatch(code: string, context?: any): Promise<{
+  public async evaluateCodePatch(
+    code: string,
+    context?: any,
+  ): Promise<{
     passed: boolean;
     compositeScore: number;
     agentBreakdown: Record<string, number>;
     compiledFeedback: string[];
   }> {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('volt_consensus_weights');
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("volt_consensus_weights");
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
           for (const agent of this.agents) {
-            if (agent instanceof SeniorSecurityAgent && parsed.security !== undefined) agent.weight = parsed.security;
-            if (agent instanceof SeniorQATesterAgent && parsed.qa !== undefined) agent.weight = parsed.qa;
-            if (agent instanceof SeniorUIAgent && parsed.ui !== undefined) agent.weight = parsed.ui;
-            if (agent instanceof SeniorArchitectAgent && parsed.arch !== undefined) agent.weight = parsed.arch;
+            if (
+              agent instanceof SeniorSecurityAgent &&
+              parsed.security !== undefined
+            )
+              agent.weight = parsed.security;
+            if (agent instanceof SeniorQATesterAgent && parsed.qa !== undefined)
+              agent.weight = parsed.qa;
+            if (agent instanceof SeniorUIAgent && parsed.ui !== undefined)
+              agent.weight = parsed.ui;
+            if (
+              agent instanceof SeniorArchitectAgent &&
+              parsed.arch !== undefined
+            )
+              agent.weight = parsed.arch;
           }
         } catch (e) {
-          console.error('Failed to parse consensus weights:', e);
+          console.error("Failed to parse consensus weights:", e);
         }
       }
     }
@@ -165,7 +205,7 @@ export class ConsensusEngine {
       const weightedContribution = res.score * agent.weight;
       compositeScore += weightedContribution;
       agentBreakdown[agent.name] = res.score;
-      
+
       if (res.feedback.length > 0) {
         compiledFeedback.push(...res.feedback);
       }
@@ -176,7 +216,7 @@ export class ConsensusEngine {
       passed,
       compositeScore: Math.round(compositeScore),
       agentBreakdown,
-      compiledFeedback
+      compiledFeedback,
     };
   }
 }
@@ -185,25 +225,36 @@ export class ConsensusEngine {
 export class JuniorWorker {
   constructor(
     public id: string,
-    public specialty: 'CodeGenerator' | 'TestWriter' | 'LinterFixer'
+    public specialty: "CodeGenerator" | "TestWriter" | "LinterFixer",
   ) {}
 
-  public async execute(taskDescription: string, code: string, keys: Record<string, string>): Promise<string> {
-    const response = await fetch('/api/openrouter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+  public async execute(
+    taskDescription: string,
+    code: string,
+    keys: Record<string, string>,
+  ): Promise<string> {
+    const response = await fetch("/api/openrouter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         code,
-        language: 'auto',
-        model: 'llama-3.3-70b-versatile',
-        skill: this.specialty === 'CodeGenerator' ? 'Patch Generator' : 'Syntax Repair',
-        plugin: this.specialty === 'TestWriter' ? 'Test Runner' : 'Repo Scanner',
+        language: "auto",
+        model: "llama-3.3-70b-versatile",
+        skill:
+          this.specialty === "CodeGenerator"
+            ? "Patch Generator"
+            : "Syntax Repair",
+        plugin:
+          this.specialty === "TestWriter" ? "Test Runner" : "Repo Scanner",
         customPrompt: `Task: ${taskDescription}. Generate clean modifications.`,
-        keys
-      })
+        keys,
+      }),
     });
 
-    if (!response.ok) throw new Error(`Junior Worker failed execution: HTTP ${response.status}`);
+    if (!response.ok)
+      throw new Error(
+        `Junior Worker failed execution: HTTP ${response.status}`,
+      );
     const data = await response.json();
     return data.fixedCode || code;
   }
@@ -220,23 +271,43 @@ export class TriageAgent {
     requiresTests: boolean;
     subtasks: string[];
   } {
-    const desc = (taskDescription || '').toLowerCase();
-    const subtasks: string[] = ['Generate primary code patch'];
+    const desc = (taskDescription || "").toLowerCase();
+    const subtasks: string[] = ["Generate primary code patch"];
     let requiresLinter = false;
     let requiresSecurityScan = false;
     let requiresTests = false;
 
-    if (desc.includes('syntax') || desc.includes('linter') || desc.includes('fix') || desc.includes('error')) {
+    if (
+      desc.includes("syntax") ||
+      desc.includes("linter") ||
+      desc.includes("fix") ||
+      desc.includes("error")
+    ) {
       requiresLinter = true;
-      subtasks.push('Audit AST structure and verify JS/Python environment isolation');
+      subtasks.push(
+        "Audit AST structure and verify JS/Python environment isolation",
+      );
     }
-    if (desc.includes('security') || desc.includes('leak') || desc.includes('key') || desc.includes('credentials') || desc.includes('safe')) {
+    if (
+      desc.includes("security") ||
+      desc.includes("leak") ||
+      desc.includes("key") ||
+      desc.includes("credentials") ||
+      desc.includes("safe")
+    ) {
       requiresSecurityScan = true;
-      subtasks.push('Scan for secret keys, eval statement vectors, and XSS leaks');
+      subtasks.push(
+        "Scan for secret keys, eval statement vectors, and XSS leaks",
+      );
     }
-    if (desc.includes('test') || desc.includes('verify') || desc.includes('assert') || desc.includes('check')) {
+    if (
+      desc.includes("test") ||
+      desc.includes("verify") ||
+      desc.includes("assert") ||
+      desc.includes("check")
+    ) {
       requiresTests = true;
-      subtasks.push('Synthesize unit assertions and verification files');
+      subtasks.push("Synthesize unit assertions and verification files");
     }
 
     return { requiresLinter, requiresSecurityScan, requiresTests, subtasks };
@@ -263,13 +334,23 @@ export class MultiAgentOrchestrator {
     originalCode: string,
     username: string,
     keys: Record<string, string>,
-    context?: any
+    context?: any,
   ): Promise<OrchestratorResult> {
     // 1. Triage Phase
     const triageReport = this.triageAgent.triage(taskDescription);
-    const history: Array<{ attempt: number; score: number; feedback: string[] }> = [];
-    
-    await this.logWorkflowTask(username, `triage_${Date.now()}`, 'COMPLETED', `Triaged: subtasks = [${triageReport.subtasks.join(', ')}]`, context?.filePath || 'unknown');
+    const history: Array<{
+      attempt: number;
+      score: number;
+      feedback: string[];
+    }> = [];
+
+    await this.logWorkflowTask(
+      username,
+      `triage_${Date.now()}`,
+      "COMPLETED",
+      `Triaged: subtasks = [${triageReport.subtasks.join(", ")}]`,
+      context?.filePath || "unknown",
+    );
 
     let currentCode = originalCode;
     let attempts = 0;
@@ -280,20 +361,37 @@ export class MultiAgentOrchestrator {
     while (attempts < maxAttempts) {
       attempts++;
       const currentAttemptId = `attempt_${attempts}_${Date.now()}`;
-      await this.logWorkflowTask(username, currentAttemptId, 'RUNNING', `Starting patch generation attempt ${attempts}`, context?.filePath || 'unknown');
+      await this.logWorkflowTask(
+        username,
+        currentAttemptId,
+        "RUNNING",
+        `Starting patch generation attempt ${attempts}`,
+        context?.filePath || "unknown",
+      );
 
       // Spawn Junior Workers in Parallel
       const workers: Promise<string>[] = [];
-      const generator = new JuniorWorker(`generator_${attempts}`, 'CodeGenerator');
-      workers.push(generator.execute(
-        `Attempt ${attempts}. Generate code to solve: ${taskDescription}. Previous feedback if any: ${history.map(h => h.feedback.join(' ')).join('. ')}`,
-        currentCode,
-        keys
-      ));
+      const generator = new JuniorWorker(
+        `generator_${attempts}`,
+        "CodeGenerator",
+      );
+      workers.push(
+        generator.execute(
+          `Attempt ${attempts}. Generate code to solve: ${taskDescription}. Previous feedback if any: ${history.map((h) => h.feedback.join(" ")).join(". ")}`,
+          currentCode,
+          keys,
+        ),
+      );
 
       if (triageReport.requiresLinter) {
-        const linter = new JuniorWorker(`linter_${attempts}`, 'LinterFixer');
-        workers.push(linter.execute(`Ensure no syntax issues in: ${taskDescription}`, currentCode, keys));
+        const linter = new JuniorWorker(`linter_${attempts}`, "LinterFixer");
+        workers.push(
+          linter.execute(
+            `Ensure no syntax issues in: ${taskDescription}`,
+            currentCode,
+            keys,
+          ),
+        );
       }
 
       // Execute all workers concurrently (dynamic parallel threads)
@@ -301,22 +399,37 @@ export class MultiAgentOrchestrator {
       const patchedCode = results[0];
 
       // Run Consensus Matrix checks
-      const evalResult = await this.consensusEngine.evaluateCodePatch(patchedCode, context);
-      
+      const evalResult = await this.consensusEngine.evaluateCodePatch(
+        patchedCode,
+        context,
+      );
+
       history.push({
         attempt: attempts,
         score: evalResult.compositeScore,
-        feedback: evalResult.compiledFeedback
+        feedback: evalResult.compiledFeedback,
       });
 
       if (evalResult.passed) {
         currentCode = patchedCode;
         success = true;
-        await this.logWorkflowTask(username, currentAttemptId, 'COMPLETED', `Consensus passed with score ${evalResult.compositeScore}/100`, context?.filePath || 'unknown');
+        await this.logWorkflowTask(
+          username,
+          currentAttemptId,
+          "COMPLETED",
+          `Consensus passed with score ${evalResult.compositeScore}/100`,
+          context?.filePath || "unknown",
+        );
         break;
       } else {
         currentCode = patchedCode;
-        await this.logWorkflowTask(username, currentAttemptId, 'FAILED', `Consensus rejected with score ${evalResult.compositeScore}/100. Feedback: ${evalResult.compiledFeedback.join('; ')}`, context?.filePath || 'unknown');
+        await this.logWorkflowTask(
+          username,
+          currentAttemptId,
+          "FAILED",
+          `Consensus rejected with score ${evalResult.compositeScore}/100. Feedback: ${evalResult.compiledFeedback.join("; ")}`,
+          context?.filePath || "unknown",
+        );
       }
     }
 
@@ -324,25 +437,34 @@ export class MultiAgentOrchestrator {
       success,
       finalCode: currentCode,
       history,
-      subtasks: triageReport.subtasks
+      subtasks: triageReport.subtasks,
     };
   }
 
-  private async logWorkflowTask(username: string, taskId: string, status: string, logs: string, targetFile: string) {
+  private async logWorkflowTask(
+    username: string,
+    taskId: string,
+    status: string,
+    logs: string,
+    targetFile: string,
+  ) {
     try {
-      await fetch(`/api/database?action=saveWorkflowTask&username=${encodeURIComponent(username)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          taskId,
-          agentSpecialty: 'Orchestrator',
-          status,
-          logs,
-          targetFile
-        })
-      });
+      await fetch(
+        `/api/database?action=saveWorkflowTask&username=${encodeURIComponent(username)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            taskId,
+            agentSpecialty: "Orchestrator",
+            status,
+            logs,
+            targetFile,
+          }),
+        },
+      );
     } catch (e) {
-      console.error('Failed to log workflow task to DB:', e);
+      console.error("Failed to log workflow task to DB:", e);
     }
   }
 }

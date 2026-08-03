@@ -4,11 +4,11 @@
 export interface Agent {
   id: string;
   name: string;
-  role: 'Security' | 'QA' | 'UI/UX' | 'Performance' | 'Architecture' | 'DevOps';
+  role: "Security" | "QA" | "UI/UX" | "Performance" | "Architecture" | "DevOps";
   avatar?: string;
   color: string;
   expertise: string[];
-  status: 'idle' | 'speaking' | 'listening' | 'executing';
+  status: "idle" | "speaking" | "listening" | "executing";
 }
 
 export interface Message {
@@ -16,9 +16,9 @@ export interface Message {
   senderId: string;
   senderName: string;
   content: string;
-  language: 'en' | 'hi';
+  language: "en" | "hi";
   timestamp: Date;
-  type: 'text' | 'audio' | 'system' | 'decision';
+  type: "text" | "audio" | "system" | "decision";
   audioUrl?: string;
   audioTranscript?: string;
 }
@@ -26,10 +26,16 @@ export interface Message {
 export interface MeetingTask {
   id: string;
   title: string;
-  type: 'update' | 'upgrade' | 'fix' | 'review';
-  severity: 'critical' | 'high' | 'medium' | 'low';
+  type: "update" | "upgrade" | "fix" | "review";
+  severity: "critical" | "high" | "medium" | "low";
   description: string;
-  status: 'planned' | 'in-progress' | 'completed' | 'failed' | 'pushing' | 'pr-created';
+  status:
+    | "planned"
+    | "in-progress"
+    | "completed"
+    | "failed"
+    | "pushing"
+    | "pr-created";
   assignedAgents: string[];
   bossApproved: boolean;
   bossApprovalTime?: Date;
@@ -37,7 +43,7 @@ export interface MeetingTask {
     agentId: string;
     agentName: string;
     solution: string;
-    complexity: 'simple' | 'medium' | 'complex';
+    complexity: "simple" | "medium" | "complex";
   }[];
   executionChanges?: string;
   gitBranch?: string;
@@ -65,8 +71,8 @@ export interface PullRequest {
   branch: string;
   createdBy: string;
   createdAt: Date;
-  status: 'open' | 'merged' | 'squashed' | 'ignored';
-  userDecision?: 'merge' | 'squash' | 'ignore';
+  status: "open" | "merged" | "squashed" | "ignored";
+  userDecision?: "merge" | "squash" | "ignore";
   userDecisionTime?: Date;
   meetingId: string;
   taskId: string;
@@ -77,11 +83,11 @@ export interface BossGuidance {
   id: string;
   prId: string;
   reason: string;
-  concern: 'rejected-critical-fix' | 'approved-risky-change' | 'other';
+  concern: "rejected-critical-fix" | "approved-risky-change" | "other";
   recommendation: string;
   agentFeedback: string[];
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  userResponse?: 'accepted' | 'confirmed' | 'pending';
+  riskLevel: "low" | "medium" | "high" | "critical";
+  userResponse?: "accepted" | "confirmed" | "pending";
   timestamp: Date;
 }
 
@@ -104,7 +110,7 @@ export class AgentCommunicationService {
       agents,
       tasks: [],
       messages: [],
-      agentVotes: new Map()
+      agentVotes: new Map(),
     };
 
     this.meetings.set(meeting.id, meeting);
@@ -117,10 +123,10 @@ export class AgentCommunicationService {
     senderId: string,
     senderName: string,
     content: string,
-    language: 'en' | 'hi' = 'en',
-    type: 'text' | 'audio' | 'system' | 'decision' = 'text',
+    language: "en" | "hi" = "en",
+    type: "text" | "audio" | "system" | "decision" = "text",
     audioUrl?: string,
-    audioTranscript?: string
+    audioTranscript?: string,
   ): Message {
     const meeting = this.meetings.get(meetingId);
     if (!meeting) throw new Error(`Meeting ${meetingId} not found`);
@@ -134,11 +140,11 @@ export class AgentCommunicationService {
       timestamp: new Date(),
       type,
       audioUrl,
-      audioTranscript
+      audioTranscript,
     };
 
     meeting.messages.push(message);
-    this.messageListeners.forEach(listener => listener(message));
+    this.messageListeners.forEach((listener) => listener(message));
 
     return message;
   }
@@ -147,10 +153,10 @@ export class AgentCommunicationService {
   addTask(
     meetingId: string,
     title: string,
-    type: MeetingTask['type'],
-    severity: MeetingTask['severity'],
+    type: MeetingTask["type"],
+    severity: MeetingTask["severity"],
     description: string,
-    assignedAgents: string[]
+    assignedAgents: string[],
   ): MeetingTask {
     const meeting = this.meetings.get(meetingId);
     if (!meeting) throw new Error(`Meeting ${meetingId} not found`);
@@ -161,14 +167,14 @@ export class AgentCommunicationService {
       type,
       severity,
       description,
-      status: 'planned',
+      status: "planned",
       assignedAgents,
       bossApproved: false,
       suggestedSolutions: [],
     };
 
     meeting.tasks.push(task);
-    this.taskListeners.forEach(listener => listener(task));
+    this.taskListeners.forEach((listener) => listener(task));
 
     return task;
   }
@@ -178,13 +184,13 @@ export class AgentCommunicationService {
     const meeting = this.meetings.get(meetingId);
     if (!meeting) throw new Error(`Meeting ${meetingId} not found`);
 
-    const task = meeting.tasks.find(t => t.id === taskId);
+    const task = meeting.tasks.find((t) => t.id === taskId);
     if (!task) throw new Error(`Task ${taskId} not found`);
 
     task.bossApproved = true;
     task.bossApprovalTime = new Date();
 
-    this.taskListeners.forEach(listener => listener(task));
+    this.taskListeners.forEach((listener) => listener(task));
 
     return task;
   }
@@ -193,15 +199,15 @@ export class AgentCommunicationService {
   updateTaskStatus(
     meetingId: string,
     taskId: string,
-    status: MeetingTask['status'],
+    status: MeetingTask["status"],
     executionChanges?: string,
     gitBranch?: string,
-    prId?: string
+    prId?: string,
   ): MeetingTask {
     const meeting = this.meetings.get(meetingId);
     if (!meeting) throw new Error(`Meeting ${meetingId} not found`);
 
-    const task = meeting.tasks.find(t => t.id === taskId);
+    const task = meeting.tasks.find((t) => t.id === taskId);
     if (!task) throw new Error(`Task ${taskId} not found`);
 
     task.status = status;
@@ -209,7 +215,7 @@ export class AgentCommunicationService {
     if (gitBranch) task.gitBranch = gitBranch;
     if (prId) task.prId = prId;
 
-    this.taskListeners.forEach(listener => listener(task));
+    this.taskListeners.forEach((listener) => listener(task));
 
     return task;
   }
@@ -221,22 +227,22 @@ export class AgentCommunicationService {
     agentId: string,
     agentName: string,
     solution: string,
-    complexity: 'simple' | 'medium' | 'complex'
+    complexity: "simple" | "medium" | "complex",
   ): MeetingTask {
     const meeting = this.meetings.get(meetingId);
     if (!meeting) throw new Error(`Meeting ${meetingId} not found`);
 
-    const task = meeting.tasks.find(t => t.id === taskId);
+    const task = meeting.tasks.find((t) => t.id === taskId);
     if (!task) throw new Error(`Task ${taskId} not found`);
 
     task.suggestedSolutions.push({
       agentId,
       agentName,
       solution,
-      complexity
+      complexity,
     });
 
-    this.taskListeners.forEach(listener => listener(task));
+    this.taskListeners.forEach((listener) => listener(task));
 
     return task;
   }
@@ -263,7 +269,9 @@ export class AgentCommunicationService {
   onMessageAdded(listener: (msg: Message) => void): () => void {
     this.messageListeners.push(listener);
     return () => {
-      this.messageListeners = this.messageListeners.filter(l => l !== listener);
+      this.messageListeners = this.messageListeners.filter(
+        (l) => l !== listener,
+      );
     };
   }
 
@@ -271,7 +279,7 @@ export class AgentCommunicationService {
   onTaskUpdated(listener: (task: MeetingTask) => void): () => void {
     this.taskListeners.push(listener);
     return () => {
-      this.taskListeners = this.taskListeners.filter(l => l !== listener);
+      this.taskListeners = this.taskListeners.filter((l) => l !== listener);
     };
   }
 
@@ -293,93 +301,97 @@ export class AgentCommunicationService {
 // Translation utilities for EN/HI
 export const translations = {
   en: {
-    'meeting_started': 'Meeting started',
-    'boss_joined': 'Boss has joined the meeting',
-    'agent_joined': 'Agent joined the meeting',
-    'task_created': 'New task created',
-    'task_approved': 'Task approved by Boss',
-    'task_executing': 'Executing task',
-    'task_completed': 'Task completed successfully',
-    'pr_created': 'Pull request created',
-    'pushing_code': 'Pushing code to repository',
-    'solution_proposed': 'New solution proposed',
-    'guidance_needed': 'Boss guidance needed'
+    meeting_started: "Meeting started",
+    boss_joined: "Boss has joined the meeting",
+    agent_joined: "Agent joined the meeting",
+    task_created: "New task created",
+    task_approved: "Task approved by Boss",
+    task_executing: "Executing task",
+    task_completed: "Task completed successfully",
+    pr_created: "Pull request created",
+    pushing_code: "Pushing code to repository",
+    solution_proposed: "New solution proposed",
+    guidance_needed: "Boss guidance needed",
   },
   hi: {
-    'meeting_started': 'बैठक शुरू हुई',
-    'boss_joined': 'बॉस बैठक में शामिल हो गए',
-    'agent_joined': 'एजेंट बैठक में शामिल हो गया',
-    'task_created': 'नया कार्य बनाया गया',
-    'task_approved': 'बॉस द्वारा कार्य को मंजूरी दी गई',
-    'task_executing': 'कार्य निष्पादित जा रहा है',
-    'task_completed': 'कार्य सफलतापूर्वक पूरा हुआ',
-    'pr_created': 'पुल अनुरोध बनाया गया',
-    'pushing_code': 'रिपॉजिटरी में कोड धकेल रहे हैं',
-    'solution_proposed': 'नया समाधान प्रस्तावित किया गया',
-    'guidance_needed': 'बॉस से मार्गदर्शन की आवश्यकता है'
-  }
+    meeting_started: "बैठक शुरू हुई",
+    boss_joined: "बॉस बैठक में शामिल हो गए",
+    agent_joined: "एजेंट बैठक में शामिल हो गया",
+    task_created: "नया कार्य बनाया गया",
+    task_approved: "बॉस द्वारा कार्य को मंजूरी दी गई",
+    task_executing: "कार्य निष्पादित जा रहा है",
+    task_completed: "कार्य सफलतापूर्वक पूरा हुआ",
+    pr_created: "पुल अनुरोध बनाया गया",
+    pushing_code: "रिपॉजिटरी में कोड धकेल रहे हैं",
+    solution_proposed: "नया समाधान प्रस्तावित किया गया",
+    guidance_needed: "बॉस से मार्गदर्शन की आवश्यकता है",
+  },
 };
 
-export function translate(key: string, language: 'en' | 'hi' = 'en'): string {
-  return translations[language][key as keyof typeof translations[typeof language]] || key;
+export function translate(key: string, language: "en" | "hi" = "en"): string {
+  return (
+    translations[language][
+      key as keyof (typeof translations)[typeof language]
+    ] || key
+  );
 }
 
 export const defaultAgents: Agent[] = [
   {
-    id: 'agent-security',
-    name: 'Security Specialist',
-    role: 'Security',
-    color: '#EF4444',
-    expertise: ['Vulnerabilities', 'API Keys', 'Auth Security'],
-    status: 'idle'
+    id: "agent-security",
+    name: "Security Specialist",
+    role: "Security",
+    color: "#EF4444",
+    expertise: ["Vulnerabilities", "API Keys", "Auth Security"],
+    status: "idle",
   },
   {
-    id: 'agent-qa',
-    name: 'QA Tester',
-    role: 'QA',
-    color: '#3B82F6',
-    expertise: ['Type Safety', 'Testing', 'Assertions'],
-    status: 'idle'
+    id: "agent-qa",
+    name: "QA Tester",
+    role: "QA",
+    color: "#3B82F6",
+    expertise: ["Type Safety", "Testing", "Assertions"],
+    status: "idle",
   },
   {
-    id: 'agent-ui',
-    name: 'UI/UX Specialist',
-    role: 'UI/UX',
-    color: '#8B5CF6',
-    expertise: ['Styling', 'Responsiveness', 'Accessibility'],
-    status: 'idle'
+    id: "agent-ui",
+    name: "UI/UX Specialist",
+    role: "UI/UX",
+    color: "#8B5CF6",
+    expertise: ["Styling", "Responsiveness", "Accessibility"],
+    status: "idle",
   },
   {
-    id: 'agent-perf',
-    name: 'Performance Expert',
-    role: 'Performance',
-    color: '#F59E0B',
-    expertise: ['Optimization', 'Caching', 'Bundle Size'],
-    status: 'idle'
+    id: "agent-perf",
+    name: "Performance Expert",
+    role: "Performance",
+    color: "#F59E0B",
+    expertise: ["Optimization", "Caching", "Bundle Size"],
+    status: "idle",
   },
   {
-    id: 'agent-arch',
-    name: 'Architecture Advisor',
-    role: 'Architecture',
-    color: '#10B981',
-    expertise: ['Design Patterns', 'Scalability', 'Integration'],
-    status: 'idle'
+    id: "agent-arch",
+    name: "Architecture Advisor",
+    role: "Architecture",
+    color: "#10B981",
+    expertise: ["Design Patterns", "Scalability", "Integration"],
+    status: "idle",
   },
   {
-    id: 'agent-devops',
-    name: 'DevOps Engineer',
-    role: 'DevOps',
-    color: '#06B6D4',
-    expertise: ['Deployment', 'CI/CD', 'Infrastructure'],
-    status: 'idle'
-  }
+    id: "agent-devops",
+    name: "DevOps Engineer",
+    role: "DevOps",
+    color: "#06B6D4",
+    expertise: ["Deployment", "CI/CD", "Infrastructure"],
+    status: "idle",
+  },
 ];
 
 export const bossAgent: Agent = {
-  id: 'boss',
-  name: 'Boss',
-  role: 'Architecture',
-  color: '#FBBF24',
-  expertise: ['Orchestration', 'Decision Making', 'Governance'],
-  status: 'idle'
+  id: "boss",
+  name: "Boss",
+  role: "Architecture",
+  color: "#FBBF24",
+  expertise: ["Orchestration", "Decision Making", "Governance"],
+  status: "idle",
 };
