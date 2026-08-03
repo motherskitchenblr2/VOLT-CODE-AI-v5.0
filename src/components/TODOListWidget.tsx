@@ -1,13 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, CheckCircle2, Circle, AlertCircle, Calendar, User, Flag } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  AlertCircle,
+  Calendar,
+  User,
+  Flag,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TodoItem {
   id: string;
   title: string;
   description?: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'blocked';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  status: "pending" | "in-progress" | "completed" | "blocked";
+  priority: "low" | "medium" | "high" | "critical";
   assignedTo?: string;
   dueDate?: Date;
   linkedMeeting?: string;
@@ -28,22 +37,26 @@ export function TODOListWidget({
   onAddTodo,
   onUpdateTodo,
   onDeleteTodo,
-  agents = []
+  agents = [],
 }: TODOListWidgetProps) {
-  const [newTitle, setNewTitle] = useState('');
-  const [newPriority, setNewPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'in-progress' | 'completed' | 'blocked'>('all');
+  const [newTitle, setNewTitle] = useState("");
+  const [newPriority, setNewPriority] = useState<
+    "low" | "medium" | "high" | "critical"
+  >("medium");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "in-progress" | "completed" | "blocked"
+  >("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const filteredTodos = todos.filter(todo =>
-    filterStatus === 'all' || todo.status === filterStatus
+  const filteredTodos = todos.filter(
+    (todo) => filterStatus === "all" || todo.status === filterStatus,
   );
 
   const stats = {
     total: todos.length,
-    completed: todos.filter(t => t.status === 'completed').length,
-    inProgress: todos.filter(t => t.status === 'in-progress').length,
-    blocked: todos.filter(t => t.status === 'blocked').length
+    completed: todos.filter((t) => t.status === "completed").length,
+    inProgress: todos.filter((t) => t.status === "in-progress").length,
+    blocked: todos.filter((t) => t.status === "blocked").length,
   };
 
   const handleAddTodo = () => {
@@ -52,32 +65,41 @@ export function TODOListWidget({
     const newTodo: TodoItem = {
       id: `todo-${Date.now()}`,
       title: newTitle,
-      status: 'pending',
+      status: "pending",
       priority: newPriority,
-      subtasks: []
+      subtasks: [],
     };
 
     onAddTodo(newTodo);
-    setNewTitle('');
-    setNewPriority('medium');
+    setNewTitle("");
+    setNewPriority("medium");
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'high': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'low': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      default: return '';
+      case "critical":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "high":
+        return "bg-orange-500/20 text-orange-400 border-orange-500/30";
+      case "medium":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      case "low":
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+      default:
+        return "";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle2 className="w-5 h-5 text-green-400" />;
-      case 'in-progress': return <AlertCircle className="w-5 h-5 text-yellow-400" />;
-      case 'blocked': return <AlertCircle className="w-5 h-5 text-red-400" />;
-      default: return <Circle className="w-5 h-5 text-white/40" />;
+      case "completed":
+        return <CheckCircle2 className="w-5 h-5 text-green-400" />;
+      case "in-progress":
+        return <AlertCircle className="w-5 h-5 text-yellow-400" />;
+      case "blocked":
+        return <AlertCircle className="w-5 h-5 text-red-400" />;
+      default:
+        return <Circle className="w-5 h-5 text-white/40" />;
     }
   };
 
@@ -98,8 +120,10 @@ export function TODOListWidget({
         {/* Progress Bar */}
         <div className="h-1.5 bg-black/60 rounded-full overflow-hidden">
           <motion.div
-            animate={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }}
-            transition={{ type: 'spring', stiffness: 100 }}
+            animate={{
+              width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%`,
+            }}
+            transition={{ type: "spring", stiffness: 100 }}
             className="h-full bg-gradient-to-r from-green-500 to-[#FF5F00]"
           />
         </div>
@@ -107,14 +131,25 @@ export function TODOListWidget({
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: 'Total', value: stats.total, color: 'text-white' },
-            { label: 'Active', value: stats.inProgress, color: 'text-yellow-400' },
-            { label: 'Done', value: stats.completed, color: 'text-green-400' },
-            { label: 'Blocked', value: stats.blocked, color: 'text-red-400' }
+            { label: "Total", value: stats.total, color: "text-white" },
+            {
+              label: "Active",
+              value: stats.inProgress,
+              color: "text-yellow-400",
+            },
+            { label: "Done", value: stats.completed, color: "text-green-400" },
+            { label: "Blocked", value: stats.blocked, color: "text-red-400" },
           ].map((stat) => (
-            <div key={stat.label} className="p-2 bg-black/40 border border-white/10 rounded-lg text-center">
-              <div className={`text-lg font-bold ${stat.color}`}>{stat.value}</div>
-              <div className="text-[10px] text-white/40 uppercase font-bold">{stat.label}</div>
+            <div
+              key={stat.label}
+              className="p-2 bg-black/40 border border-white/10 rounded-lg text-center"
+            >
+              <div className={`text-lg font-bold ${stat.color}`}>
+                {stat.value}
+              </div>
+              <div className="text-[10px] text-white/40 uppercase font-bold">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
@@ -127,7 +162,7 @@ export function TODOListWidget({
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAddTodo()}
+            onKeyPress={(e) => e.key === "Enter" && handleAddTodo()}
             placeholder="Add a new task..."
             className="flex-1 bg-black border border-white/10 px-3 py-2 rounded-lg text-sm text-white focus:border-[#FF5F00]/40 outline-none"
           />
@@ -153,17 +188,19 @@ export function TODOListWidget({
 
       {/* Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
-        {(['all', 'pending', 'in-progress', 'completed', 'blocked'] as const).map((status) => (
+        {(
+          ["all", "pending", "in-progress", "completed", "blocked"] as const
+        ).map((status) => (
           <button
             key={status}
             onClick={() => setFilterStatus(status)}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
               filterStatus === status
-                ? 'bg-[#FF5F00] text-black'
-                : 'bg-white/5 text-white/60 hover:bg-white/10'
+                ? "bg-[#FF5F00] text-black"
+                : "bg-white/5 text-white/60 hover:bg-white/10"
             }`}
           >
-            {status.replace('-', ' ').toUpperCase()}
+            {status.replace("-", " ").toUpperCase()}
           </button>
         ))}
       </div>
@@ -184,7 +221,9 @@ export function TODOListWidget({
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ delay: idx * 0.05 }}
                 className="border border-white/10 rounded-lg p-3 bg-black/40 hover:bg-black/60 transition-all cursor-pointer group"
-                onClick={() => setExpandedId(expandedId === todo.id ? null : todo.id)}
+                onClick={() =>
+                  setExpandedId(expandedId === todo.id ? null : todo.id)
+                }
               >
                 {/* Todo Item Header */}
                 <div className="flex items-center gap-3">
@@ -192,11 +231,11 @@ export function TODOListWidget({
                     onClick={(e) => {
                       e.stopPropagation();
                       const newStatus =
-                        todo.status === 'completed'
-                          ? 'pending'
-                          : todo.status === 'pending'
-                          ? 'in-progress'
-                          : 'completed';
+                        todo.status === "completed"
+                          ? "pending"
+                          : todo.status === "pending"
+                            ? "in-progress"
+                            : "completed";
                       onUpdateTodo(todo.id, { status: newStatus });
                     }}
                     className="flex-shrink-0"
@@ -205,20 +244,26 @@ export function TODOListWidget({
                   </button>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className={`font-semibold text-sm ${
-                      todo.status === 'completed'
-                        ? 'text-white/40 line-through'
-                        : 'text-white'
-                    }`}>
+                    <h3
+                      className={`font-semibold text-sm ${
+                        todo.status === "completed"
+                          ? "text-white/40 line-through"
+                          : "text-white"
+                      }`}
+                    >
                       {todo.title}
                     </h3>
                     {todo.description && (
-                      <p className="text-xs text-white/40 mt-1 line-clamp-1">{todo.description}</p>
+                      <p className="text-xs text-white/40 mt-1 line-clamp-1">
+                        {todo.description}
+                      </p>
                     )}
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getPriorityColor(todo.priority)}`}>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getPriorityColor(todo.priority)}`}
+                    >
                       {todo.priority.charAt(0).toUpperCase()}
                     </span>
                     <button
@@ -238,7 +283,7 @@ export function TODOListWidget({
                   {expandedId === todo.id && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
+                      animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       className="mt-3 pt-3 border-t border-white/10 space-y-2"
                     >
