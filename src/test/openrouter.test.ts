@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import handler from '../../api/openrouter';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import handler from "../../api/openrouter";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -21,7 +21,7 @@ function makeRes() {
   return res;
 }
 
-function makeReq(body: Record<string, unknown> = {}, method = 'POST') {
+function makeReq(body: Record<string, unknown> = {}, method = "POST") {
   return { method, body };
 }
 
@@ -40,24 +40,24 @@ function mockFetchResponse(
 
 const VALID_PARSED_BODY = JSON.stringify({
   issues: [],
-  fixedCode: 'const x = 1;',
-  summary: 'No issues found',
+  fixedCode: "const x = 1;",
+  summary: "No issues found",
 });
 
 /** Minimal valid request body that passes all validation gates. */
 const VALID_BODY = {
-  code: 'const x = 1;',
-  language: 'typescript',
+  code: "const x = 1;",
+  language: "typescript",
 };
 
 // ---------------------------------------------------------------------------
 // Tests focused on the typed response.json() result (PR change: line 118)
 // ---------------------------------------------------------------------------
 
-describe('handler – response.json() typed result (choices / usage access)', () => {
+describe("handler – response.json() typed result (choices / usage access)", () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn());
-    vi.stubEnv('OPENROUTER_API_KEY', 'test-key');
+    vi.stubGlobal("fetch", vi.fn());
+    vi.stubEnv("OPENROUTER_API_KEY", "test-key");
   });
 
   afterEach(() => {
@@ -69,7 +69,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
   // Successful response shapes
   // -------------------------------------------------------------------------
 
-  it('returns 200 with parsed data when choices and full usage are present', async () => {
+  it("returns 200 with parsed data when choices and full usage are present", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -83,12 +83,12 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['tokensUsed']).toBe(30);
-    expect(body['promptTokens']).toBe(10);
-    expect(body['completionTokens']).toBe(20);
+    expect(body["tokensUsed"]).toBe(30);
+    expect(body["promptTokens"]).toBe(10);
+    expect(body["completionTokens"]).toBe(20);
   });
 
-  it('falls back to prompt_tokens + completion_tokens when total_tokens is absent', async () => {
+  it("falls back to prompt_tokens + completion_tokens when total_tokens is absent", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -102,12 +102,12 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['tokensUsed']).toBe(40); // 15 + 25
-    expect(body['promptTokens']).toBe(15);
-    expect(body['completionTokens']).toBe(25);
+    expect(body["tokensUsed"]).toBe(40); // 15 + 25
+    expect(body["promptTokens"]).toBe(15);
+    expect(body["completionTokens"]).toBe(25);
   });
 
-  it('defaults all token counts to 0 when usage is absent from the response', async () => {
+  it("defaults all token counts to 0 when usage is absent from the response", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -121,12 +121,12 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['tokensUsed']).toBe(0);
-    expect(body['promptTokens']).toBe(0);
-    expect(body['completionTokens']).toBe(0);
+    expect(body["tokensUsed"]).toBe(0);
+    expect(body["promptTokens"]).toBe(0);
+    expect(body["completionTokens"]).toBe(0);
   });
 
-  it('defaults all token counts to 0 when usage fields are individually absent', async () => {
+  it("defaults all token counts to 0 when usage fields are individually absent", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -140,12 +140,12 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['tokensUsed']).toBe(0);
-    expect(body['promptTokens']).toBe(0);
-    expect(body['completionTokens']).toBe(0);
+    expect(body["tokensUsed"]).toBe(0);
+    expect(body["promptTokens"]).toBe(0);
+    expect(body["completionTokens"]).toBe(0);
   });
 
-  it('uses total_tokens directly when provided, ignoring the computed sum', async () => {
+  it("uses total_tokens directly when provided, ignoring the computed sum", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -159,7 +159,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['tokensUsed']).toBe(999); // total_tokens takes precedence
+    expect(body["tokensUsed"]).toBe(999); // total_tokens takes precedence
   });
 
   // -------------------------------------------------------------------------
@@ -180,7 +180,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Empty model response');
+    expect(body["error"]).toBe("Empty model response");
   });
 
   it('returns 500 "Empty model response" when choices key is absent', async () => {
@@ -196,7 +196,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Empty model response');
+    expect(body["error"]).toBe("Empty model response");
   });
 
   it('returns 500 "Empty model response" when message.content is undefined', async () => {
@@ -213,7 +213,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Empty model response');
+    expect(body["error"]).toBe("Empty model response");
   });
 
   it('returns 500 "Empty model response" when choices[0].message is undefined', async () => {
@@ -230,19 +230,21 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Empty model response');
+    expect(body["error"]).toBe("Empty model response");
   });
 
   // -------------------------------------------------------------------------
   // Non-OK upstream response — data still typed, passed through to caller
   // -------------------------------------------------------------------------
 
-  it('proxies upstream error status and typed data when response.ok is false', async () => {
+  it("proxies upstream error status and typed data when response.ok is false", async () => {
     const errorPayload = {
       choices: [],
-      error: { message: 'Invalid API key' },
+      error: { message: "Invalid API key" },
     };
-    vi.mocked(fetch).mockResolvedValue(mockFetchResponse(errorPayload, 401, false));
+    vi.mocked(fetch).mockResolvedValue(
+      mockFetchResponse(errorPayload, 401, false),
+    );
 
     const req = makeReq(VALID_BODY);
     const res = makeRes();
@@ -250,13 +252,15 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(401);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('OpenRouter error');
-    expect(body['details']).toEqual(errorPayload);
+    expect(body["error"]).toBe("OpenRouter error");
+    expect(body["details"]).toEqual(errorPayload);
   });
 
-  it('proxies 429 rate-limit upstream error with typed data', async () => {
+  it("proxies 429 rate-limit upstream error with typed data", async () => {
     const errorPayload = { choices: [] };
-    vi.mocked(fetch).mockResolvedValue(mockFetchResponse(errorPayload, 429, false));
+    vi.mocked(fetch).mockResolvedValue(
+      mockFetchResponse(errorPayload, 429, false),
+    );
 
     const req = makeReq(VALID_BODY);
     const res = makeRes();
@@ -264,7 +268,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(429);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('OpenRouter error');
+    expect(body["error"]).toBe("OpenRouter error");
   });
 
   // -------------------------------------------------------------------------
@@ -274,7 +278,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
   it('returns 500 "Model did not return valid JSON" when content is not JSON', async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
-        choices: [{ message: { content: 'this is plain text, not JSON' } }],
+        choices: [{ message: { content: "this is plain text, not JSON" } }],
         usage: {},
       }),
     );
@@ -285,15 +289,15 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Model did not return valid JSON');
-    expect(body['raw']).toBe('this is plain text, not JSON');
+    expect(body["error"]).toBe("Model did not return valid JSON");
+    expect(body["raw"]).toBe("this is plain text, not JSON");
   });
 
-  it('extracts JSON from markdown code block when content is markdown-wrapped', async () => {
+  it("extracts JSON from markdown code block when content is markdown-wrapped", async () => {
     const innerJson = JSON.stringify({
       issues: [],
-      fixedCode: 'let y = 2;',
-      summary: 'All good',
+      fixedCode: "let y = 2;",
+      summary: "All good",
     });
     const markdownContent = `\`\`\`json\n${innerJson}\n\`\`\``;
 
@@ -310,14 +314,14 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['summary']).toBe('All good');
-    expect(body['tokensUsed']).toBe(20);
+    expect(body["summary"]).toBe("All good");
+    expect(body["tokensUsed"]).toBe(20);
   });
 
-  it('returns 500 when markdown block contains invalid JSON', async () => {
+  it("returns 500 when markdown block contains invalid JSON", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
-        choices: [{ message: { content: '```json\n{broken json\n```' } }],
+        choices: [{ message: { content: "```json\n{broken json\n```" } }],
         usage: {},
       }),
     );
@@ -328,7 +332,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Model did not return valid JSON');
+    expect(body["error"]).toBe("Model did not return valid JSON");
   });
 
   // -------------------------------------------------------------------------
@@ -336,7 +340,7 @@ describe('handler – response.json() typed result (choices / usage access)', ()
   // -------------------------------------------------------------------------
 
   it('returns 500 "Server error" when fetch throws a network error', async () => {
-    vi.mocked(fetch).mockRejectedValue(new Error('Network failure'));
+    vi.mocked(fetch).mockRejectedValue(new Error("Network failure"));
 
     const req = makeReq(VALID_BODY);
     const res = makeRes();
@@ -344,15 +348,15 @@ describe('handler – response.json() typed result (choices / usage access)', ()
 
     expect(res._status).toBe(500);
     const body = res._body as Record<string, unknown>;
-    expect(body['error']).toBe('Server error');
-    expect(body['details']).toBe('Network failure');
+    expect(body["error"]).toBe("Server error");
+    expect(body["details"]).toBe("Network failure");
   });
 
   // -------------------------------------------------------------------------
   // Boundary / regression: partial usage combinations
   // -------------------------------------------------------------------------
 
-  it('correctly computes tokensUsed when only completion_tokens is provided', async () => {
+  it("correctly computes tokensUsed when only completion_tokens is provided", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -367,12 +371,12 @@ describe('handler – response.json() typed result (choices / usage access)', ()
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
     // promptTokens defaults to 0, so tokensUsed = 0 + 7
-    expect(body['promptTokens']).toBe(0);
-    expect(body['completionTokens']).toBe(7);
-    expect(body['tokensUsed']).toBe(7);
+    expect(body["promptTokens"]).toBe(0);
+    expect(body["completionTokens"]).toBe(7);
+    expect(body["tokensUsed"]).toBe(7);
   });
 
-  it('attaches modelUsed to the response', async () => {
+  it("attaches modelUsed to the response", async () => {
     vi.mocked(fetch).mockResolvedValue(
       mockFetchResponse({
         choices: [{ message: { content: VALID_PARSED_BODY } }],
@@ -380,12 +384,15 @@ describe('handler – response.json() typed result (choices / usage access)', ()
       }),
     );
 
-    const req = makeReq({ ...VALID_BODY, model: 'mistralai/mistral-7b-instruct:free' });
+    const req = makeReq({
+      ...VALID_BODY,
+      model: "mistralai/mistral-7b-instruct:free",
+    });
     const res = makeRes();
     await handler(req, res);
 
     expect(res._status).toBe(200);
     const body = res._body as Record<string, unknown>;
-    expect(body['modelUsed']).toBe('mistralai/mistral-7b-instruct:free');
+    expect(body["modelUsed"]).toBe("mistralai/mistral-7b-instruct:free");
   });
 });
