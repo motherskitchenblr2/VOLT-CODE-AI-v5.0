@@ -1,10 +1,10 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Lightbulb, Copy, Check } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from "react";
+import { Lightbulb, Copy, Check } from "lucide-react";
 
 interface AgentSuggestion {
   line: number;
   suggestion: string;
-  type: 'optimization' | 'bug' | 'style' | 'performance';
+  type: "optimization" | "bug" | "style" | "performance";
 }
 
 interface ProfessionalEditorCanvasProps {
@@ -18,7 +18,9 @@ interface ProfessionalEditorCanvasProps {
   isAnalyzing?: boolean;
 }
 
-export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> = ({
+export const ProfessionalEditorCanvas: React.FC<
+  ProfessionalEditorCanvasProps
+> = ({
   code,
   onCodeChange,
   language,
@@ -35,30 +37,30 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
   const generateAgentSuggestions = useCallback(async () => {
     if (!enableAgentSuggestions || !code) return;
 
-    const lines = code.split('\n');
+    const lines = code.split("\n");
     const suggestions: AgentSuggestion[] = [];
 
     // Simple suggestion logic - can be enhanced with AI
     lines.forEach((line, index) => {
-      if (line.includes('var ')) {
+      if (line.includes("var ")) {
         suggestions.push({
           line: index + 1,
           suggestion: 'Replace "var" with "const" or "let" for better scoping',
-          type: 'style'
+          type: "style",
         });
       }
-      if (line.includes('==')) {
+      if (line.includes("==")) {
         suggestions.push({
           line: index + 1,
           suggestion: 'Use "===" for strict equality comparison',
-          type: 'style'
+          type: "style",
         });
       }
       if (line.length > 120) {
         suggestions.push({
           line: index + 1,
-          suggestion: 'Line is too long (>120 chars). Consider breaking it up',
-          type: 'style'
+          suggestion: "Line is too long (>120 chars). Consider breaking it up",
+          type: "style",
         });
       }
     });
@@ -76,7 +78,7 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
     setTimeout(() => setCopiedSuggestion(null), 2000);
   };
 
-  const lineNumbers = code.split('\n').map((_, i) => i + 1);
+  const lineNumbers = code.split("\n").map((_, i) => i + 1);
 
   return (
     <div className="flex h-full gap-0 bg-[#000000]">
@@ -105,26 +107,26 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
               #111111 79px,
               #111111 80px
             )`,
-            backgroundPosition: '0 0',
+            backgroundPosition: "0 0",
           }}
         />
 
         {/* Editor Header with Toggle */}
         <div className="flex items-center justify-between px-4 py-2 bg-[#0a0a0a] border-b border-[#1a1a1a] z-10">
           <div className="text-xs text-[#888888] font-mono">
-            {language.toUpperCase()} • {code.split('\n').length} lines
+            {language.toUpperCase()} • {code.split("\n").length} lines
           </div>
-          
+
           <button
             onClick={() => onToggleSuggestions(!enableAgentSuggestions)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               enableAgentSuggestions
-                ? 'bg-blue-600 text-white'
-                : 'bg-[#1a1a1a] text-[#888888] hover:bg-[#2a2a2a]'
+                ? "bg-blue-600 text-white"
+                : "bg-[#1a1a1a] text-[#888888] hover:bg-[#2a2a2a]"
             }`}
           >
             <Lightbulb className="w-4 h-4" />
-            {enableAgentSuggestions ? 'Suggestions ON' : 'Suggestions OFF'}
+            {enableAgentSuggestions ? "Suggestions ON" : "Suggestions OFF"}
           </button>
         </div>
 
@@ -135,16 +137,16 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
           onChange={(e) => onCodeChange(e.target.value)}
           className="flex-1 bg-[#000000] text-[#e0e0e0] font-mono text-sm resize-none outline-none px-4 py-4 relative z-20 overflow-hidden"
           style={{
-            backgroundAttachment: 'local',
+            backgroundAttachment: "local",
             backgroundImage: `linear-gradient(
               to right,
               #111111 0.5px,
               transparent 0.5px
             )`,
-            backgroundSize: '80px 1em',
-            backgroundPosition: '4px 4px',
-            lineHeight: '1.5em',
-            letterSpacing: '0.5px',
+            backgroundSize: "80px 1em",
+            backgroundPosition: "4px 4px",
+            lineHeight: "1.5em",
+            letterSpacing: "0.5px",
           }}
           spellCheck="false"
         />
@@ -178,20 +180,24 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
                         <p className="text-xs font-mono text-[#888888]">
                           Line {suggestion.line}
                         </p>
-                        <span className={`inline-block text-xs px-2 py-1 rounded mt-1 ${
-                          suggestion.type === 'bug'
-                            ? 'bg-red-900/30 text-red-400'
-                            : suggestion.type === 'performance'
-                            ? 'bg-yellow-900/30 text-yellow-400'
-                            : suggestion.type === 'optimization'
-                            ? 'bg-green-900/30 text-green-400'
-                            : 'bg-blue-900/30 text-blue-400'
-                        }`}>
+                        <span
+                          className={`inline-block text-xs px-2 py-1 rounded mt-1 ${
+                            suggestion.type === "bug"
+                              ? "bg-red-900/30 text-red-400"
+                              : suggestion.type === "performance"
+                                ? "bg-yellow-900/30 text-yellow-400"
+                                : suggestion.type === "optimization"
+                                  ? "bg-green-900/30 text-green-400"
+                                  : "bg-blue-900/30 text-blue-400"
+                          }`}
+                        >
                           {suggestion.type}
                         </span>
                       </div>
                       <button
-                        onClick={() => handleCopySuggestion(idx, suggestion.suggestion)}
+                        onClick={() =>
+                          handleCopySuggestion(idx, suggestion.suggestion)
+                        }
                         className="p-1 hover:bg-[#1a1a1a] rounded transition-colors"
                       >
                         {copiedSuggestion === idx ? (
@@ -210,7 +216,7 @@ export const ProfessionalEditorCanvas: React.FC<ProfessionalEditorCanvasProps> =
             ) : (
               <div className="flex items-center justify-center h-full text-center px-4">
                 <p className="text-xs text-[#666666]">
-                  {isAnalyzing ? 'Analyzing code...' : 'No suggestions yet'}
+                  {isAnalyzing ? "Analyzing code..." : "No suggestions yet"}
                 </p>
               </div>
             )}
