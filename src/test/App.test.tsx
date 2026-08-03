@@ -13,9 +13,15 @@
  *     server-side allowlist.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import React from "react";
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  act,
+} from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
 // Pure logic extracted for unit testing (mirrors the implementation in App.tsx)
@@ -28,7 +34,7 @@ import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
  * Tests ensure all ECMAScript regex metacharacters are escaped.
  */
 function escapeRegExp(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
@@ -46,7 +52,7 @@ function applyPatchReducer(
 ): string {
   return issues.reduce((acc, issue) => {
     const escaped = escapeRegExp(issue.original);
-    return acc.replace(new RegExp(escaped, 'g'), issue.fixed);
+    return acc.replace(new RegExp(escaped, "g"), issue.fixed);
   }, code);
 }
 
@@ -54,73 +60,73 @@ function applyPatchReducer(
 // escapeRegExp tests
 // ---------------------------------------------------------------------------
 
-describe('escapeRegExp (App.tsx helper)', () => {
-  it('escapes dot', () => {
-    const escaped = escapeRegExp('a.b');
-    expect(new RegExp(escaped).test('a.b')).toBe(true);
-    expect(new RegExp(escaped).test('axb')).toBe(false);
+describe("escapeRegExp (App.tsx helper)", () => {
+  it("escapes dot", () => {
+    const escaped = escapeRegExp("a.b");
+    expect(new RegExp(escaped).test("a.b")).toBe(true);
+    expect(new RegExp(escaped).test("axb")).toBe(false);
   });
 
-  it('escapes asterisk', () => {
-    const escaped = escapeRegExp('x*y');
+  it("escapes asterisk", () => {
+    const escaped = escapeRegExp("x*y");
     expect(() => new RegExp(escaped)).not.toThrow();
-    expect(new RegExp(escaped).test('x*y')).toBe(true);
+    expect(new RegExp(escaped).test("x*y")).toBe(true);
   });
 
-  it('escapes plus', () => {
-    const escaped = escapeRegExp('a+b');
-    expect(new RegExp(escaped).test('a+b')).toBe(true);
-    expect(new RegExp(escaped).test('ab')).toBe(false);
+  it("escapes plus", () => {
+    const escaped = escapeRegExp("a+b");
+    expect(new RegExp(escaped).test("a+b")).toBe(true);
+    expect(new RegExp(escaped).test("ab")).toBe(false);
   });
 
-  it('escapes question mark', () => {
-    const escaped = escapeRegExp('c?d');
-    expect(new RegExp(escaped).test('c?d')).toBe(true);
-    expect(new RegExp(escaped).test('cd')).toBe(false);
+  it("escapes question mark", () => {
+    const escaped = escapeRegExp("c?d");
+    expect(new RegExp(escaped).test("c?d")).toBe(true);
+    expect(new RegExp(escaped).test("cd")).toBe(false);
   });
 
-  it('escapes caret', () => {
-    const escaped = escapeRegExp('^start');
-    expect(new RegExp(escaped).test('^start')).toBe(true);
+  it("escapes caret", () => {
+    const escaped = escapeRegExp("^start");
+    expect(new RegExp(escaped).test("^start")).toBe(true);
   });
 
-  it('escapes dollar sign', () => {
-    const escaped = escapeRegExp('end$');
-    expect(new RegExp(escaped).test('end$')).toBe(true);
+  it("escapes dollar sign", () => {
+    const escaped = escapeRegExp("end$");
+    expect(new RegExp(escaped).test("end$")).toBe(true);
   });
 
-  it('escapes curly braces', () => {
-    const escaped = escapeRegExp('{2,3}');
-    expect(new RegExp(escaped).test('{2,3}')).toBe(true);
+  it("escapes curly braces", () => {
+    const escaped = escapeRegExp("{2,3}");
+    expect(new RegExp(escaped).test("{2,3}")).toBe(true);
   });
 
-  it('escapes parentheses', () => {
-    const escaped = escapeRegExp('(group)');
-    expect(new RegExp(escaped).test('(group)')).toBe(true);
+  it("escapes parentheses", () => {
+    const escaped = escapeRegExp("(group)");
+    expect(new RegExp(escaped).test("(group)")).toBe(true);
   });
 
-  it('escapes square brackets', () => {
-    const escaped = escapeRegExp('[class]');
-    expect(new RegExp(escaped).test('[class]')).toBe(true);
+  it("escapes square brackets", () => {
+    const escaped = escapeRegExp("[class]");
+    expect(new RegExp(escaped).test("[class]")).toBe(true);
   });
 
-  it('escapes pipe', () => {
-    const escaped = escapeRegExp('a|b');
-    expect(new RegExp(escaped).test('a|b')).toBe(true);
-    expect(new RegExp(escaped).test('a')).toBe(false);
+  it("escapes pipe", () => {
+    const escaped = escapeRegExp("a|b");
+    expect(new RegExp(escaped).test("a|b")).toBe(true);
+    expect(new RegExp(escaped).test("a")).toBe(false);
   });
 
-  it('escapes backslash', () => {
-    const escaped = escapeRegExp('back\\slash');
-    expect(new RegExp(escaped).test('back\\slash')).toBe(true);
+  it("escapes backslash", () => {
+    const escaped = escapeRegExp("back\\slash");
+    expect(new RegExp(escaped).test("back\\slash")).toBe(true);
   });
 
-  it('leaves plain alphanumeric strings unchanged', () => {
-    expect(escapeRegExp('hello123')).toBe('hello123');
+  it("leaves plain alphanumeric strings unchanged", () => {
+    expect(escapeRegExp("hello123")).toBe("hello123");
   });
 
-  it('handles empty string', () => {
-    expect(escapeRegExp('')).toBe('');
+  it("handles empty string", () => {
+    expect(escapeRegExp("")).toBe("");
   });
 });
 
@@ -128,97 +134,97 @@ describe('escapeRegExp (App.tsx helper)', () => {
 // Patch reducer tests (applyAllFixes / sentinel patch)
 // ---------------------------------------------------------------------------
 
-describe('patch reducer (App.tsx - applyAllFixes & sentinel patch)', () => {
-  it('replaces a simple token', () => {
-    const result = applyPatchReducer('const x = null;', [
-      { original: 'null', fixed: 'undefined' },
+describe("patch reducer (App.tsx - applyAllFixes & sentinel patch)", () => {
+  it("replaces a simple token", () => {
+    const result = applyPatchReducer("const x = null;", [
+      { original: "null", fixed: "undefined" },
     ]);
-    expect(result).toBe('const x = undefined;');
+    expect(result).toBe("const x = undefined;");
   });
 
-  it('replaces ALL occurrences (global flag)', () => {
-    const code = 'let x = null; let y = null;';
-    const result = applyPatchReducer(code, [{ original: 'null', fixed: '0' }]);
-    expect(result).toBe('let x = 0; let y = 0;');
+  it("replaces ALL occurrences (global flag)", () => {
+    const code = "let x = null; let y = null;";
+    const result = applyPatchReducer(code, [{ original: "null", fixed: "0" }]);
+    expect(result).toBe("let x = 0; let y = 0;");
   });
 
-  it('handles original containing regex metacharacters (dot)', () => {
-    const code = 'foo.bar();';
+  it("handles original containing regex metacharacters (dot)", () => {
+    const code = "foo.bar();";
     const result = applyPatchReducer(code, [
-      { original: 'foo.bar', fixed: 'foo.baz' },
+      { original: "foo.bar", fixed: "foo.baz" },
     ]);
     // Without escaping, `.` matches any char and could match 'fooXbar'
-    expect(result).toBe('foo.baz();');
+    expect(result).toBe("foo.baz();");
   });
 
-  it('handles original containing square brackets (e.g. array access)', () => {
-    const code = 'arr[0] = arr[0] + 1;';
+  it("handles original containing square brackets (e.g. array access)", () => {
+    const code = "arr[0] = arr[0] + 1;";
     const result = applyPatchReducer(code, [
-      { original: 'arr[0]', fixed: 'arr[1]' },
+      { original: "arr[0]", fixed: "arr[1]" },
     ]);
-    expect(result).toBe('arr[1] = arr[1] + 1;');
+    expect(result).toBe("arr[1] = arr[1] + 1;");
   });
 
-  it('handles original containing parentheses', () => {
-    const code = 'if (x > 0) { return; }';
+  it("handles original containing parentheses", () => {
+    const code = "if (x > 0) { return; }";
     const result = applyPatchReducer(code, [
-      { original: 'if (x > 0)', fixed: 'if (x >= 0)' },
+      { original: "if (x > 0)", fixed: "if (x >= 0)" },
     ]);
-    expect(result).toBe('if (x >= 0) { return; }');
+    expect(result).toBe("if (x >= 0) { return; }");
   });
 
-  it('handles original containing a pipe character', () => {
-    const code = 'let a = b | c;';
+  it("handles original containing a pipe character", () => {
+    const code = "let a = b | c;";
     const result = applyPatchReducer(code, [
-      { original: 'b | c', fixed: 'b || c' },
+      { original: "b | c", fixed: "b || c" },
     ]);
-    expect(result).toBe('let a = b || c;');
+    expect(result).toBe("let a = b || c;");
   });
 
-  it('handles original containing a backslash', () => {
+  it("handles original containing a backslash", () => {
     const code = 'const re = "back\\\\slash";';
     const result = applyPatchReducer(code, [
-      { original: 'back\\\\slash', fixed: 'backslash' },
+      { original: "back\\\\slash", fixed: "backslash" },
     ]);
     expect(result).toBe('const re = "backslash";');
   });
 
-  it('chains multiple issues sequentially', () => {
-    const code = 'let x = null; let y = undefined;';
+  it("chains multiple issues sequentially", () => {
+    const code = "let x = null; let y = undefined;";
     const result = applyPatchReducer(code, [
-      { original: 'null', fixed: '0' },
-      { original: 'undefined', fixed: '1' },
+      { original: "null", fixed: "0" },
+      { original: "undefined", fixed: "1" },
     ]);
-    expect(result).toBe('let x = 0; let y = 1;');
+    expect(result).toBe("let x = 0; let y = 1;");
   });
 
-  it('returns original code unchanged when issues array is empty', () => {
-    const code = 'const x = 1;';
+  it("returns original code unchanged when issues array is empty", () => {
+    const code = "const x = 1;";
     expect(applyPatchReducer(code, [])).toBe(code);
   });
 
-  it('does not corrupt code when original is not found', () => {
-    const code = 'const x = 1;';
+  it("does not corrupt code when original is not found", () => {
+    const code = "const x = 1;";
     const result = applyPatchReducer(code, [
-      { original: 'notPresent', fixed: 'something' },
+      { original: "notPresent", fixed: "something" },
     ]);
     expect(result).toBe(code);
   });
 
-  it('handles multiline code correctly', () => {
-    const code = 'function foo() {\n  return null;\n}';
+  it("handles multiline code correctly", () => {
+    const code = "function foo() {\n  return null;\n}";
     const result = applyPatchReducer(code, [
-      { original: 'return null;', fixed: 'return 0;' },
+      { original: "return null;", fixed: "return 0;" },
     ]);
-    expect(result).toBe('function foo() {\n  return 0;\n}');
+    expect(result).toBe("function foo() {\n  return 0;\n}");
   });
 
-  it('handles dollar sign in original (common in template literals)', () => {
-    const code = 'const msg = `${name}`;';
+  it("handles dollar sign in original (common in template literals)", () => {
+    const code = "const msg = `${name}`;";
     const result = applyPatchReducer(code, [
-      { original: '`${name}`', fixed: '`${username}`' },
+      { original: "`${name}`", fixed: "`${username}`" },
     ]);
-    expect(result).toBe('const msg = `${username}`;');
+    expect(result).toBe("const msg = `${username}`;");
   });
 });
 
@@ -227,37 +233,44 @@ describe('patch reducer (App.tsx - applyAllFixes & sentinel patch)', () => {
 // ---------------------------------------------------------------------------
 
 // Mock heavy/external deps that are not relevant to the changed behaviour
-vi.mock('framer-motion', () => ({
-  motion: new Proxy({}, {
-    get: (_target, prop) => {
-      const tag = String(prop);
-      // Return a simple forwardRef component for any motion.X
-      const Component = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
-        ({ children, ...rest }, ref) => React.createElement(tag, { ...rest, ref }, children)
-      );
-      Component.displayName = `motion.${tag}`;
-      return Component;
+vi.mock("framer-motion", () => ({
+  motion: new Proxy(
+    {},
+    {
+      get: (_target, prop) => {
+        const tag = String(prop);
+        // Return a simple forwardRef component for any motion.X
+        const Component = React.forwardRef<
+          HTMLElement,
+          React.HTMLAttributes<HTMLElement>
+        >(({ children, ...rest }, ref) =>
+          React.createElement(tag, { ...rest, ref }, children),
+        );
+        Component.displayName = `motion.${tag}`;
+        return Component;
+      },
     },
-  }),
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children),
   useAnimation: () => ({ start: vi.fn() }),
   useInView: () => false,
 }));
 
-vi.mock('@vercel/analytics/react', () => ({
+vi.mock("@vercel/analytics/react", () => ({
   Analytics: () => null,
 }));
 
-vi.mock('highlight.js/styles/atom-one-dark.css', () => ({}));
+vi.mock("highlight.js/styles/atom-one-dark.css", () => ({}));
 
-describe('App component (App.tsx)', () => {
+describe("App component (App.tsx)", () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn());
+    vi.stubGlobal("fetch", vi.fn());
     // jsdom does not implement scrollIntoView; stub it to avoid errors
     window.HTMLElement.prototype.scrollIntoView = vi.fn();
     // Suppress console noise from the component
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -265,36 +278,47 @@ describe('App component (App.tsx)', () => {
     localStorage.clear();
   });
 
-  it('renders without crashing', async () => {
-    const { default: App } = await import('../App');
+  it("renders without crashing", async () => {
+    const { default: App } = await import("../App");
     await act(async () => {
       render(<App />);
     });
     // App mounts — the textarea / code editor should be present
-    const textareas = document.querySelectorAll('textarea');
+    const textareas = document.querySelectorAll("textarea");
     expect(textareas.length).toBeGreaterThanOrEqual(0);
   });
 
-  it('has pluginOptions that match the server allowlist', async () => {
+  it("has pluginOptions that match the server allowlist", async () => {
     /**
      * The pluginOptions array in App.tsx must remain in sync with the
      * allowedPlugins array in api/openrouter.ts. This regression test imports
      * the handler and verifies that every App.tsx plugin value is accepted.
      */
     const pluginOptions = [
-      'Test Runner',
-      'Console Trace',
-      'Diff Reviewer',
-      'Repo Scanner',
-      'API Schema Reader',
-      'Dependency Audit',
+      "Test Runner",
+      "Console Trace",
+      "Diff Reviewer",
+      "Repo Scanner",
+      "API Schema Reader",
+      "Dependency Audit",
     ];
 
-    const { default: handler } = await import('../../api/openrouter');
+    const { default: handler } = await import("../../api/openrouter");
 
     for (const plugin of pluginOptions) {
-      const req = { method: 'POST', body: { code: 'const x = 1;', plugin } };
-      const res = { _status: 0, _json: null as unknown, status(c: number) { this._status = c; return this; }, json(d: unknown) { this._json = d; return this; } };
+      const req = { method: "POST", body: { code: "const x = 1;", plugin } };
+      const res = {
+        _status: 0,
+        _json: null as unknown,
+        status(c: number) {
+          this._status = c;
+          return this;
+        },
+        json(d: unknown) {
+          this._json = d;
+          return this;
+        },
+      };
       // We only need to check that the plugin validation passes (not 400)
       // by calling the handler. Fetch is not set up here so it will throw later,
       // but status should not be 400.
@@ -303,28 +327,31 @@ describe('App component (App.tsx)', () => {
     }
   });
 
-  it('sendAgentMessage passes customPrompt in the fetch body', async () => {
+  it("sendAgentMessage passes customPrompt in the fetch body", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         issues: [],
-        fixedCode: '',
-        summary: 'ok',
+        fixedCode: "",
+        summary: "ok",
         tokensUsed: 5,
         promptTokens: 3,
         completionTokens: 2,
       }),
     });
-    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal("fetch", fetchMock);
 
-    const { default: App } = await import('../App');
+    const { default: App } = await import("../App");
     await act(async () => {
       render(<App />);
     });
 
     // Find the agent chat input
-    const input = document.querySelector('input[placeholder*="Ask"]') as HTMLInputElement
-      || document.querySelector('input[type="text"]') as HTMLInputElement;
+    const input =
+      (document.querySelector(
+        'input[placeholder*="Ask"]',
+      ) as HTMLInputElement) ||
+      (document.querySelector('input[type="text"]') as HTMLInputElement);
 
     if (!input) {
       // If the input is not visible (e.g. modal hidden), skip the UI interaction
@@ -334,11 +361,14 @@ describe('App component (App.tsx)', () => {
     }
 
     await act(async () => {
-      fireEvent.change(input, { target: { value: 'Why is this function slow?' } });
+      fireEvent.change(input, {
+        target: { value: "Why is this function slow?" },
+      });
     });
 
-    const sendBtn = input.closest('form')?.querySelector('button[type="submit"]')
-      ?? document.querySelector('button[aria-label="Send"]');
+    const sendBtn =
+      input.closest("form")?.querySelector('button[type="submit"]') ??
+      document.querySelector('button[aria-label="Send"]');
 
     if (sendBtn) {
       await act(async () => {
@@ -349,7 +379,10 @@ describe('App component (App.tsx)', () => {
         expect(fetchMock).toHaveBeenCalled();
         const [, init] = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
         const body = JSON.parse(init.body);
-        expect(body).toHaveProperty('customPrompt', 'Why is this function slow?');
+        expect(body).toHaveProperty(
+          "customPrompt",
+          "Why is this function slow?",
+        );
       });
     }
   });
