@@ -60,8 +60,15 @@ export class SentinelWatcher {
   }
 
   public checkMemoryPerformance() {
-    if (typeof window !== "undefined" && (performance as any).memory) {
-      const mem = (performance as any).memory;
+    const perf = performance as Performance & {
+      memory?: {
+        usedJSHeapSize: number;
+        totalJSHeapSize: number;
+        jsHeapSizeLimit: number;
+      };
+    };
+    if (typeof window !== "undefined" && perf.memory) {
+      const mem = perf.memory;
       this.telemetry.memoryUsageMb = Math.round(
         mem.usedJSHeapSize / (1024 * 1024),
       );

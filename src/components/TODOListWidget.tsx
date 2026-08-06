@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Plus,
   Trash2,
@@ -37,7 +37,6 @@ export function TODOListWidget({
   onAddTodo,
   onUpdateTodo,
   onDeleteTodo,
-  agents = [],
 }: TODOListWidgetProps) {
   const [newTitle, setNewTitle] = useState("");
   const [newPriority, setNewPriority] = useState<
@@ -168,7 +167,11 @@ export function TODOListWidget({
           />
           <select
             value={newPriority}
-            onChange={(e) => setNewPriority(e.target.value as any)}
+            onChange={(e) =>
+              setNewPriority(
+                e.target.value as "low" | "medium" | "high" | "critical",
+              )
+            }
             className="px-3 py-2 bg-black border border-white/10 rounded-lg text-sm text-white focus:border-[#FF5F00]/40 outline-none"
           >
             <option value="low">Low</option>

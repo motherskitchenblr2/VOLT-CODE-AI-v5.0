@@ -44,10 +44,7 @@ interface MeetingMinutesDisplayProps {
   onUpdate?: (meeting: MeetingMinutes) => void;
 }
 
-export function MeetingMinutesDisplay({
-  meeting,
-  onUpdate,
-}: MeetingMinutesDisplayProps) {
+export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedDecision, setExpandedDecision] = useState<string | null>(null);
 
@@ -197,21 +194,21 @@ export function MeetingMinutesDisplay({
                     Team Voting Results
                   </div>
                   <div className="space-y-3">
-                    {["yes", "no", "abstain"].map((vote) => (
+                    {(["yes", "no", "abstain"] as const).map((vote) => (
                       <div key={vote} className="space-y-1">
                         <div className="flex justify-between text-xs">
                           <span className="text-white/70 capitalize font-semibold">
                             {vote}
                           </span>
                           <span className="text-[#FF5F00] font-bold">
-                            {getVotePercentage(decision, vote as any)}%
+                            {getVotePercentage(decision, vote)}%
                           </span>
                         </div>
                         <div className="h-2 bg-black/60 rounded-full overflow-hidden border border-white/10">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{
-                              width: `${getVotePercentage(decision, vote as any)}%`,
+                              width: `${getVotePercentage(decision, vote)}%`,
                             }}
                             transition={{ delay: 0.2, duration: 0.5 }}
                             className={`h-full ${

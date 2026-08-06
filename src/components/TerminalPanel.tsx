@@ -12,7 +12,7 @@ interface TerminalPanelProps {
 export const TerminalPanel: React.FC<TerminalPanelProps> = ({
   logs,
   setLogs,
-  code,
+  code: _code,
   runAnalysis,
   applyFixes,
 }) => {
@@ -52,20 +52,16 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
 
     setInputVal("");
     let promptStr = "";
-    let currentLogs: string[] = [];
     let logSetter: React.Dispatch<React.SetStateAction<string[]>>;
 
     if (activeTab === "powershell") {
       promptStr = "PS C:\\Workspace\\Volt-Code-AI> ";
-      currentLogs = powershellLogs;
       logSetter = setPowershellLogs;
     } else if (activeTab === "ubuntu") {
       promptStr = "volt-user@ubuntu:~/workspace$ ";
-      currentLogs = ubuntuLogs;
       logSetter = setUbuntuLogs;
     } else {
       promptStr = "C:\\Workspace\\Volt-Code-AI> ";
-      currentLogs = cmdLogs;
       logSetter = setCmdLogs;
     }
 

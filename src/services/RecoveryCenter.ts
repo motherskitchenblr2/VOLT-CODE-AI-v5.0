@@ -27,10 +27,11 @@ export class RecoveryCenter {
         `/api/database?action=getCheckpoints&username=${encodeURIComponent(this.username)}`,
       );
       if (dbResponse.ok) {
-        const checkpoints = await dbResponse.json();
-        const target = checkpoints.find(
-          (c: any) => c.checkpointId === checkpointId,
-        );
+        const checkpoints = (await dbResponse.json()) as Array<{
+          checkpointId: string;
+          codeBackup: string;
+        }>;
+        const target = checkpoints.find((c) => c.checkpointId === checkpointId);
         if (target) {
           this.logCallback(
             `[RECOVERY] Snapshot recovered successfully from database.`,

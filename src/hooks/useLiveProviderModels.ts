@@ -61,7 +61,7 @@ export function useLiveProviderModels(keys: ProviderKeys) {
 
     const currentKeys = keysRef.current;
     const query = new URLSearchParams({ provider: "all" });
-    for (const { provider, key } of PROVIDER_KEY_MAP) {
+    for (const { key } of PROVIDER_KEY_MAP) {
       const value = currentKeys[key];
       if (value) {
         query.append("key", value);
@@ -81,9 +81,10 @@ export function useLiveProviderModels(keys: ProviderKeys) {
       const data: AvailabilityResponse = await response.json();
       setAvailability(data.results || []);
       setLastUpdated(Date.now());
-    } catch (err: any) {
-      if (err?.name !== "AbortError") {
-        setError(err?.message || "Failed to fetch provider availability");
+    } catch (err: unknown) {
+      const error = err as Error | undefined;
+      if (error?.name !== "AbortError") {
+        setError(error?.message || "Failed to fetch provider availability");
       }
     } finally {
       setLoading(false);

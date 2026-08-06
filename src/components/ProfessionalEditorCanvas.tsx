@@ -14,7 +14,7 @@ interface ProfessionalEditorCanvasProps {
   enableAgentSuggestions: boolean;
   onToggleSuggestions: (enabled: boolean) => void;
   agentSuggestions?: AgentSuggestion[];
-  issues?: any[];
+  issues?: unknown[];
   isAnalyzing?: boolean;
 }
 
@@ -27,7 +27,6 @@ export const ProfessionalEditorCanvas: React.FC<
   enableAgentSuggestions,
   onToggleSuggestions,
   agentSuggestions = [],
-  issues = [],
   isAnalyzing = false,
 }) => {
   const [copiedSuggestion, setCopiedSuggestion] = useState<number | null>(null);

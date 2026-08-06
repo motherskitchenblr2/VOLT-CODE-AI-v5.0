@@ -267,7 +267,7 @@ export class GitHubManager {
   }
 
   // Get pull request details
-  async getPullRequest(prNumber: number): Promise<any> {
+  async getPullRequest(prNumber: number): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}`,
@@ -347,7 +347,7 @@ export class GitHubManager {
   }
 
   // Get list of open PRs
-  async getOpenPullRequests(): Promise<any[]> {
+  async getOpenPullRequests(): Promise<Record<string, unknown>[]> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls?state=open`,
@@ -386,7 +386,7 @@ export class GitHubManager {
   }
 
   // Get commit
-  async getCommit(sha: string): Promise<any> {
+  async getCommit(sha: string): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/commits/${sha}`,

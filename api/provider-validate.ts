@@ -94,7 +94,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
     return res.status(200).json({ success: true, message: `Validated and encrypted ${provider} credentials successfully.` });
 
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+  } catch (err: unknown) {
+    return res.status(500).json({ success: false, error: (err as Error)?.message });
   }
 }

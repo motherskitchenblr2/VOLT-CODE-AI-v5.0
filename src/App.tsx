@@ -11,48 +11,24 @@ import {
   AlertTriangle,
   Zap,
   Bug,
-  Code2,
   Shield,
-  Brain,
   Wrench,
   Sparkles,
   ChevronDown,
   Bot,
-  Terminal as TerminalIcon,
   Search,
   HelpCircle,
   Send,
   GitBranch,
-  Folder,
-  File,
   AlertCircle,
   RefreshCw,
   Crown,
   Loader2,
   Users,
   GitPullRequest,
-  Lightbulb,
-  Columns,
 } from "lucide-react";
 import "highlight.js/styles/atom-one-dark.css";
 import { Analytics } from "@vercel/analytics/react";
-
-// Custom SVG Github icon because lucide-react v1.x does not include brand logos
-const Github: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="24"
-    height="24"
-    stroke="currentColor"
-    strokeWidth="2"
-    fill="none"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-  </svg>
-);
 
 // v6.0 Upgraded Components & Services
 import { ResponsiveContainer } from "./components/ResponsiveContainer";
@@ -63,12 +39,6 @@ import { TerminalPanel } from "./components/TerminalPanel";
 import { GitHubWorkspace } from "./components/GitHubWorkspace";
 import { MeetingPanel } from "./components/MeetingPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
-import { BossGuidancePanel } from "./components/BossGuidancePanel";
-import { SplitEditorLayout } from "./components/SplitEditorLayout";
-import { AIProviderSelector } from "./components/AIProviderSelector";
-import { TODOListWidget } from "./components/TODOListWidget";
-import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
-import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas";
 
 import {
   PerformanceOptimizer,
@@ -76,7 +46,7 @@ import {
 } from "./services/PerformanceOptimizer";
 import { ProviderRegistry, ProviderState } from "./services/ProviderRegistry";
 import { RecoveryCenter } from "./services/RecoveryCenter";
-import { RepairPlanner, PriorityReport } from "./services/RepairPlanner";
+import { RepairPlanner } from "./services/RepairPlanner";
 import {
   RepoIntelligence,
   HealthScoreDetails,
@@ -86,10 +56,7 @@ import {
   ConsensusEngine,
   MultiAgentOrchestrator,
 } from "./services/AgentWorkforce";
-import {
-  useLiveProviderModels,
-  ProviderAvailability,
-} from "./hooks/useLiveProviderModels";
+import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
 
 interface Session {
   id: string;
@@ -115,11 +82,29 @@ interface Issue {
   fixed: string;
 }
 
-interface DiffLine {
-  type: "added" | "removed" | "normal";
-  value: string;
-  lineNumOriginal?: number;
-  lineNumFixed?: number;
+interface Checkpoint {
+  checkpointId: string;
+  filePath: string;
+  codeBackup: string;
+  gitCommitSha: string;
+  createdAt: string;
+}
+
+interface AuditLog {
+  action: string;
+  details: string;
+  status: "SUCCESS" | "WARNING" | "FAILED";
+  createdAt: string;
+}
+
+interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body?: string | null;
+  pull_request?: unknown;
+  user?: { login?: string } | null;
+  created_at: string;
 }
 
 type View =
@@ -395,6 +380,11 @@ const detectLanguage = (codeStr: string, filePath?: string): string => {
     return "javascript";
   return "unknown";
 };
+
+const getErrorMessage = (err: unknown): string => {
+  return err instanceof Error ? err.message : String(err);
+};
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>("editor");
   const [code, setCode] = useState(
@@ -417,16 +407,14 @@ const App: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
   const [selectedPlugin, setSelectedPlugin] = useState("Test Runner");
   const [selectedSkill, setSelectedSkill] = useState("Syntax Repair");
-  const [agentStatus, setAgentStatus] = useState("idle");
+  const [, setAgentStatus] = useState("idle");
   const [agentMode, setAgentMode] = useState<AgentMode>("assist");
   const [tokensUsed, setTokensUsed] = useState(0);
   const [promptTokens, setPromptTokens] = useState(0);
   const [completionTokens, setCompletionTokens] = useState(0);
-  const [currentModelName, setCurrentModelName] = useState("");
+  const [, setCurrentModelName] = useState("");
   const [autoApplyFixes, setAutoApplyFixes] = useState(false);
   const [enableSentinel, setEnableSentinel] = useState(false);
-  const [enableAgentSuggestions, setEnableAgentSuggestions] = useState(false);
-  const [agentSuggestions, setAgentSuggestions] = useState<string[]>([]);
 
   // v5.0 Added States
   const [aboutDocPage, setAboutDocPage] = useState<
@@ -435,7 +423,6 @@ const App: React.FC = () => {
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
     `[SYSTEM] Volt Diagnostic Engine initialized. Ready for v5.0 operations.`,
   ]);
-  const [showTerminal, setShowTerminal] = useState(true);
   const [historySearch, setHistorySearch] = useState("");
   const [debounceDelay, setDebounceDelay] = useState(800);
   const [showTokenUsage, setShowTokenUsage] = useState(true);
@@ -483,7 +470,7 @@ const App: React.FC = () => {
     ),
   );
 
-  const [checkpoints, setCheckpoints] = useState<any[]>([]);
+  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [acceptedHunkIds, setAcceptedHunkIds] = useState<number[]>([]);
   const [consensusPassed, setConsensusPassed] = useState<boolean | null>(null);
   const [consensusScore, setConsensusScore] = useState<number | null>(null);
@@ -502,8 +489,8 @@ const App: React.FC = () => {
 
   const [isMaintenanceActive, setIsMaintenanceActive] = useState(false);
   const [isSystemHalted, setIsSystemHalted] = useState(false);
-  const [activeAgents, setActiveAgents] = useState(0);
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [activeAgents] = useState(0);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   // Globally accessible logging and toast utilities (declared early to prevent TDZ/ordering errors)
   const addLog = useCallback(
@@ -562,7 +549,7 @@ const App: React.FC = () => {
   const [githubFiles, setGithubFiles] = useState<
     { path: string; type: string; sha: string }[]
   >([]);
-  const [githubIssues, setGithubIssues] = useState<any[]>([]);
+  const [githubIssues, setGithubIssues] = useState<GitHubIssue[]>([]);
   const [isFetchingGithub, setIsFetchingGithub] = useState(false);
   const [loadedFilePath, setLoadedFilePath] = useState("");
   const [loadedFileSha, setLoadedFileSha] = useState("");
@@ -570,33 +557,10 @@ const App: React.FC = () => {
     "fix: update code diagnostics",
   );
 
-  // Multi-tab interactive terminal state
-  const [terminalTab, setTerminalTab] = useState<
-    "diagnostic" | "powershell" | "ubuntu" | "cmd"
-  >("diagnostic");
-  const [terminalInput, setTerminalInput] = useState("");
-  const [powershellLogs, setPowershellLogs] = useState<string[]>([
-    "Windows PowerShell",
-    "Copyright (C) Microsoft Corporation. All rights reserved.",
-    "",
-    "PS C:\\Workspace\\Volt-Code-AI> ",
-  ]);
-  const [ubuntuLogs, setUbuntuLogs] = useState<string[]>([
-    "Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-88-generic x86_64)",
-    "Last login: Thu Jun 25 04:30:11 2026 from 192.168.1.5",
-    "",
-    "volt-user@ubuntu:~/workspace$ ",
-  ]);
-  const [cmdLogs, setCmdLogs] = useState<string[]>([
-    "Microsoft Windows [Version 10.0.22631.3296]",
-    "(c) Microsoft Corporation. All rights reserved.",
-    "",
-    "C:\\Workspace\\Volt-Code-AI> ",
-  ]);
   // Sentinel State telemetry
   const [sentinelIssues, setSentinelIssues] = useState<Issue[]>([]);
   const [lastSentinelScan, setLastSentinelScan] = useState<string>("Never");
-  const [isSentinelScanning, setIsSentinelScanning] = useState(false);
+  const [, setIsSentinelScanning] = useState(false);
   const [sentinelStats, setSentinelStats] = useState({
     totalRuns: 0,
     totalBugsFixed: 0,
@@ -616,7 +580,6 @@ const App: React.FC = () => {
   ]);
   const [bossInput, setBossInput] = useState("");
   const [isBossLoading, setIsBossLoading] = useState(false);
-  const [agentInput, setAgentInput] = useState("");
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -658,7 +621,7 @@ const App: React.FC = () => {
         setCheckpoints(data || []);
       } else {
         // Local fallback
-        const localCheckpoints: any[] = [];
+        const localCheckpoints: Checkpoint[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (key && key.startsWith("backup_")) {
@@ -670,7 +633,7 @@ const App: React.FC = () => {
                 checkpointId,
                 filePath: parsed.filePath,
                 createdAt: parsed.timestamp,
-              });
+              } as Checkpoint);
             }
           }
         }
@@ -718,7 +681,7 @@ const App: React.FC = () => {
           `[RECOVERY] Checkpoint ${checkpointId} created and registered inside database registers.`,
           "success",
         );
-      } catch (err) {
+      } catch {
         addLog(
           `[RECOVERY] Saved checkpoint ${checkpointId} in local storage cache (database offline).`,
           "warn",
@@ -734,7 +697,7 @@ const App: React.FC = () => {
   const onRestoreCheckpoint = useCallback(
     async (checkpointId: string) => {
       const recovery = new RecoveryCenter(
-        (msg, type) => addLog(msg, type as any),
+        (msg, type) => addLog(msg, type),
         username,
       );
       try {
@@ -744,8 +707,8 @@ const App: React.FC = () => {
           `Checkpoint ${checkpointId} restored successfully!`,
           "success",
         );
-      } catch (err: any) {
-        showToast(`Restore failed: ${err.message}`, "error");
+      } catch (err: unknown) {
+        showToast(`Restore failed: ${getErrorMessage(err)}`, "error");
       }
     },
     [username, addLog],
@@ -794,7 +757,7 @@ const App: React.FC = () => {
           `AI Provider health checked for ${providerName}. Status: ${updated.status}, Latency: ${updated.latencyMs}ms`,
           "success",
         );
-      } catch (err: any) {
+      } catch {
         const latencyFallback = Math.round(performance.now() - start);
         setProviders((prev) =>
           prev.map((p) =>
@@ -1153,7 +1116,7 @@ const App: React.FC = () => {
 
       if (data.issues) {
         setIssues(data.issues);
-        setAcceptedHunkIds(data.issues.map((i: any) => i.id));
+        setAcceptedHunkIds(data.issues.map((i: { id: number }) => i.id));
       }
       if (data.fixedCode) setFixedCode(data.fixedCode);
 
@@ -1193,9 +1156,9 @@ const App: React.FC = () => {
       } else {
         setShowDiff(true);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("OpenRouter API error:", err);
-      addLog(`Runtime connection failed: ${err?.message || err}`, "error");
+      addLog(`Runtime connection failed: ${getErrorMessage(err)}`, "error");
       showToast("Connection failed. Check your internet.", "error");
       setAgentStatus("error");
     } finally {
@@ -1394,107 +1357,21 @@ const App: React.FC = () => {
       } else {
         throw new Error("Invalid response structure from core orchestrator.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setBossMessages((prev) => [
         ...prev,
         {
           role: "agent",
-          content: `Volt AI Core connection failure: ${err.message}`,
+          content: `Volt AI Core connection failure: ${getErrorMessage(err)}`,
         },
       ]);
-      addLog(`[BOSS] Core communication failed: ${err.message}`, "error");
+      addLog(
+        `[BOSS] Core communication failed: ${getErrorMessage(err)}`,
+        "error",
+      );
     } finally {
       setIsBossLoading(false);
     }
-  };
-
-  const sendAgentMessage = (text: string) => {
-    if (!text.trim()) return;
-    setBossMessages((prev) => [...prev, { role: "user", content: text }]);
-    setBossInput("");
-    addLog(
-      `[AGENT] Quick action triggered: ${text.substring(0, 60)}...`,
-      "info",
-    );
-    sendBossMessage(text);
-  };
-
-  const handleAgentQuickAction = (
-    actionType:
-      "analyze" | "diagnose" | "security" | "performance" | "explain" | "fix",
-  ) => {
-    let promptText = "";
-    if (actionType === "analyze" || actionType === "diagnose") {
-      promptText =
-        "Please perform a full code diagnosis and outline any logic, syntax, or styling issues.";
-    } else if (actionType === "security") {
-      promptText =
-        "Scan the current workspace code for potential security vulnerabilities like XSS, injections, unsafe regex, or credentials leaks.";
-    } else if (actionType === "performance") {
-      promptText =
-        "Analyze the code execution flow and identify O(N^2) complexity, unnecessary memory allocations, or blocking structures.";
-    } else if (actionType === "explain") {
-      promptText =
-        "Review the last analysis report and explain the root causes of the issues found.";
-    } else if (actionType === "fix") {
-      promptText =
-        "Generate a comprehensive fix patch for the critical and high severity issues in the code.";
-    }
-    // Agent message handling through meeting panel
-    addLog(`Agent task initiated: ${promptText}`, "info");
-  };
-
-  const computeDiff = (original: string, fixed: string) => {
-    const originalLines = original.split("\n");
-    const fixedLines = fixed.split("\n");
-    const diff: DiffLine[] = [];
-
-    let i = 0,
-      j = 0;
-    while (i < originalLines.length || j < fixedLines.length) {
-      if (i < originalLines.length && j < fixedLines.length) {
-        if (originalLines[i] === fixedLines[j]) {
-          diff.push({
-            type: "normal",
-            value: originalLines[i],
-            lineNumOriginal: i + 1,
-            lineNumFixed: j + 1,
-          });
-          i++;
-          j++;
-        } else {
-          const nextMatchInFixed = fixedLines.indexOf(originalLines[i], j);
-          if (nextMatchInFixed !== -1 && nextMatchInFixed - j < 5) {
-            while (j < nextMatchInFixed) {
-              diff.push({
-                type: "added",
-                value: fixedLines[j],
-                lineNumFixed: j + 1,
-              });
-              j++;
-            }
-          } else {
-            diff.push({
-              type: "removed",
-              value: originalLines[i],
-              lineNumOriginal: i + 1,
-            });
-            i++;
-          }
-        }
-      } else if (i < originalLines.length) {
-        diff.push({
-          type: "removed",
-          value: originalLines[i],
-          lineNumOriginal: i + 1,
-        });
-        i++;
-      } else if (j < fixedLines.length) {
-        diff.push({ type: "added", value: fixedLines[j], lineNumFixed: j + 1 });
-        j++;
-      }
-    }
-    return diff;
   };
 
   const copyToClipboard = (text: string) => {
@@ -1539,7 +1416,10 @@ const App: React.FC = () => {
       const treeData = await treeRes.json();
       if (treeData && treeData.tree) {
         setGithubFiles(
-          treeData.tree.filter((item: any) => item.type === "blob"),
+          treeData.tree.filter(
+            (item: { path: string; type: string; sha: string }) =>
+              item.type === "blob",
+          ),
         );
         addLog(
           `Successfully loaded ${treeData.tree.length} files from git tree.`,
@@ -1554,7 +1434,7 @@ const App: React.FC = () => {
       if (issuesRes.ok) {
         const issuesData = await issuesRes.json();
         const filteredIssues = issuesData.filter(
-          (iss: any) => !iss.pull_request,
+          (iss: GitHubIssue) => !iss.pull_request,
         );
         setGithubIssues(filteredIssues);
         addLog(
@@ -1565,15 +1445,15 @@ const App: React.FC = () => {
         addLog(`Could not fetch issues (HTTP ${issuesRes.status})`, "warn");
       }
       showToast("GitHub data updated!", "success");
-    } catch (err: any) {
-      addLog(`GitHub retrieval failed: ${err.message}`, "error");
-      showToast(`GitHub fetch failed: ${err.message}`, "error");
+    } catch (err: unknown) {
+      addLog(`GitHub retrieval failed: ${getErrorMessage(err)}`, "error");
+      showToast(`GitHub fetch failed: ${getErrorMessage(err)}`, "error");
     } finally {
       setIsFetchingGithub(false);
     }
   };
 
-  const handleLoadGithubFile = async (path: string, sha: string) => {
+  const handleLoadGithubFile = async (path: string, _sha: string) => {
     setIsFetchingGithub(true);
     addLog(`Fetching file content: ${path}...`, "info");
 
@@ -1608,9 +1488,9 @@ const App: React.FC = () => {
         addLog(`Successfully loaded file: ${path}`, "success");
         showToast(`Loaded ${path} successfully.`, "success");
       }
-    } catch (err: any) {
-      addLog(`File load failed: ${err.message}`, "error");
-      showToast(`Failed to load file: ${err.message}`, "error");
+    } catch (err: unknown) {
+      addLog(`File load failed: ${getErrorMessage(err)}`, "error");
+      showToast(`Failed to load file: ${getErrorMessage(err)}`, "error");
     } finally {
       setIsFetchingGithub(false);
     }
@@ -1670,15 +1550,15 @@ const App: React.FC = () => {
         );
         showToast("Code committed and pushed to GitHub!", "success");
       }
-    } catch (err: any) {
-      addLog(`Commit failed: ${err.message}`, "error");
-      showToast(`Commit failed: ${err.message}`, "error");
+    } catch (err: unknown) {
+      addLog(`Commit failed: ${getErrorMessage(err)}`, "error");
+      showToast(`Commit failed: ${getErrorMessage(err)}`, "error");
     } finally {
       setIsFetchingGithub(false);
     }
   };
 
-  const handleLoadIssue = (issue: any) => {
+  const handleLoadIssue = (issue: GitHubIssue) => {
     const context = `Fix Issue #${issue.number}: ${issue.title}\n\nDescription:\n${issue.body || "No description provided."}`;
     setCode(context);
     addLog(`Loaded GitHub issue #${issue.number} context into editor.`, "info");
@@ -2427,93 +2307,6 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-    );
-  };
-
-  const renderTerminal = () => {
-    if (!showTerminal) return null;
-    return (
-      <div className="border-t border-[#FF5F00]/30 bg-[#0a0a0a] h-48 flex flex-col font-mono text-xs text-white">
-        <div className="bg-[#121212] border-b border-[#FF5F00]/20 px-6 py-2 flex justify-between items-center select-none">
-          <div className="flex items-center gap-2 text-[#FF5F00] font-bold">
-            <TerminalIcon className="w-4 h-4" />
-            <span>DEDICATED VIRUS/BUG DIAGNOSTIC STREAM</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setTerminalLogs([`[SYSTEM] Log stream cleared.`])}
-              className="text-[#FF5F00]/60 hover:text-[#FF5F00] text-[10px] uppercase font-bold cursor-pointer"
-            >
-              Clear
-            </button>
-            <button
-              onClick={() => setShowTerminal(false)}
-              className="text-[#FF5F00]/60 hover:text-[#FF5F00] text-[10px] uppercase font-bold cursor-pointer"
-            >
-              Minimize
-            </button>
-          </div>
-        </div>
-        <div className="flex-1 p-4 overflow-y-auto space-y-1 select-text">
-          {terminalLogs.map((log, idx) => {
-            let textColor = "text-white/70";
-            if (log.includes("[SUCCESS]")) textColor = "text-green-400";
-            else if (log.includes("[ERROR]")) textColor = "text-red-400";
-            else if (log.includes("[WARNING]"))
-              textColor = "text-yellow-400 font-bold";
-            else if (log.includes("[INFO]")) textColor = "text-[#FF5F00]";
-
-            return (
-              <div key={idx} className={textColor}>
-                {log}
-              </div>
-            );
-          })}
-          <div ref={terminalEndRef} />
-        </div>
-      </div>
-    );
-  };
-
-  const renderUnifiedDiff = () => {
-    if (!fixedCode)
-      return <div className="text-white/45">No fixed changes staged.</div>;
-    const diffLines = computeDiff(code, fixedCode);
-    return (
-      <div className="bg-[#0a0a0a] rounded-2xl border border-[#FF5F00]/20 font-mono text-xs overflow-auto max-h-[480px] p-6 leading-relaxed">
-        {diffLines.map((line, idx) => {
-          let bgColor = "";
-          let textColor = "text-white/80";
-          let prefix = " ";
-
-          if (line.type === "added") {
-            bgColor = "bg-green-500/10 border-l-2 border-green-500";
-            textColor = "text-green-400";
-            prefix = "+";
-          } else if (line.type === "removed") {
-            bgColor = "bg-red-500/10 border-l-2 border-red-500";
-            textColor = "text-red-400";
-            prefix = "-";
-          }
-
-          return (
-            <div key={idx} className={`flex py-0.5 px-2 -mx-2 ${bgColor}`}>
-              <div className="w-12 text-white/30 select-none text-right pr-4">
-                {line.lineNumOriginal || ""}
-              </div>
-              <div className="w-12 text-white/30 select-none text-right pr-4">
-                {line.lineNumFixed || ""}
-              </div>
-              <div className="w-6 text-white/40 select-none text-center font-bold">
-                {prefix}
-              </div>
-              <span className={`whitespace-pre-wrap ${textColor}`}>
-                {line.value}
-              </span>
-            </div>
-          );
-        })}
       </div>
     );
   };
@@ -3760,10 +3553,11 @@ const App: React.FC = () => {
   const renderDiagnosticsColumn = () => {
     const roadmap = RepairPlanner.planRepairs(
       [...issues, ...(enableSentinel ? sentinelIssues : [])].map(
-        (iss: any) => ({
+        (iss: Issue) => ({
           filePath: loadedFilePath || "editor_buffer.ts",
           line: 0,
-          severity: (iss.severity as any) || "Medium",
+          severity:
+            (iss.severity === "Low" ? "Cosmetic" : iss.severity) || "Medium",
           description: iss.description,
         }),
       ),
@@ -3973,7 +3767,7 @@ const App: React.FC = () => {
 
               <div className="p-8">
                 <VisualDiff
-                  issues={issues as any}
+                  issues={issues}
                   acceptedHunkIds={acceptedHunkIds}
                   onToggleHunk={onToggleHunk}
                 />

@@ -15,13 +15,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
-import {
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-  act,
-} from "@testing-library/react";
+import { render, waitFor, fireEvent, act } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
 // Pure logic extracted for unit testing (mirrors the implementation in App.tsx)

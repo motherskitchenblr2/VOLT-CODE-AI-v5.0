@@ -67,9 +67,12 @@ export const useGitBackup = (username: string) => {
           `/api/database?action=getCheckpoints&username=${encodeURIComponent(username)}`,
         );
         if (res.ok) {
-          const checkpoints = await res.json();
+          const checkpoints = (await res.json()) as Array<{
+            checkpointId: string;
+            codeBackup: string;
+          }>;
           const target = checkpoints.find(
-            (c: any) => c.checkpointId === checkpointId,
+            (c) => c.checkpointId === checkpointId,
           );
           if (target) {
             return target.codeBackup;

@@ -25,7 +25,7 @@ export const useApiGateway = () => {
     ) => {
       setLoading(true);
       const providers = ["Groq", "OpenRouter", "NVIDIA", "HuggingFace"];
-      let lastError: any = null;
+      let lastError: unknown = null;
 
       for (const provider of providers) {
         const keyKey = (provider.toLowerCase() + "Key") as keyof typeof keys;
@@ -81,18 +81,18 @@ export const useApiGateway = () => {
           } finally {
             clearTimeout(timeoutId);
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           lastError = err;
           setLogs((prev) => [
             ...prev,
-            `[GATEWAY] Failure with ${provider}: ${err.message || "Timeout"}. Transitioning to next provider...`,
+            `[GATEWAY] Failure with ${provider}: ${(err as Error)?.message || "Timeout"}. Transitioning to next provider...`,
           ]);
         }
       }
 
       setLoading(false);
       throw new Error(
-        `All configured AI providers failed. Last exception: ${lastError?.message || "Unknown network error"}`,
+        `All configured AI providers failed. Last exception: ${(lastError as Error)?.message || "Unknown network error"}`,
       );
     },
     [],

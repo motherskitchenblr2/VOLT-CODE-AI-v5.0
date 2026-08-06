@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PullRequest } from "../services/AgentCommunication";
 import {
   GitPullRequest,
   ExternalLink,
-  CheckCircle2,
   XCircle,
   GitMerge,
   GitCommit,

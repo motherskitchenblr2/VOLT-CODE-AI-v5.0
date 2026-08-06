@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ChevronDown, RefreshCw, Check } from "lucide-react";
 
 interface Model {
@@ -27,7 +27,7 @@ export function AIProviderSelector({
   onProviderChange,
   onModelChange,
 }: AIProviderSelectorProps) {
-  const [providers, setProviders] = useState<Provider[]>([
+  const [providers] = useState<Provider[]>([
     {
       id: "openai",
       name: "OpenAI",

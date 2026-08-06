@@ -87,7 +87,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
         const detectedLanguage = language === "en" ? "en-US" : "hi-IN";
         const transcribedText = await audioEngine.speechToText(
           audioBlob,
-          detectedLanguage as any,
+          detectedLanguage,
         );
         setTranscript(transcribedText);
       } catch (error) {

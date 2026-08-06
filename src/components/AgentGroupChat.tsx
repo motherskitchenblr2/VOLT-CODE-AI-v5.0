@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Message, Agent, translate } from "../services/AgentCommunication";
+import { Message, Agent } from "../services/AgentCommunication";
 import { MessageCircle, Volume2, Copy } from "lucide-react";
 
 interface AgentGroupChatProps {
@@ -60,9 +60,6 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
     }
   };
 
-  const agent =
-    messages.length > 0 ? agents.get(messages[0].senderId) : undefined;
-
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border border-white/10 overflow-hidden">
       {/* Header */}
@@ -95,7 +92,6 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
           messages.map((message) => {
             const sender = agents.get(message.senderId);
             const isSystem = message.type === "system";
-            const isDecision = message.type === "decision";
 
             return (
               <div

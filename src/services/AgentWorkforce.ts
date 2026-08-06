@@ -10,6 +10,12 @@ export interface VerificationResult {
   feedback: string[];
 }
 
+export interface VerifyContext {
+  language?: string;
+  filePath?: string;
+  circularCycles?: number;
+}
+
 export abstract class SeniorAgent {
   constructor(
     public name: string,
@@ -17,7 +23,10 @@ export abstract class SeniorAgent {
     public weight: number, // Weighted voting percentage (Gap 5)
   ) {}
 
-  abstract verify(code: string, context?: any): Promise<VerificationResult>;
+  abstract verify(
+    code: string,
+    context?: VerifyContext,
+  ): Promise<VerificationResult>;
 }
 
 // 1. Senior Security Specialist
@@ -57,7 +66,10 @@ export class SeniorQATesterAgent extends SeniorAgent {
     super("Senior QA Tester Specialist", "Types & Test Assertions", 0.25);
   }
 
-  async verify(code: string, context?: any): Promise<VerificationResult> {
+  async verify(
+    code: string,
+    context?: VerifyContext,
+  ): Promise<VerificationResult> {
     const feedback: string[] = [];
     let score = 100;
 
@@ -162,7 +174,7 @@ export class ConsensusEngine {
 
   public async evaluateCodePatch(
     code: string,
-    context?: any,
+    context?: VerifyContext,
   ): Promise<{
     passed: boolean;
     compositeScore: number;
@@ -334,7 +346,7 @@ export class MultiAgentOrchestrator {
     originalCode: string,
     username: string,
     keys: Record<string, string>,
-    context?: any,
+    context?: VerifyContext,
   ): Promise<OrchestratorResult> {
     // 1. Triage Phase
     const triageReport = this.triageAgent.triage(taskDescription);

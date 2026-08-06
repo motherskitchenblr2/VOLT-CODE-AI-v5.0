@@ -13,6 +13,29 @@ interface GroqResponse {
   };
 }
 
+interface OpenRouterRequestBody {
+  code?: string;
+  language?: string;
+  model?: string;
+  agentMode?: string;
+  skill?: string;
+  plugin?: string;
+  customPrompt?: string;
+  provider?: string;
+  keys?: Record<string, string>;
+  isBossChat?: boolean;
+}
+
+interface ApiRequest {
+  method?: string;
+  body?: Record<string, unknown>;
+}
+
+interface ApiResponse {
+  status: (code: number) => ApiResponse;
+  json: (payload: unknown) => ApiResponse;
+}
+
 function detectLanguage(codeStr: string): string {
   if (!codeStr || !codeStr.trim()) return 'unknown';
   if (
@@ -32,12 +55,12 @@ function detectLanguage(codeStr: string): string {
   return 'unknown';
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys, isBossChat } = req.body || {};
+  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys, isBossChat } = (req.body || {}) as OpenRouterRequestBody;
 
   // --- 1. Language Detection ---
   const activeLanguage = (language === 'auto' || !language) ? detectLanguage(code || '') : language;
@@ -238,7 +261,7 @@ Specifically:
 }`
               : `Role: Senior debug agent. Return ONLY valid JSON. No markdown. No prose.
 
-${skillMap[activeSkill] || 'Focus: all bug types equally.'}
+${skillMap[activeSkill || ''] || 'Focus: all bug types equally.'}
 ${trimmedPlugin ? `Active Plugin Diagnostic: Apply specialized logic checks for "${trimmedPlugin}".` : ''}
 ${pythonGuardrailPrompt}
 
@@ -331,7 +354,7 @@ Rules:
         parsed.summary = parsed.explanation;
       }
       if (parsed.fixes && Array.isArray(parsed.fixes) && !parsed.issues) {
-        parsed.issues = parsed.fixes.map((fix: any, index: number) => ({
+        parsed.issues = parsed.fixes.map((fix: Record<string, unknown>, index: number) => ({
           id: fix.id || index + 1,
           type: fix.type || 'style',
           severity: fix.severity || 'Medium',
@@ -356,10 +379,10 @@ Rules:
       modelUsed: selectedModel
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(500).json({
       error: 'Server error',
-      details: error?.message || 'Unknown error'
+      details: (error as Error)?.message || 'Unknown error'
     });
   }
 }

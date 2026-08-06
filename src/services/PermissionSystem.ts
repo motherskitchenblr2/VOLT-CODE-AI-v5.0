@@ -34,7 +34,7 @@ export interface AuditLog {
   action: string;
   resource: string;
   timestamp: Date;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   status: "success" | "failed" | "unauthorized";
 }
 
@@ -276,7 +276,7 @@ export class PermissionSystem {
     userId: string,
     action: string,
     resource: string,
-    details: Record<string, any>,
+    details: Record<string, unknown>,
     status: "success" | "failed" | "unauthorized" = "success",
   ): void {
     const log: AuditLog = {

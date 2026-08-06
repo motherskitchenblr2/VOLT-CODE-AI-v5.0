@@ -12,12 +12,9 @@ import {
   defaultAgents,
   bossAgent,
   Meeting,
-  Message,
-  MeetingTask,
   Agent,
   translate,
 } from "../services/AgentCommunication";
-import { getAudioEngine } from "../services/AudioEngine";
 import { AgentGroupChat } from "./AgentGroupChat";
 import { AudioInterface } from "./AudioInterface";
 import { ExecutionPanel } from "./ExecutionPanel";
@@ -88,7 +85,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
   const handleSendMessage = async (content: string) => {
     if (!meeting || !selectedAgent) return;
 
-    const message = communicationService.addMessage(
+    communicationService.addMessage(
       meeting.id,
       selectedAgent,
       meeting.agents.find((a) => a.id === selectedAgent)?.name || "Unknown",
@@ -105,7 +102,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
     const audioUrl = URL.createObjectURL(audioBlob);
 
     // Add message with audio
-    const message = communicationService.addMessage(
+    communicationService.addMessage(
       meeting.id,
       selectedAgent,
       meeting.agents.find((a) => a.id === selectedAgent)?.name || "Unknown",
@@ -126,7 +123,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
         ? "A new task has been created for the team"
         : "टीम के लिए एक नया कार्य बनाया गया है";
 
-    const task = communicationService.addTask(
+    communicationService.addTask(
       meeting.id,
       taskTitle,
       "fix",

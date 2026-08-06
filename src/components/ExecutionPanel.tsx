@@ -69,7 +69,10 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
   language,
 }) => {
   const getStatusConfig = (status: string) => {
-    return (statusConfig as any)[status] || statusConfig["planned"];
+    return (
+      statusConfig[status as keyof typeof statusConfig] ||
+      statusConfig["planned"]
+    );
   };
 
   const getSeverityBadgeColor = (severity: string) => {
@@ -172,8 +175,8 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                         className={`text-xs font-semibold ${statusConfig.textColor}`}
                       >
                         {language === "en"
-                          ? (statusConfig as any).label_en
-                          : (statusConfig as any).label_hi}
+                          ? statusConfig.label_en
+                          : statusConfig.label_hi}
                       </span>
                     </div>
                   </div>

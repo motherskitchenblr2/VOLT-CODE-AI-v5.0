@@ -10,18 +10,13 @@ import {
   Key,
   Cpu,
   Eye,
-  DollarSign,
   Sparkles,
   Layers,
   Flame,
   AlertCircle,
   Sliders,
-  Settings,
   Lock,
   GitBranch,
-  Trash2,
-  CheckSquare,
-  Square,
 } from "lucide-react";
 import { ProviderState } from "../services/ProviderRegistry";
 import { OptimizerReport } from "../services/PerformanceOptimizer";
@@ -38,6 +33,15 @@ interface Checkpoint {
   filePath: string;
   codeBackup: string;
   gitCommitSha: string;
+  createdAt: string;
+}
+
+interface Deployment {
+  _id: string;
+  target: string;
+  status: string;
+  gitCommitSha?: string;
+  latency?: number;
   createdAt: string;
 }
 
@@ -119,7 +123,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   const [selectedCheckpointId, setSelectedCheckpointId] = useState("");
   const [isPinging, setIsPinging] = useState<Record<string, boolean>>({});
 
-  const [deployments, setDeployments] = useState<any[]>([]);
+  const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployLogs, setDeployLogs] = useState("");
   const [selectedTarget, setSelectedTarget] = useState<
@@ -171,9 +175,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             `[ERROR] Deployment failed: ${err.error || "Server error"}\n`,
         );
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setDeployLogs(
-        (prev) => prev + `[ERROR] Network error: ${e.message || e}\n`,
+        (prev) =>
+          prev +
+          `[ERROR] Network error: ${e instanceof Error ? e.message || String(e) : String(e)}\n`,
       );
     } finally {
       setIsDeploying(false);
@@ -248,8 +254,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     try {
       await onRestoreCheckpoint(selectedCheckpointId);
       alert(`Reverted workspace content to checkpoint ${selectedCheckpointId}`);
-    } catch (e: any) {
-      alert(`Rollback failed: ${e.message}`);
+    } catch (e: unknown) {
+      alert(`Rollback failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   };
 
@@ -1144,7 +1150,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 </span>
                 <select
                   value={selectedTarget}
-                  onChange={(e) => setSelectedTarget(e.target.value as any)}
+                  onChange={(e) =>
+                    setSelectedTarget(
+                      e.target.value as "STAGING" | "PRODUCTION",
+                    )
+                  }
                   className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
                 >
                   <option

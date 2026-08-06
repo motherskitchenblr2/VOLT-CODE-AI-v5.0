@@ -1,18 +1,12 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  ChevronRight,
-  Eye,
-  GitCompare,
-  FileText,
-  CheckCircle2,
-} from "lucide-react";
+import { Eye, GitCompare, FileText, CheckCircle2 } from "lucide-react";
+import { HunkIssue } from "./VisualDiff";
 
 interface SplitEditorLayoutProps {
   code: string;
   onCodeChange: (code: string) => void;
   fixedCode?: string;
-  issues: any[];
+  issues: HunkIssue[];
   isAnalyzing: boolean;
   onAnalyze: () => void;
   onApplyFix: () => void;
@@ -24,8 +18,8 @@ export function SplitEditorLayout({
   onCodeChange,
   fixedCode,
   issues,
-  isAnalyzing,
-  onAnalyze,
+  isAnalyzing: _isAnalyzing,
+  onAnalyze: _onAnalyze,
   onApplyFix,
   language,
 }: SplitEditorLayoutProps) {
@@ -104,7 +98,11 @@ export function SplitEditorLayout({
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setRightPanel(id as any)}
+              onClick={() =>
+                setRightPanel(
+                  id as "preview" | "comparison" | "notepad" | "review",
+                )
+              }
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 rightPanel === id
                   ? "bg-[#FF5F00] text-black"

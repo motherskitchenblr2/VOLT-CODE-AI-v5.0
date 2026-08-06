@@ -1,18 +1,11 @@
 import React, { useState } from "react";
 import {
   Shield,
-  ShieldAlert,
   AlertTriangle,
   TrendingUp,
   Activity,
-  Sparkles,
   Zap,
   Users,
-  Play,
-  History,
-  Settings,
-  Wrench,
-  HelpCircle,
   RefreshCw,
 } from "lucide-react";
 

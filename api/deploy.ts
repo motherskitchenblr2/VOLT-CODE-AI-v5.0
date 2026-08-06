@@ -33,8 +33,8 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   try {
     await connectToDatabase();
-  } catch (error: any) {
-    return res.status(500).json({ error: 'Database connection failed', details: error.message });
+  } catch (error: unknown) {
+    return res.status(500).json({ error: 'Database connection failed', details: (error as Error)?.message });
   }
 
   const generatedSha = gitCommitSha || 'v6.1-rc1-' + Math.random().toString(36).substring(2, 9);

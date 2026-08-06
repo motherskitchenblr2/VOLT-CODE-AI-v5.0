@@ -49,7 +49,7 @@ describe("MultiAgentOrchestrator - Self-Correction Flow", () => {
           issues: [],
           summary: "All checks passed",
         }),
-    } as any);
+    } as unknown as Response);
 
     const orchestrator = new MultiAgentOrchestrator();
     const result = await orchestrator.runOrchestration(

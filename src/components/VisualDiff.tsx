@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  Check,
-  X,
-  AlertTriangle,
-  AlertCircle,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { Check, X, Eye, EyeOff } from "lucide-react";
 
 export interface HunkIssue {
   id: number;

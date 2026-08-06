@@ -77,7 +77,7 @@ function isFreeModel(provider: ProviderKey, model: RawModel): boolean {
   return false;
 }
 
-function normalizeName(model: RawModel, provider: ProviderKey): string {
+function normalizeName(model: RawModel, _provider: ProviderKey): string {
   if (model.name && model.name !== model.id) return model.name;
   const parts = model.id.split(/[:./-]+/);
   const namePart = parts[parts.length - 1];

@@ -5,7 +5,6 @@ import {
   GitPullRequest,
   Code,
   CheckCircle,
-  RefreshCw,
 } from "lucide-react";
 
 interface GitHubWorkspaceProps {

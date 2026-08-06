@@ -66,7 +66,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
   onDismiss,
   language = "en",
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [, setIsExpanded] = useState(true);
 
   if (!guidance) return null;
 

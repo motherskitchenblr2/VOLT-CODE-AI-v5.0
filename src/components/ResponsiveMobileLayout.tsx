@@ -8,13 +8,9 @@ import {
   GitCompare,
   FileText,
   CheckCircle2,
-  Settings,
   Users,
   GitPullRequest,
   Crown,
-  Zap,
-  Home,
-  MessageSquare,
   Plus,
 } from "lucide-react";
 
@@ -128,7 +124,9 @@ export function ResponsiveMobileLayout({
             ].map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                onClick={() => setActiveTab(id as any)}
+                onClick={() =>
+                  setActiveTab(id as "code" | "preview" | "compare" | "notes")
+                }
                 className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-bold transition-all ${
                   activeTab === id
                     ? "bg-[#FF5F00] text-black"

@@ -14,6 +14,50 @@ export interface RecordingState {
   audioBlob?: Blob;
 }
 
+interface WindowWithWebkitAudioContext {
+  webkitAudioContext?: typeof AudioContext;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence?: number;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionEventLike {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEventLike {
+  readonly error: string;
+}
+
+interface SpeechRecognitionLike {
+  language: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface WindowWithSpeechRecognition {
+  SpeechRecognition?: new () => SpeechRecognitionLike;
+  webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+}
+
 export class AudioEngine {
   private mediaRecorder: MediaRecorder | null = null;
   private audioContext: AudioContext | null = null;
@@ -39,9 +83,10 @@ export class AudioEngine {
   // Initialize audio context
   async initialize(): Promise<void> {
     if (!this.audioContext) {
-      this.audioContext = new (
-        window.AudioContext || (window as any).webkitAudioContext
-      )();
+      const AudioContextCtor = (window.AudioContext ||
+        (window as WindowWithWebkitAudioContext)
+          .webkitAudioContext) as typeof AudioContext;
+      this.audioContext = new AudioContextCtor();
     }
   }
 
@@ -203,9 +248,9 @@ export class AudioEngine {
     audioBlob: Blob,
     language: "en-US" | "hi-IN" = "en-US",
   ): Promise<string> {
+    const win = window as WindowWithSpeechRecognition;
     const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+      win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       console.warn(
@@ -221,7 +266,7 @@ export class AudioEngine {
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEventLike) => {
         let transcript = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
@@ -229,7 +274,7 @@ export class AudioEngine {
         resolve(transcript);
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
         reject(new Error(`Speech recognition error: ${event.error}`));
       };
 
@@ -322,7 +367,8 @@ export class AudioEngine {
   // Check browser support
   static isSupported(): boolean {
     return !!(
-      (window.AudioContext || (window as any).webkitAudioContext) &&
+      (window.AudioContext ||
+        (window as WindowWithWebkitAudioContext).webkitAudioContext) &&
       typeof SpeechSynthesisUtterance !== "undefined" &&
       typeof navigator.mediaDevices?.getUserMedia === "function"
     );
