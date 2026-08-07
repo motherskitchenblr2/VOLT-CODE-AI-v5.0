@@ -28,7 +28,7 @@ Applies to:
 
 - Provider API keys (Groq, OpenRouter, NVIDIA, HuggingFace) and GitHub tokens are
   stored in a **MongoDB secret vault**, encrypted at rest with `ENCRYPTION_KEY`
-  using AES-256-GCM (see `api/utils/secrets.ts`).
+  using AES-256-GCM (see `shared/secrets.ts`).
 - Plaintext secrets are never written to MongoDB and never returned to the client.
 - Server-side handlers resolve keys in order: **MongoDB vault → request-provided
   key → environment variable** (see `api/openrouter.ts` and `api/models.ts`).
@@ -58,7 +58,7 @@ use the OAuth 2.0 Authorization Code flow with PKCE (S256).
   `https://volt-code-ai-v5-0-next-gen-ops-projects.vercel.app/api/auth?action=callback`
 - **Token storage**: access + refresh tokens are encrypted at rest with
   `ENCRYPTION_KEY` (AES-256-GCM) under `oauth.google` / `oauth.microsoft` in
-  the MongoDB vault (see `api/utils/oauth.ts`). Plaintext tokens are never
+  the MongoDB vault (see `shared/oauth.ts`). Plaintext tokens are never
   stored and never returned to the client.
 - The PKCE verifier + state travel in an HttpOnly `volt_oauth` cookie; the
   state is validated on callback to prevent CSRF.
@@ -67,6 +67,67 @@ use the OAuth 2.0 Authorization Code flow with PKCE (S256).
   read-only scopes.
 - If OAuth client credentials or `MONGODB_URI` are missing, the endpoints
   degrade gracefully with clear 4xx/5xx errors and the UI shows "Not configured".
+
+## User Authentication & Data Security
+
+Password login with server-side sessions protects every user data endpoint.
+All user-scoped data (sessions, secret vault, audit log, OAuth tokens) is
+tied to an authenticated identity — never to a client-supplied username.
+
+### Passwords & Sessions
+
+- **Password hashing**: scrypt with a per-user random 16-byte salt and 64-byte
+  derived key (`scrypt$salt$hash` format); comparison uses
+  `crypto.timingSafeEqual` (see `shared/security.ts`).
+- **Password policy**: 8–128 characters; never stored in plaintext, never
+  logged, never returned to the client.
+- **Session tokens**: 256-bit random tokens issued on login/register, delivered
+  in an `HttpOnly; SameSite=Lax; Secure` `volt_session` cookie (7-day expiry).
+  Only the SHA-256 hash of the token is stored in MongoDB — the raw token is
+  never persisted.
+- **Registration** rate-limited (5/min/IP); **login** rate-limited (10/min/IP)
+  with `Retry-After` on 429.
+- **Logout** destroys the server session and clears the cookie.
+
+### Authorization
+
+- Every data handler (`/api/database`, `/api/cloud`, `/api/openrouter`,
+  `/api/deploy`, `/api/provider-validate`) requires a valid session via
+  `requireAuth` and derives the acting username from the session, never from a
+  request parameter or body.
+- Unauthenticated access returns `401`; a session cookie is validated against
+  MongoDB on every request (expired/revoked sessions are rejected).
+- `/api/models` remains a public catalog; a valid session upgrades key
+  resolution to the user's vault, anonymous callers still get env/client keys.
+
+### Input Sanitization
+
+- `sanitizeUsername`: 3–32 chars, `^[A-Za-z0-9._-]+$`, control characters rejected.
+- `sanitizeText`: strips control chars/null bytes, caps length; applied to
+  email and free-text inputs.
+
+### Security Headers & CORS
+
+- Applied on every API handler: `X-Content-Type-Options: nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, strict
+  `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, and a
+  locked-down `Content-Security-Policy`.
+- CORS is an explicit allowlist (APP_ORIGIN + localhost); credentials
+  (`Access-Control-Allow-Credentials: true`) are only emitted for allowlisted
+  origins, preventing credential-bearing cross-origin requests.
+
+### Audit Trail
+
+- Every authentication event (register, login, logout) and sensitive action
+  writes to the MongoDB `AuditLog` collection with username, action, details,
+  and status (`SUCCESS`/`WARNING`/`FAILED`).
+- Audit failures are non-fatal: they never break the primary operation.
+
+### Storage
+
+- Requires `MONGODB_URI` (Vercel env). Users, sessions, the secret vault, and
+  audit logs persist in MongoDB. If `MONGODB_URI` is unset, auth-related
+  endpoints fail closed with a clear 500 (no data is silently exposed).
 
 ## Code Security
 
