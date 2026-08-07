@@ -17,14 +17,18 @@ const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown error';
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  try {
-    await connectToDatabase();
-  } catch (error: unknown) {
-    return res.status(500).json({ error: 'Database connection failed', details: getErrorMessage(error) });
-  }
-
   const { method } = req;
   const { action, username } = req.query;
+
+  const isStatusQuery = action === 'getSecretStatus';
+
+  if (!isStatusQuery) {
+    try {
+      await connectToDatabase();
+    } catch (error: unknown) {
+      return res.status(500).json({ error: 'Database connection failed', details: getErrorMessage(error) });
+    }
+  }
 
   if (typeof username !== 'string' || !username.trim()) {
     return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
