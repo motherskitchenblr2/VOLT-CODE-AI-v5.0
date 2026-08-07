@@ -39,7 +39,7 @@ const PROVIDER_KEY_MAP: Array<{ provider: string; key: keyof ProviderKeys }> = [
   { provider: "huggingface", key: "huggingface" },
 ];
 
-export function useLiveProviderModels(keys: ProviderKeys) {
+export function useLiveProviderModels(keys: ProviderKeys, username?: string) {
   const [availability, setAvailability] = useState<ProviderAvailability[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
@@ -61,6 +61,9 @@ export function useLiveProviderModels(keys: ProviderKeys) {
 
     const currentKeys = keysRef.current;
     const query = new URLSearchParams({ provider: "all" });
+    if (username) {
+      query.append("username", username);
+    }
     for (const { key } of PROVIDER_KEY_MAP) {
       const value = currentKeys[key];
       if (value) {
@@ -89,7 +92,7 @@ export function useLiveProviderModels(keys: ProviderKeys) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [username]);
 
   const groq = keys.groq;
   const openrouter = keys.openrouter;

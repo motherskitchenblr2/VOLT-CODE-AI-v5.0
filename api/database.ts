@@ -58,6 +58,25 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           return res.status(500).json({ error: 'Failed to fetch settings', details: getErrorMessage(err) });
         }
       }
+      if (action === 'getSecretStatus') {
+        try {
+          const { hasStoredSecrets, loadUserSecrets } = await import('./utils/secrets.js');
+          const secrets = await loadUserSecrets(username);
+          const hasAny = await hasStoredSecrets(username);
+          return res.status(200).json({
+            stored: hasAny,
+            providers: {
+              groq: Boolean(secrets.groq),
+              openrouter: Boolean(secrets.openrouter),
+              nvidia: Boolean(secrets.nvidia),
+              huggingface: Boolean(secrets.huggingface),
+              githubToken: Boolean(secrets.githubToken)
+            }
+          });
+        } catch {
+          return res.status(200).json({ stored: false, providers: {} });
+        }
+      }
       if (action === 'getCheckpoints') {
         try {
           const checkpoints = await CheckpointModel.find({ username }).sort({ createdAt: -1 });
@@ -138,6 +157,22 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           return res.status(200).json(updatedSettings);
         } catch (err: unknown) {
           return res.status(500).json({ error: 'Failed to save settings', details: getErrorMessage(err) });
+        }
+      }
+      if (action === 'saveSecrets') {
+        try {
+          const { saveUserSecrets } = await import('./utils/secrets.js');
+          const body = req.body as { keys?: Record<string, string> };
+          await saveUserSecrets(username, body.keys || {});
+          await AuditLogModel.create({
+            username,
+            action: 'SECRETS_UPDATE',
+            details: 'Encrypted provider API secrets updated in the secure vault.',
+            status: 'SUCCESS'
+          });
+          return res.status(200).json({ ok: true });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save secrets', details: getErrorMessage(err) });
         }
       }
       if (action === 'saveCheckpoint') {

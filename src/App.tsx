@@ -448,12 +448,68 @@ const App: React.FC = () => {
     loading: liveProviderLoading,
     lastUpdated: liveProviderUpdated,
     refresh: refreshLiveProviders,
-  } = useLiveProviderModels({
-    groq: groqKey,
-    openrouter: openrouterKey,
-    nvidia: nvidiaKey,
-    huggingface: huggingfaceKey,
-  });
+  } = useLiveProviderModels(
+    {
+      groq: groqKey,
+      openrouter: openrouterKey,
+      nvidia: nvidiaKey,
+      huggingface: huggingfaceKey,
+    },
+    username,
+  );
+
+  // Secure vault: which secrets are stored encrypted in MongoDB
+  const [vaultStored, setVaultStored] = useState(false);
+  const [vaultSyncState, setVaultSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const fetchVaultStatus = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/database?action=getSecretStatus&username=${encodeURIComponent(username)}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setVaultStored(Boolean(data.stored));
+      }
+    } catch {
+      setVaultStored(false);
+    }
+  }, [username]);
+
+  useEffect(() => {
+    fetchVaultStatus();
+  }, [fetchVaultStatus]);
+
+  // Debounced push of provider keys to the MongoDB secret vault (encrypted server-side).
+  useEffect(() => {
+    const hasAnyKey = groqKey || openrouterKey || nvidiaKey || huggingfaceKey;
+    if (!hasAnyKey) return;
+    setVaultSyncState("saving");
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/database?action=saveSecrets&username=${encodeURIComponent(username)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              keys: {
+                groq: groqKey,
+                openrouter: openrouterKey,
+                nvidia: nvidiaKey,
+                huggingface: huggingfaceKey,
+              },
+            }),
+          },
+        );
+        setVaultSyncState(res.ok ? "saved" : "error");
+        if (res.ok) fetchVaultStatus();
+      } catch {
+        setVaultSyncState("error");
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, fetchVaultStatus]);
 
   // Auto-Language Deduction Warning Modal
   const [showLangAlert, setShowLangAlert] = useState(false);
@@ -1334,6 +1390,7 @@ const App: React.FC = () => {
           plugin: selectedPlugin,
           customPrompt: text,
           isBossChat: true,
+          username,
           keys: {
             groq: groqKey,
             openrouter: openrouterKey,
@@ -2579,7 +2636,36 @@ const App: React.FC = () => {
             </div>
 
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40 space-y-4">
-              <div className="text-lg font-bold mb-2">Provider API Keys</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-lg font-bold">Provider API Keys</div>
+                <div className="flex items-center gap-2">
+                  {vaultStored && (
+                    <span className="flex items-center gap-1 text-[10px] text-green-400 font-semibold uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_#22c55e]" />
+                      Vault
+                    </span>
+                  )}
+                  {vaultSyncState === "saving" && (
+                    <span className="text-[10px] text-[#FF5F00] font-semibold uppercase tracking-wider">
+                      Syncing…
+                    </span>
+                  )}
+                  {vaultSyncState === "saved" && (
+                    <span className="text-[10px] text-green-400 font-semibold uppercase tracking-wider">
+                      Saved
+                    </span>
+                  )}
+                  {vaultSyncState === "error" && (
+                    <span className="text-[10px] text-red-400 font-semibold uppercase tracking-wider">
+                      Sync failed
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-[10px] text-white/40 -mt-2 mb-1">
+                Keys are encrypted and stored in the MongoDB secret vault.
+                Entering a key auto-syncs it to the vault.
+              </p>
 
               <div>
                 <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">

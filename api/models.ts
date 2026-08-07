@@ -168,6 +168,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     : typeof req.query.key === 'string'
       ? [req.query.key]
       : [];
+  const username = typeof req.query.username === 'string' ? req.query.username : '';
 
   const fetchAll = !rawProvider || rawProvider === 'all';
 
@@ -177,9 +178,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(400).json({ error: `Unsupported provider. Allowed: ${PROVIDERS.join(', ')}` });
   }
 
+  const { loadUserSecrets } = await import('./utils/secrets.js');
+  const storedSecrets = await loadUserSecrets(username);
+  const providerToSecretKey: Record<ProviderKey, keyof typeof storedSecrets> = {
+    groq: 'groq',
+    openrouter: 'openrouter',
+    nvidia: 'nvidia',
+    huggingface: 'huggingface',
+  };
+
   const results = await Promise.all(
     providersToFetch.map(async (provider, index) => {
+      const stored = storedSecrets[providerToSecretKey[provider]];
       const key =
+        (typeof stored === 'string' && stored.length > 0 ? stored : '') ||
         rawKeys[index] ||
         apiKeyFromEnv(provider) ||
         '';
