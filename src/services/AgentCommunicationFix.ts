@@ -103,13 +103,10 @@ export class AgentCommunicationFix {
 
       // Perform health check
       const startTime = Date.now();
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
       const response = await fetch(`/api/agents/${agentId}/health`, { 
         method: 'GET',
-        signal: controller.signal
+        signal: AbortSignal.timeout(3000)
       });
-      clearTimeout(timeoutId);
 
       const responseTime = Date.now() - startTime;
       const isOnline = response.ok;
@@ -216,13 +213,10 @@ export class AgentCommunicationFix {
     try {
       console.log('[AgentComm] Verifying API connectivity...');
       
-      const healthController = new AbortController();
-      const healthTimeoutId = setTimeout(() => healthController.abort(), 2000);
       const response = await fetch('/api/health', { 
         method: 'GET',
-        signal: healthController.signal
+        signal: AbortSignal.timeout(2000)
       });
-      clearTimeout(healthTimeoutId);
 
       const isConnected = response.ok;
       console.log(`[AgentComm] API connectivity: ${isConnected ? 'OK' : 'FAILED'}`);
