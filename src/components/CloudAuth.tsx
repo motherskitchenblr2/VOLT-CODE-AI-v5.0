@@ -36,11 +36,7 @@ interface CloudItem {
   isFolder?: boolean;
 }
 
-interface CloudAuthProps {
-  username: string;
-}
-
-export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
+export const CloudAuth: React.FC = () => {
   const [status, setStatus] = useState<Record<string, ProviderStatus> | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
@@ -70,7 +66,7 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/auth?action=status&username=${encodeURIComponent(username)}`,
+        `/api/auth?action=status`,
       );
       const data = (await res.json()) as { providers?: Record<string, ProviderStatus> };
       setStatus(data.providers || null);
@@ -79,7 +75,7 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
     } finally {
       setLoading(false);
     }
-  }, [username]);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => loadStatus(), 0);
@@ -96,14 +92,14 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
   }, [loadStatus]);
 
   const startSignIn = (provider: string) => {
-    const url = `/api/auth?action=start&provider=${provider}&username=${encodeURIComponent(username)}`;
+    const url = `/api/auth?action=start&provider=${provider}`;
     window.location.assign(url);
   };
 
   const disconnect = async (provider: string) => {
     setBusyProvider(provider);
     try {
-      await fetch(`/api/auth?action=logout&username=${encodeURIComponent(username)}&provider=${provider}`, {
+      await fetch(`/api/auth?action=logoutoauth&provider=${provider}`, {
         method: "POST",
       });
       await loadStatus();
@@ -121,7 +117,7 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
     setItems([]);
     try {
       const res = await fetch(
-        `/api/cloud?username=${encodeURIComponent(username)}&provider=${provider}&service=${service}&max=10`,
+        `/api/cloud?provider=${provider}&service=${service}&max=10`,
       );
       const data = (await res.json()) as { items?: CloudItem[]; error?: string; details?: string };
       if (!res.ok) {

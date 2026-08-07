@@ -403,6 +403,10 @@ const App: React.FC = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("dev_user");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginMode, setLoginMode] = useState<"login" | "register">("login");
+  const [loginError, setLoginError] = useState("");
+  const [loginBusy, setLoginBusy] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [scanProgress, setScanProgress] = useState(0);
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
@@ -1639,10 +1643,57 @@ const App: React.FC = () => {
     setShowReport(true);
   };
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setShowLoginModal(false);
+  const handleLogin = async () => {
+    setLoginError("");
+    setLoginBusy(true);
+    try {
+      const action = loginMode === "register" ? "register" : "login";
+      const res = await fetch(`/api/auth?action=${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username: username.trim(), password: loginPassword }),
+      });
+      const data = (await res.json()) as { ok?: boolean; username?: string; error?: string; details?: string };
+      if (!res.ok || !data.ok) {
+        setLoginError(data.details || data.error || "Sign-in failed.");
+        return;
+      }
+      setIsLoggedIn(true);
+      setUsername(data.username || username.trim());
+      setShowLoginModal(false);
+    } catch {
+      setLoginError("Network error — could not reach the server.");
+    } finally {
+      setLoginBusy(false);
+    }
   };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth?action=logout", { method: "POST", credentials: "include" });
+    } catch {
+      // Best-effort: still clear local session.
+    }
+    setIsLoggedIn(false);
+    setUsername("dev_user");
+    setLoginPassword("");
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/auth?action=me", { credentials: "include" });
+        const data = (await res.json()) as { authenticated?: boolean; username?: string };
+        if (data.authenticated && data.username) {
+          setIsLoggedIn(true);
+          setUsername(data.username);
+        }
+      } catch {
+        // No session — leave logged out.
+      }
+    })();
+  }, []);
 
   const languages = [
     { value: "auto", label: "Auto Detect" },
@@ -2397,8 +2448,18 @@ const App: React.FC = () => {
             LOGIN TO SAVE
           </button>
         ) : (
-          <div className="text-[#FF5F00] font-semibold truncate">
-            {username}
+          <div className="flex items-center gap-2">
+            <div className="text-[#FF5F00] font-semibold truncate max-w-[120px]">
+              {username}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[10px] font-bold transition-all cursor-pointer"
+              title="Sign out"
+            >
+              <X className="w-3.5 h-3.5" />
+              LOGOUT
+            </button>
           </div>
         )}
 
@@ -4077,34 +4138,88 @@ const App: React.FC = () => {
       <AnimatePresence>
         {showLoginModal && (
           <div className="fixed inset-0 bg-black/90 z-[90] flex items-center justify-center select-text">
-            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-xl p-9 rounded-3xl">
+            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-xl p-9 rounded-3xl max-h-[90vh] overflow-y-auto">
               <div className="font-bold text-center text-2xl mb-2 select-none">
-                SIGN IN
+                {loginMode === "register" ? "CREATE ACCOUNT" : "SIGN IN"}
               </div>
-              <div className="text-center text-sm mb-8 text-[#FF5F00]/60 select-none">
-                Save and retrieve all your diagnostics sessions
+              <div className="text-center text-sm mb-6 text-[#FF5F00]/60 select-none">
+                Secure login — your data and keys stay protected
               </div>
+
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => {
+                    setLoginMode("login");
+                    setLoginError("");
+                  }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    loginMode === "login"
+                      ? "bg-[#FF5F00] text-black"
+                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                  }`}
+                >
+                  SIGN IN
+                </button>
+                <button
+                  onClick={() => {
+                    setLoginMode("register");
+                    setLoginError("");
+                  }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    loginMode === "register"
+                      ? "bg-[#FF5F00] text-black"
+                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                  }`}
+                >
+                  CREATE ACCOUNT
+                </button>
+              </div>
+
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
                 placeholder="Username"
+                autoComplete="username"
               />
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
+                placeholder="Password (min 8 characters)"
+                autoComplete={loginMode === "register" ? "new-password" : "current-password"}
+              />
+
+              {loginError && (
+                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-3">
+                  {loginError}
+                </div>
+              )}
+
               <button
                 onClick={handleLogin}
-                className="mt-2 w-full py-3.5 bg-[#FF5F00] font-extrabold text-black rounded-xl cursor-pointer select-none"
+                disabled={loginBusy}
+                className="mt-2 w-full py-3.5 bg-[#FF5F00] font-extrabold text-black rounded-xl cursor-pointer select-none disabled:opacity-60"
               >
-                ENABLE SESSION SAVING
+                {loginBusy
+                  ? "PLEASE WAIT..."
+                  : loginMode === "register"
+                    ? "CREATE ACCOUNT & SIGN IN"
+                    : "SIGN IN"}
               </button>
 
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <div className="text-center text-xs font-bold text-white/50 mb-4 select-none uppercase tracking-wider">
-                  Connect Cloud Accounts
+              {isLoggedIn && (
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <div className="text-center text-xs font-bold text-white/50 mb-4 select-none uppercase tracking-wider">
+                    Connect Cloud Accounts
+                  </div>
+                  <div className="max-h-72 overflow-y-auto pr-1">
+                    <CloudAuth />
+                  </div>
                 </div>
-                <div className="max-h-72 overflow-y-auto pr-1">
-                  <CloudAuth username={username} />
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}

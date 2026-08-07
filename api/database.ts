@@ -1,26 +1,38 @@
 import { connectToDatabase } from './utils/db.js';
 import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
 
 type ApiRequest = {
   method?: string;
   query: Record<string, string | string[] | undefined>;
   body?: Record<string, unknown>;
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
-  setHeader: (name: string, value: string[]) => void;
+  setHeader: (name: string, value: string) => void;
 };
 
 const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown error';
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const { method } = req;
-  const { action, username } = req.query;
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
+  const { action } = req.query;
 
   const isStatusQuery = action === 'getSecretStatus';
+
+  // All database actions require an authenticated session. The username is
+  // taken from the session, never from the client.
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
 
   if (!isStatusQuery) {
     try {
@@ -30,11 +42,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     }
   }
 
-  if (typeof username !== 'string' || !username.trim()) {
-    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
-  }
-
-  switch (method) {
+  switch (req.method) {
     case 'GET':
       if (action === 'getSessions') {
         try {
@@ -224,7 +232,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return res.status(400).json({ error: 'Invalid POST action' });
 
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
-      return res.status(405).json({ error: `Method ${method} not allowed` });
+      res.setHeader('Allow', 'GET, POST');
+      return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 }

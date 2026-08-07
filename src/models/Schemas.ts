@@ -77,6 +77,8 @@ const CheckpointSchema: Schema = new Schema({
 // 3. User Settings & Encrypted Keys Schema (Epic 17 & Gap 7)
 export interface IUserSettings extends Document {
   username: string;
+  email: string;
+  passwordHash: string;
   agentMode: "manual" | "assist" | "auto-syntax" | "auto-debug" | "team-review";
   debounceDelay: number;
   autoApplyFixes: boolean;
@@ -102,6 +104,7 @@ export interface IUserSettings extends Document {
     microsoft: OAuthTokenFields;
   };
   updatedAt: Date;
+  createdAt: Date;
 }
 
 // OAuth token bundle for Google (Gmail/Drive) and Microsoft (OneDrive).
@@ -118,6 +121,8 @@ export interface OAuthTokenFields {
 
 const UserSettingsSchema: Schema = new Schema({
   username: { type: String, required: true, unique: true },
+  email: { type: String, default: "" },
+  passwordHash: { type: String, default: "" },
   agentMode: { type: String, default: "assist" },
   debounceDelay: { type: Number, default: 800 },
   autoApplyFixes: { type: Boolean, default: false },
@@ -157,6 +162,7 @@ const UserSettingsSchema: Schema = new Schema({
     },
   },
   updatedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // 4. Audit Log Schema
@@ -178,6 +184,27 @@ const AuditLogSchema: Schema = new Schema({
     required: true,
   },
   createdAt: { type: Date, default: Date.now },
+});
+
+// 4b. Auth Session Schema (real login — HttpOnly session token stored hashed)
+export interface IAuthSession extends Document {
+  tokenHash: string;
+  username: string;
+  createdAt: Date;
+  expiresAt: Date;
+  userAgent: string;
+  ip: string;
+  lastSeenAt: Date;
+}
+
+const AuthSessionSchema: Schema = new Schema({
+  tokenHash: { type: String, required: true, unique: true, index: true },
+  username: { type: String, required: true, index: true },
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: { type: Date, required: true, index: true },
+  userAgent: { type: String, default: "" },
+  ip: { type: String, default: "" },
+  lastSeenAt: { type: Date, default: Date.now },
 });
 
 // 5. Deployment Schema (v6.1)
@@ -264,6 +291,9 @@ export const UserSettingsModel =
 export const AuditLogModel =
   mongoose.models.AuditLog ||
   mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);
+export const AuthSessionModel =
+  mongoose.models.AuthSession ||
+  mongoose.model<IAuthSession>("AuthSession", AuthSessionSchema);
 export const DeploymentModel =
   mongoose.models.Deployment ||
   mongoose.model<IDeployment>("Deployment", DeploymentSchema);

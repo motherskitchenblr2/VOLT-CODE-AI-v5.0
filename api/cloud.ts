@@ -1,13 +1,17 @@
 import { OAuthProvider, getUsableAccessToken, OAUTH_PROVIDERS } from './utils/oauth.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
 
 type ApiRequest = {
   method?: string;
   query: Record<string, string | string[] | undefined>;
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
+  setHeader: (name: string, value: string) => ApiResponse;
 };
 
 function getQueryString(req: ApiRequest, key: string): string {
@@ -20,24 +24,28 @@ const GMAIL_BASE = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 
 /**
- * GET /api/cloud?username=...&provider=google|microsoft&service=gmail|drive|onedrive|mail&max=10
+ * GET /api/cloud?provider=google|microsoft&service=gmail|drive|onedrive|mail&max=10
  * Lists recent files/messages using the user's stored OAuth access token
- * (refreshing it automatically when expired).
+ * (refreshing it automatically when expired). Requires an authenticated session.
  */
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const username = getQueryString(req, 'username').trim();
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
+
   const provider = getQueryString(req, 'provider').toLowerCase() as OAuthProvider;
   const service = getQueryString(req, 'service').toLowerCase();
   const maxRaw = Number.parseInt(getQueryString(req, 'max') || '10', 10);
   const max = Number.isFinite(maxRaw) ? Math.min(Math.max(maxRaw, 1), 25) : 10;
 
-  if (!username) {
-    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
-  }
   if (!OAUTH_PROVIDERS.includes(provider)) {
     return res.status(400).json({ error: `Unsupported provider. Allowed: ${OAUTH_PROVIDERS.join(', ')}` });
   }

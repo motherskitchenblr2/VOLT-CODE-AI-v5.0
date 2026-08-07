@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import handler from '../../../api/openrouter';
 
+vi.mock('../../../api/utils/security.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../api/utils/security.js')>();
+  return {
+    ...actual,
+    requireAuth: vi.fn(async (req: { locals?: { username: string } }) => {
+      req.locals = { username: 'testuser' };
+      return true;
+    }),
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Helpers to create lightweight mock req/res objects
 // ---------------------------------------------------------------------------

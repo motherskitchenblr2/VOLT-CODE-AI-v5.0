@@ -1,5 +1,6 @@
 import { connectToDatabase } from './utils/db.js';
 import { DeploymentModel, AuditLogModel } from '../src/models/Schemas.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
 
 type ApiRequest = {
   method?: string;
@@ -8,25 +9,32 @@ type ApiRequest = {
     target?: string;
     gitCommitSha?: string;
   };
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
-  setHeader: (name: string, value: string[]) => void;
+  setHeader: (name: string, value: string | string[]) => ApiResponse;
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { username, target, gitCommitSha } = req.body || {};
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
 
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
-  }
+  const { target, gitCommitSha } = req.body || {};
+
   if (!target || (target !== 'STAGING' && target !== 'PRODUCTION')) {
     return res.status(400).json({ error: 'Target must be STAGING or PRODUCTION' });
   }

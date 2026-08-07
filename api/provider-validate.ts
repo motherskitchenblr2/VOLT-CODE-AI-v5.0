@@ -1,6 +1,7 @@
 import { encrypt } from './utils/crypto.js';
 import { connectToDatabase } from './utils/db.js';
 import { UserSettingsModel, AuditLogModel } from '../src/models/Schemas.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
 
 type ApiRequest = {
   method?: string;
@@ -9,21 +10,32 @@ type ApiRequest = {
     provider?: string;
     keyRaw?: string;
   };
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
+  setHeader: (name: string, value: string) => ApiResponse;
 };
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { username, provider, keyRaw } = req.body ?? {};
-  if (!username || !provider || !keyRaw) {
-    return res.status(400).json({ error: 'Missing parameters: username, provider, and keyRaw are required.' });
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
+
+  const { provider, keyRaw } = req.body ?? {};
+  if (!provider || !keyRaw) {
+    return res.status(400).json({ error: 'Missing parameters: provider, and keyRaw are required.' });
   }
 
   try {

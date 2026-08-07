@@ -13,11 +13,33 @@ import {
   saveOAuthTokens,
   clearOAuthTokens,
 } from './utils/oauth.js';
+import {
+  applySecurityHeaders,
+  audit,
+  clearSessionCookieHeader,
+  clientIp,
+  createSession,
+  destroySession,
+  getPasswordHash,
+  getSessionUsername,
+  hashPassword,
+  isPreflight,
+  rateLimit,
+  requireAuth,
+  sanitizeText,
+  sanitizeUsername,
+  sessionCookieHeader,
+  setPassword,
+  userExists,
+  verifyPassword,
+} from './utils/security.js';
 
 type ApiRequest = {
   method?: string;
   query: Record<string, string | string[] | undefined>;
+  body?: Record<string, unknown>;
   headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
@@ -32,40 +54,164 @@ const getQueryString = (req: ApiRequest, key: string): string => {
   return typeof value === 'string' ? value : '';
 };
 
+const getBodyString = (req: ApiRequest, key: string): string => {
+  const value = req.body?.[key];
+  return typeof value === 'string' ? value : '';
+};
+
 const APP_ORIGIN =
   process.env.APP_ORIGIN ||
   'https://volt-code-ai-v5-0-next-gen-ops-projects.vercel.app';
 
-const getUsername = (req: ApiRequest): string => getQueryString(req, 'username').trim();
-
 /**
- * Central OAuth gateway. Routes by ?action= :
- *   GET  action=start    -> redirect to provider consent (PKCE + HttpOnly cookie)
- *   GET  action=callback -> exchange code, store tokens, redirect to app
- *   GET  action=status   -> connection state (no tokens exposed)
- *   POST action=logout   -> disconnect a provider
+ * Central auth + OAuth gateway. Routes by ?action= :
+ *   POST action=register  -> create account, start session
+ *   POST action=login     -> verify password, start session
+ *   POST action=logout    -> destroy session
+ *   GET  action=me        -> current session identity (for app boot)
+ *   GET  action=start     -> redirect to provider consent (PKCE + HttpOnly cookie)
+ *   GET  action=callback  -> exchange code, store tokens, redirect to app
+ *   GET  action=status    -> connection state (no tokens exposed)
+ *   POST action=logoutoauth -> disconnect a provider
  *
  * Consolidated into one Serverless Function to stay within the Vercel Hobby
  * plan limit of 12 functions per deployment.
  */
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   const action = getQueryString(req, 'action');
 
+  if (action === 'register') return handleRegister(req, res);
+  if (action === 'login') return handleLogin(req, res);
+  if (action === 'logout') return handleLogout(req, res);
+  if (action === 'me') return handleMe(req, res);
   if (action === 'start') return handleStart(req, res);
   if (action === 'callback') return handleCallback(req, res);
   if (action === 'status') return handleStatus(req, res);
-  if (action === 'logout') return handleLogout(req, res);
+  if (action === 'logoutoauth') return handleLogoutOAuth(req, res);
 
   return res.status(400).json({
     error: 'Invalid or missing action',
-    details: 'Use ?action=start|callback|status|logout',
+    details: 'Use ?action=register|login|logout|me|start|callback|status|logoutoauth',
   });
+}
+
+async function handleRegister(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const ip = clientIp(req);
+  const limited = rateLimit(`auth:register:${ip}`, { limit: 5, windowMs: 60_000 });
+  if (!limited.allowed) {
+    res.setHeader('Retry-After', String(Math.ceil(limited.retryAfterMs / 1000)));
+    return res.status(429).json({ error: 'Too many registration attempts. Try again shortly.' });
+  }
+
+  const username = sanitizeUsername(getBodyString(req, 'username'));
+  const password = getBodyString(req, 'password');
+  const email = sanitizeText(getBodyString(req, 'email'), 254);
+
+  if (!username) {
+    return res.status(400).json({
+      error: 'Invalid username',
+      details: 'Use 3-32 letters, digits, dot, underscore or hyphen.',
+    });
+  }
+  if (password.length < 8 || password.length > 128) {
+    return res.status(400).json({ error: 'Password must be 8-128 characters.' });
+  }
+
+  if (await userExists(username)) {
+    await audit(username, 'AUTH_REGISTER', 'Registration rejected: username already exists', 'WARNING');
+    return res.status(409).json({ error: 'Username already exists. Choose another or sign in.' });
+  }
+
+  try {
+    await setPassword(username, hashPassword(password), email);
+    const token = await createSession(username, { userAgent: String(req.headers?.['user-agent'] || ''), ip });
+    res.setHeader('Set-Cookie', sessionCookieHeader(token));
+    await audit(username, 'AUTH_REGISTER', 'New account created and session started.', 'SUCCESS');
+    return res.status(201).json({ ok: true, username });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    await audit(username, 'AUTH_REGISTER', `Registration failed: ${message}`, 'FAILED');
+    return res.status(500).json({ error: 'Registration failed', details: message });
+  }
+}
+
+async function handleLogin(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const ip = clientIp(req);
+  const limited = rateLimit(`auth:login:${ip}`, { limit: 10, windowMs: 60_000 });
+  if (!limited.allowed) {
+    res.setHeader('Retry-After', String(Math.ceil(limited.retryAfterMs / 1000)));
+    return res.status(429).json({ error: 'Too many login attempts. Try again shortly.' });
+  }
+
+  const username = sanitizeUsername(getBodyString(req, 'username'));
+  const password = getBodyString(req, 'password');
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required.' });
+  }
+
+  const storedHash = await getPasswordHash(username);
+  if (!storedHash || !verifyPassword(password, storedHash)) {
+    await audit(username, 'AUTH_LOGIN', 'Login failed: invalid credentials', 'WARNING');
+    return res.status(401).json({ error: 'Invalid username or password.' });
+  }
+
+  try {
+    const token = await createSession(username, { userAgent: String(req.headers?.['user-agent'] || ''), ip });
+    res.setHeader('Set-Cookie', sessionCookieHeader(token));
+    await audit(username, 'AUTH_LOGIN', 'User signed in successfully.', 'SUCCESS');
+    return res.status(200).json({ ok: true, username });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    await audit(username, 'AUTH_LOGIN', `Login failed: ${message}`, 'FAILED');
+    return res.status(500).json({ error: 'Login failed', details: message });
+  }
+}
+
+async function handleLogout(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const username = await getSessionUsername(req);
+  await destroySession(req);
+  res.setHeader('Set-Cookie', clearSessionCookieHeader());
+  if (username) {
+    await audit(username, 'AUTH_LOGOUT', 'User signed out.', 'SUCCESS');
+  }
+  return res.status(200).json({ ok: true, loggedOut: true });
+}
+
+async function handleMe(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+  const username = await getSessionUsername(req);
+  if (!username) {
+    return res.status(200).json({ authenticated: false });
+  }
+  return res.status(200).json({ authenticated: true, username });
 }
 
 async function handleStart(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!(await requireAuth(req, res))) return res;
 
   const rawProvider = getQueryString(req, 'provider').toLowerCase();
   const provider = rawProvider as OAuthProvider;
@@ -76,10 +222,7 @@ async function handleStart(req: ApiRequest, res: ApiResponse) {
     });
   }
 
-  const username = getUsername(req);
-  if (!username) {
-    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
-  }
+  const username = req.locals!.username;
 
   const client = getOAuthClient(provider);
   if (!client) {
@@ -192,6 +335,7 @@ async function handleCallback(req: ApiRequest, res: ApiResponse) {
   }
 
   res.setHeader('Set-Cookie', 'volt_oauth=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0');
+  await audit(pending.username, `OAUTH_CONNECT_${provider.toUpperCase()}`, `Connected ${provider} account ${identity?.email || ''}`, 'SUCCESS');
 
   const successUrl = new URL(APP_ORIGIN);
   successUrl.searchParams.set('oauth', 'success');
@@ -205,10 +349,8 @@ async function handleStatus(req: ApiRequest, res: ApiResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const username = getUsername(req);
-  if (!username) {
-    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
-  }
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
 
   const statuses: Record<string, unknown> = {};
 
@@ -230,15 +372,13 @@ async function handleStatus(req: ApiRequest, res: ApiResponse) {
   return res.status(200).json({ username, providers: statuses });
 }
 
-async function handleLogout(req: ApiRequest, res: ApiResponse) {
+async function handleLogoutOAuth(req: ApiRequest, res: ApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const username = getUsername(req);
-  if (!username) {
-    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
-  }
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
 
   const rawProvider = getQueryString(req, 'provider').toLowerCase();
   const provider = rawProvider as OAuthProvider;
@@ -251,6 +391,7 @@ async function handleLogout(req: ApiRequest, res: ApiResponse) {
 
   try {
     await clearOAuthTokens(username, provider);
+    await audit(username, `OAUTH_DISCONNECT_${provider.toUpperCase()}`, `Disconnected ${provider} account`, 'SUCCESS');
     return res.status(200).json({ ok: true, provider, disconnected: true });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

@@ -30,11 +30,14 @@ interface OpenRouterRequestBody {
 interface ApiRequest {
   method?: string;
   body?: Record<string, unknown>;
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 }
 
 interface ApiResponse {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
+  setHeader?: (name: string, value: string) => ApiResponse;
 }
 
 function detectLanguage(codeStr: string): string {
@@ -57,11 +60,21 @@ function detectLanguage(codeStr: string): string {
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  const { applySecurityHeaders, isPreflight, requireAuth } = await import('./utils/security.js');
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, username, keys, isBossChat } = (req.body || {}) as OpenRouterRequestBody;
+  if (!(await requireAuth(req, res))) return res;
+  const sessionUsername = req.locals!.username;
+
+  const { code, language, model, agentMode, skill, plugin, customPrompt, provider, keys, isBossChat } = (req.body || {}) as OpenRouterRequestBody;
+  const username = sessionUsername;
 
   // --- 1. Language Detection ---
   const activeLanguage = (language === 'auto' || !language) ? detectLanguage(code || '') : language;

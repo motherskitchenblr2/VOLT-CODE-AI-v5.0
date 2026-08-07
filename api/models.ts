@@ -2,11 +2,14 @@ type ApiRequest = {
   method?: string;
   query: Record<string, string | string[] | undefined>;
   body?: Record<string, unknown>;
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
+  setHeader?: (name: string, value: string) => ApiResponse;
 };
 
 export interface LiveModel {
@@ -158,6 +161,12 @@ async function fetchProviderModels(provider: ProviderKey, apiKey: string): Promi
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
+  const { applySecurityHeaders, getSessionUsername, isPreflight } = await import('./utils/security.js');
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -168,8 +177,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     : typeof req.query.key === 'string'
       ? [req.query.key]
       : [];
-  const username = typeof req.query.username === 'string' ? req.query.username : '';
 
+  // Public catalog endpoint: a valid session upgrades key resolution to the
+  // user's stored vault; anonymous callers still get env/client-provided keys.
+  const username = (await getSessionUsername(req)) || '';
   const fetchAll = !rawProvider || rawProvider === 'all';
 
   const providersToFetch: ProviderKey[] = fetchAll ? [...PROVIDERS] : [rawProvider as ProviderKey];
