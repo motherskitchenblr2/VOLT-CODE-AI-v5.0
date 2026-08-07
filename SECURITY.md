@@ -24,6 +24,21 @@ Applies to:
   - Rotate API keys every 90 days.
   - Store secrets only in environment variables, never in code.
 
+## Secret Vault (API Keys & Tokens)
+
+- Provider API keys (Groq, OpenRouter, NVIDIA, HuggingFace) and GitHub tokens are
+  stored in a **MongoDB secret vault**, encrypted at rest with `ENCRYPTION_KEY`
+  using AES-256-GCM (see `api/utils/secrets.ts`).
+- Plaintext secrets are never written to MongoDB and never returned to the client.
+- Server-side handlers resolve keys in order: **MongoDB vault → request-provided
+  key → environment variable** (see `api/openrouter.ts` and `api/models.ts`).
+- `ENCRYPTION_KEY` must be at least 32 bytes and is supplied via environment
+  variable only.
+- `getSecretStatus` exposes only booleans (which providers have stored keys),
+  never key material.
+- If `MONGODB_URI` is unset, the vault degrades gracefully to environment-variable
+  keys so the app keeps functioning without exposing secrets.
+
 ## Code Security
 
 - Mandatory code reviews before merging.
