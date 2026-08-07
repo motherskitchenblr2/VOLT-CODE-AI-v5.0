@@ -11,5 +11,5 @@
     "outDir": "../node_modules/.tmp/api",
     "strict": true
   },
-  "include": ["openrouter.ts", "models.ts", "database.ts", "deploy.ts", "provider-validate.ts", "cloud.ts", "auth/**/*.ts", "utils/**/*.ts", "../src/models/**/*.ts"]
+  "include": ["openrouter.ts", "models.ts", "database.ts", "deploy.ts", "provider-validate.ts", "auth.ts", "cloud.ts", "utils/**/*.ts", "../src/models/**/*.ts"]
 }

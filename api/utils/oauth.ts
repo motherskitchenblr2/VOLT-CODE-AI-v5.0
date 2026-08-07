@@ -83,9 +83,9 @@ export function getOAuthClient(provider: OAuthProvider): {
  */
 export function buildCallbackUrl(host: string): string {
   const override = process.env.OAUTH_REDIRECT_BASE;
-  if (override) return `${override.replace(/\/$/, '')}/api/auth/callback`;
+  if (override) return `${override.replace(/\/$/, '')}/api/auth?action=callback`;
   const proto = host.includes('localhost') ? 'http' : 'https';
-  return `${proto}://${host}/api/auth/callback`;
+  return `${proto}://${host}/api/auth?action=callback`;
 }
 
 export function base64UrlEncode(buffer: Buffer): string {

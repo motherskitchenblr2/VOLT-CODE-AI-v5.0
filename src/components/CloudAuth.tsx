@@ -70,7 +70,7 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/auth/status?username=${encodeURIComponent(username)}`,
+        `/api/auth?action=status&username=${encodeURIComponent(username)}`,
       );
       const data = (await res.json()) as { providers?: Record<string, ProviderStatus> };
       setStatus(data.providers || null);
@@ -96,14 +96,14 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
   }, [loadStatus]);
 
   const startSignIn = (provider: string) => {
-    const url = `/api/auth/start?provider=${provider}&username=${encodeURIComponent(username)}`;
+    const url = `/api/auth?action=start&provider=${provider}&username=${encodeURIComponent(username)}`;
     window.location.assign(url);
   };
 
   const disconnect = async (provider: string) => {
     setBusyProvider(provider);
     try {
-      await fetch(`/api/auth/logout?username=${encodeURIComponent(username)}&provider=${provider}`, {
+      await fetch(`/api/auth?action=logout&username=${encodeURIComponent(username)}&provider=${provider}`, {
         method: "POST",
       });
       await loadStatus();
