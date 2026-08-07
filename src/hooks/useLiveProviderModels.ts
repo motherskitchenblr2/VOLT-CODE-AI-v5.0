@@ -97,20 +97,15 @@ export function useLiveProviderModels(keys: ProviderKeys) {
   const huggingface = keys.huggingface;
 
   useEffect(() => {
-    const hasAnyKey = PROVIDER_KEY_MAP.some(
-      ({ key }) => !!keysRef.current[key],
-    );
-    if (hasAnyKey) {
-      const timer = setTimeout(() => {
-        refresh();
-      }, 300);
-      return () => {
-        clearTimeout(timer);
-        if (abortRef.current) {
-          abortRef.current.abort();
-        }
-      };
-    }
+    const timer = setTimeout(() => {
+      refresh();
+    }, 300);
+    return () => {
+      clearTimeout(timer);
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+    };
   }, [refresh, groq, openrouter, nvidia, huggingface]);
 
   return { availability, loading, error, lastUpdated, refresh };

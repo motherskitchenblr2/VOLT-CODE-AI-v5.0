@@ -25,6 +25,7 @@ interface RawModel {
   id: string;
   name?: string;
   context_window?: number;
+  context_length?: number;
   pricing?: {
     prompt: string;
     completion: string;
@@ -34,45 +35,56 @@ interface RawModel {
 const PROVIDERS = ['groq', 'openrouter', 'nvidia', 'huggingface'] as const;
 type ProviderKey = (typeof PROVIDERS)[number];
 
-const PROVIDER_META: Record<ProviderKey, { label: string; modelListUrl: string; requiresKey: boolean }> = {
+const PROVIDER_META: Record<
+  ProviderKey,
+  { label: string; modelListUrl: string; requiresKey: boolean; envKey: string }
+> = {
   groq: {
     label: 'Groq',
     modelListUrl: 'https://api.groq.com/openai/v1/models',
-    requiresKey: true
+    requiresKey: true,
+    envKey: 'GROQ_API_KEY'
   },
   openrouter: {
     label: 'OpenRouter',
     modelListUrl: 'https://openrouter.ai/api/v1/models',
-    requiresKey: false
+    requiresKey: false,
+    envKey: 'OPENROUTER_API_KEY'
   },
   nvidia: {
     label: 'NVIDIA',
     modelListUrl: 'https://integrate.api.nvidia.com/v1/models',
-    requiresKey: true
+    requiresKey: true,
+    envKey: 'NVIDIA_API_KEY'
   },
   huggingface: {
     label: 'HuggingFace',
     modelListUrl: 'https://api-inference.huggingface.co/models?limit=120&filter=text-generation&sort=trendingScore&direction=-1',
-    requiresKey: true
+    requiresKey: true,
+    envKey: 'HUGGINGFACE_API_KEY'
   }
 };
 
 function isFreeModel(provider: ProviderKey, model: RawModel): boolean {
   if (provider === 'openrouter') {
+    // OpenRouter reports real per-model pricing; a model is FREE only when
+    // both prompt and completion price are 0 (free tier, e.g. "model:free").
     const prompt = Number(model.pricing?.prompt ?? 0);
     const completion = Number(model.pricing?.completion ?? 0);
     return prompt === 0 && completion === 0;
   }
-  if (provider === 'huggingface') {
+  if (provider === 'groq') {
+    // Groq's model list API has no pricing field; Groq serves its catalog on
+    // a free tier (rate-limited). All Groq models are FREE.
     return true;
   }
   if (provider === 'nvidia') {
+    // NVIDIA NIM developer preview models are served free of charge.
     return true;
   }
-  if (provider === 'groq') {
-    const freeIds = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'llama-3.1-70b-versatile'];
-    const id = model.id.toLowerCase();
-    return freeIds.some((f) => id === f || id.includes(f));
+  if (provider === 'huggingface') {
+    // HuggingFace free Inference API for text-generation models.
+    return true;
   }
   return false;
 }
@@ -87,6 +99,11 @@ function normalizeName(model: RawModel, _provider: ProviderKey): string {
     return `${family} ${label}`;
   }
   return label.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function apiKeyFromEnv(provider: ProviderKey): string {
+  const value = process.env[PROVIDER_META[provider].envKey];
+  return typeof value === 'string' && value.length > 0 ? value : '';
 }
 
 async function fetchProviderModels(provider: ProviderKey, apiKey: string): Promise<LiveModel[]> {
@@ -119,7 +136,7 @@ async function fetchProviderModels(provider: ProviderKey, apiKey: string): Promi
         name: normalizeName(m, provider),
         provider: meta.label as LiveModel['provider'],
         tier: isFreeModel(provider, m) ? ('FREE' as const) : ('PAID' as const),
-        context: m.context_window || 0,
+        context: m.context_window || m.context_length || 0,
         pricing: m.pricing
           ? {
               prompt: Number(m.pricing.prompt),
@@ -146,8 +163,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   const rawProvider = typeof req.query.provider === 'string' ? req.query.provider.toLowerCase() : '';
-  const apiKey = typeof req.query.key === 'string' ? req.query.key : '';
-  const username = typeof req.query.username === 'string' ? req.query.username : '';
+  const rawKeys = Array.isArray(req.query.key)
+    ? (req.query.key as string[])
+    : typeof req.query.key === 'string'
+      ? [req.query.key]
+      : [];
 
   const fetchAll = !rawProvider || rawProvider === 'all';
 
@@ -158,9 +178,12 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   const results = await Promise.all(
-    providersToFetch.map(async (provider) => {
-      const key = apiKey || (username ? undefined : undefined);
-      const models = await fetchProviderModels(provider, key || '');
+    providersToFetch.map(async (provider, index) => {
+      const key =
+        rawKeys[index] ||
+        apiKeyFromEnv(provider) ||
+        '';
+      const models = await fetchProviderModels(provider, key);
       return {
         provider,
         label: PROVIDER_META[provider].label,

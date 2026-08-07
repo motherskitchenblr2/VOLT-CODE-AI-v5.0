@@ -2675,8 +2675,8 @@ const App: React.FC = () => {
 
               {liveProviderAvailability.length === 0 ? (
                 <p className="text-xs text-white/40">
-                  No live model data yet. Add API keys above and press Refresh
-                  to load the model catalog.
+                  No live model data yet. Press Refresh to load the model
+                  catalog from connected providers.
                 </p>
               ) : (
                 <div className="space-y-2">
