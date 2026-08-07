@@ -10,7 +10,7 @@ const vaultState = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../../api/utils/db', () => ({
+vi.mock('../../../shared/db', () => ({
   connectToDatabase: vi.fn().mockResolvedValue({}),
 }));
 
@@ -56,7 +56,7 @@ import {
   getOAuthClient,
   OAUTH_PROVIDERS,
   parseCookies,
-} from '../../../api/utils/oauth';
+} from '../../../shared/oauth';
 
 describe('api/utils/oauth', () => {
   beforeEach(() => {
@@ -175,7 +175,7 @@ describe('api/utils/oauth', () => {
   });
 
   it('degrades gracefully when the database is unreachable', async () => {
-    const db = await import('../../../api/utils/db');
+    const db = await import('../../../shared/db');
     vi.mocked(db.connectToDatabase).mockRejectedValueOnce(new Error('no db'));
     const loaded = await loadOAuthTokens('dave', 'google');
     expect(loaded.accessToken).toBe('');

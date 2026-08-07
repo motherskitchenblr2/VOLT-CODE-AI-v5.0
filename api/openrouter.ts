@@ -60,7 +60,7 @@ function detectLanguage(codeStr: string): string {
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const { applySecurityHeaders, isPreflight, requireAuth } = await import('./utils/security.js');
+  const { applySecurityHeaders, isPreflight, requireAuth } = await import('../shared/security.js');
   applySecurityHeaders(res, String(req.headers?.origin || ''));
   if (isPreflight(req)) {
     return res.status(204).json({});
@@ -183,7 +183,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   // --- 7. API Key Resolution (MongoDB vault -> client -> environment) ---
-  const { loadUserSecrets } = await import('./utils/secrets.js');
+  const { loadUserSecrets } = await import('../shared/secrets.js');
   const storedSecrets = await loadUserSecrets(typeof username === 'string' ? username : '');
   const providerToSecretKey: Record<string, keyof typeof storedSecrets> = {
     Groq: 'groq',

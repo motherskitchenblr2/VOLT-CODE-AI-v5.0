@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import handler from "../../api/openrouter";
 
-vi.mock("../../api/utils/security.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../api/utils/security.js")>();
+vi.mock("../../shared/security.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../shared/security.js")>();
   return {
     ...actual,
     requireAuth: vi.fn(async (req: { locals?: { username: string } }) => {

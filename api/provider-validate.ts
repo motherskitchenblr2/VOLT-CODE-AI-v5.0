@@ -1,7 +1,7 @@
-import { encrypt } from './utils/crypto.js';
-import { connectToDatabase } from './utils/db.js';
+import { encrypt } from '../shared/crypto.js';
+import { connectToDatabase } from '../shared/db.js';
 import { UserSettingsModel, AuditLogModel } from '../src/models/Schemas.js';
-import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from '../shared/security.js';
 
 type ApiRequest = {
   method?: string;

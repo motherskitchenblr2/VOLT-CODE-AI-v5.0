@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import { connectToDatabase } from './db.js';
-import { UserSettingsModel, AuthSessionModel, AuditLogModel } from '../../src/models/Schemas.js';
+import { UserSettingsModel, AuthSessionModel, AuditLogModel } from '../src/models/Schemas.js';
 
 const SESSION_COOKIE = 'volt_session';
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days

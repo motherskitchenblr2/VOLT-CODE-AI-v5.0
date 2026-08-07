@@ -161,7 +161,7 @@ async function fetchProviderModels(provider: ProviderKey, apiKey: string): Promi
 }
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  const { applySecurityHeaders, getSessionUsername, isPreflight } = await import('./utils/security.js');
+  const { applySecurityHeaders, getSessionUsername, isPreflight } = await import('../shared/security.js');
   applySecurityHeaders(res, String(req.headers?.origin || ''));
   if (isPreflight(req)) {
     return res.status(204).json({});
@@ -189,7 +189,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(400).json({ error: `Unsupported provider. Allowed: ${PROVIDERS.join(', ')}` });
   }
 
-  const { loadUserSecrets } = await import('./utils/secrets.js');
+  const { loadUserSecrets } = await import('../shared/secrets.js');
   const storedSecrets = await loadUserSecrets(username);
   const providerToSecretKey: Record<ProviderKey, keyof typeof storedSecrets> = {
     groq: 'groq',

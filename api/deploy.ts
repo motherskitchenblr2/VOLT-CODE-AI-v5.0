@@ -1,6 +1,6 @@
-import { connectToDatabase } from './utils/db.js';
+import { connectToDatabase } from '../shared/db.js';
 import { DeploymentModel, AuditLogModel } from '../src/models/Schemas.js';
-import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from '../shared/security.js';
 
 type ApiRequest = {
   method?: string;

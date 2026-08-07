@@ -7,7 +7,7 @@ const vaultState = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../../api/utils/db', () => ({
+vi.mock('../../../shared/db', () => ({
   connectToDatabase: vi.fn().mockResolvedValue({}),
 }));
 
@@ -38,12 +38,12 @@ vi.mock('../../../src/models/Schemas', () => ({
   },
 }));
 
-import { encrypt, decrypt } from '../../../api/utils/crypto';
+import { encrypt, decrypt } from '../../../shared/crypto';
 import {
   saveUserSecrets,
   loadUserSecrets,
   hasStoredSecrets,
-} from '../../../api/utils/secrets';
+} from '../../../shared/secrets';
 
 describe('api/utils/secrets (MongoDB secret vault)', () => {
   beforeEach(() => {
@@ -81,7 +81,7 @@ describe('api/utils/secrets (MongoDB secret vault)', () => {
   });
 
   it('degrades gracefully when the database is unreachable', async () => {
-    const db = await import('../../../api/utils/db');
+    const db = await import('../../../shared/db');
     vi.mocked(db.connectToDatabase).mockRejectedValueOnce(new Error('no db'));
     expect(await loadUserSecrets('carol')).toEqual({});
     expect(await hasStoredSecrets('carol')).toBe(false);

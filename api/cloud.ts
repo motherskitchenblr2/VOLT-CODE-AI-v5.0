@@ -1,5 +1,5 @@
-import { OAuthProvider, getUsableAccessToken, OAUTH_PROVIDERS } from './utils/oauth.js';
-import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
+import { OAuthProvider, getUsableAccessToken, OAUTH_PROVIDERS } from '../shared/oauth.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from '../shared/security.js';
 
 type ApiRequest = {
   method?: string;

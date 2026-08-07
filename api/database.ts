@@ -1,6 +1,6 @@
-import { connectToDatabase } from './utils/db.js';
+import { connectToDatabase } from '../shared/db.js';
 import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas.js';
-import { applySecurityHeaders, isPreflight, requireAuth } from './utils/security.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from '../shared/security.js';
 
 type ApiRequest = {
   method?: string;
@@ -72,7 +72,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       }
       if (action === 'getSecretStatus') {
         try {
-          const { hasStoredSecrets, loadUserSecrets } = await import('./utils/secrets.js');
+          const { hasStoredSecrets, loadUserSecrets } = await import('../shared/secrets.js');
           const secrets = await loadUserSecrets(username);
           const hasAny = await hasStoredSecrets(username);
           return res.status(200).json({
@@ -173,7 +173,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       }
       if (action === 'saveSecrets') {
         try {
-          const { saveUserSecrets } = await import('./utils/secrets.js');
+          const { saveUserSecrets } = await import('../shared/secrets.js');
           const body = req.body as { keys?: Record<string, string> };
           await saveUserSecrets(username, body.keys || {});
           await AuditLogModel.create({

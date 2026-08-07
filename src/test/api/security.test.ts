@@ -23,7 +23,7 @@ const auditState = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../../api/utils/db', () => ({
+vi.mock('../../../shared/db', () => ({
   connectToDatabase: vi.fn().mockResolvedValue({}),
 }));
 
@@ -97,7 +97,7 @@ import {
   userExists,
   setPassword,
   getPasswordHash,
-} from '../../../api/utils/security';
+} from '../../../shared/security';
 
 const makeRes = () => {
   const headers: Record<string, string> = {};

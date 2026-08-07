@@ -12,7 +12,7 @@ import {
   parseCookies,
   saveOAuthTokens,
   clearOAuthTokens,
-} from './utils/oauth.js';
+} from '../shared/oauth.js';
 import {
   applySecurityHeaders,
   audit,
@@ -32,7 +32,7 @@ import {
   setPassword,
   userExists,
   verifyPassword,
-} from './utils/security.js';
+} from '../shared/security.js';
 
 type ApiRequest = {
   method?: string;

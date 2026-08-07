@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import { connectToDatabase } from './db.js';
-import { UserSettingsModel } from '../../src/models/Schemas.js';
+import { UserSettingsModel } from '../src/models/Schemas.js';
 import { encrypt, decrypt } from './crypto.js';
 
 export type OAuthProvider = 'google' | 'microsoft';
