@@ -121,7 +121,7 @@ export const CloudAuth: React.FC<CloudAuthProps> = ({ username }) => {
     setItems([]);
     try {
       const res = await fetch(
-        `/api/cloud/list?username=${encodeURIComponent(username)}&provider=${provider}&service=${service}&max=10`,
+        `/api/cloud?username=${encodeURIComponent(username)}&provider=${provider}&service=${service}&max=10`,
       );
       const data = (await res.json()) as { items?: CloudItem[]; error?: string; details?: string };
       if (!res.ok) {

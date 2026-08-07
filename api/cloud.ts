@@ -20,7 +20,7 @@ const GMAIL_BASE = 'https://gmail.googleapis.com/gmail/v1/users/me';
 const GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
 
 /**
- * GET /api/cloud/list?username=...&provider=google|microsoft&service=gmail|drive|onedrive|mail&max=10
+ * GET /api/cloud?username=...&provider=google|microsoft&service=gmail|drive|onedrive|mail&max=10
  * Lists recent files/messages using the user's stored OAuth access token
  * (refreshing it automatically when expired).
  */
