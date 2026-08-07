@@ -39,6 +39,7 @@ import { TerminalPanel } from "./components/TerminalPanel";
 import { GitHubWorkspace } from "./components/GitHubWorkspace";
 import { MeetingPanel } from "./components/MeetingPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
+import { CloudAuth } from "./components/CloudAuth";
 
 import {
   PerformanceOptimizer,
@@ -4076,7 +4077,7 @@ const App: React.FC = () => {
       <AnimatePresence>
         {showLoginModal && (
           <div className="fixed inset-0 bg-black/90 z-[90] flex items-center justify-center select-text">
-            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-sm p-9 rounded-3xl">
+            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-xl p-9 rounded-3xl">
               <div className="font-bold text-center text-2xl mb-2 select-none">
                 SIGN IN
               </div>
@@ -4095,6 +4096,15 @@ const App: React.FC = () => {
               >
                 ENABLE SESSION SAVING
               </button>
+
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <div className="text-center text-xs font-bold text-white/50 mb-4 select-none uppercase tracking-wider">
+                  Connect Cloud Accounts
+                </div>
+                <div className="max-h-72 overflow-y-auto pr-1">
+                  <CloudAuth username={username} />
+                </div>
+              </div>
             </div>
           </div>
         )}

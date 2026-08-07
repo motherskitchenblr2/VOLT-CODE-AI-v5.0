@@ -97,7 +97,23 @@ export interface IUserSettings extends Document {
     huggingfaceKeyEncrypted: string;
     githubTokenEncrypted: string;
   };
+  oauth: {
+    google: OAuthTokenFields;
+    microsoft: OAuthTokenFields;
+  };
   updatedAt: Date;
+}
+
+// OAuth token bundle for Google (Gmail/Drive) and Microsoft (OneDrive).
+// Access tokens are encrypted at rest; only expiry + account identity are
+// stored in plaintext so the UI can render status without exposing secrets.
+export interface OAuthTokenFields {
+  accessTokenEncrypted: string;
+  refreshTokenEncrypted: string;
+  expiresAt: Date | null;
+  email: string;
+  name: string;
+  picture: string;
 }
 
 const UserSettingsSchema: Schema = new Schema({
@@ -121,6 +137,24 @@ const UserSettingsSchema: Schema = new Schema({
     nvidiaKeyEncrypted: { type: String, default: "" },
     huggingfaceKeyEncrypted: { type: String, default: "" },
     githubTokenEncrypted: { type: String, default: "" },
+  },
+  oauth: {
+    google: {
+      accessTokenEncrypted: { type: String, default: "" },
+      refreshTokenEncrypted: { type: String, default: "" },
+      expiresAt: { type: Date, default: null },
+      email: { type: String, default: "" },
+      name: { type: String, default: "" },
+      picture: { type: String, default: "" },
+    },
+    microsoft: {
+      accessTokenEncrypted: { type: String, default: "" },
+      refreshTokenEncrypted: { type: String, default: "" },
+      expiresAt: { type: Date, default: null },
+      email: { type: String, default: "" },
+      name: { type: String, default: "" },
+      picture: { type: String, default: "" },
+    },
   },
   updatedAt: { type: Date, default: Date.now },
 });
