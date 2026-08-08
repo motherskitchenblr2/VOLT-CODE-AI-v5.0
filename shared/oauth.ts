@@ -1,9 +1,9 @@
-import * as crypto from 'crypto';
-import { connectToDatabase } from './db.js';
-import { UserSettingsModel } from '../src/models/Schemas.js';
-import { encrypt, decrypt } from './crypto.js';
+import * as crypto from "crypto";
+import { connectToDatabase } from "./db.js";
+import { UserSettingsModel } from "../src/models/Schemas.js";
+import { encrypt, decrypt } from "./crypto.js";
 
-export type OAuthProvider = 'google' | 'microsoft';
+export type OAuthProvider = "google" | "microsoft";
 
 export interface OAuthTokenSet {
   accessToken: string;
@@ -26,40 +26,41 @@ interface OAuthProviderMeta {
 
 const PROVIDER_META: Record<OAuthProvider, OAuthProviderMeta> = {
   google: {
-    label: 'Google',
-    authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
-    tokenUrl: 'https://oauth2.googleapis.com/token',
-    userinfoUrl: 'https://www.googleapis.com/oauth2/v2/userinfo',
+    label: "Google",
+    authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenUrl: "https://oauth2.googleapis.com/token",
+    userinfoUrl: "https://www.googleapis.com/oauth2/v2/userinfo",
     scopes: [
-      'openid',
-      'email',
-      'profile',
-      'https://www.googleapis.com/auth/gmail.readonly',
-      'https://www.googleapis.com/auth/drive.readonly',
+      "openid",
+      "email",
+      "profile",
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/drive.readonly",
     ],
-    envClientId: 'GOOGLE_CLIENT_ID',
-    envClientSecret: 'GOOGLE_CLIENT_SECRET',
+    envClientId: "GOOGLE_CLIENT_ID",
+    envClientSecret: "GOOGLE_CLIENT_SECRET",
   },
   microsoft: {
-    label: 'Microsoft',
-    authorizeUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-    tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-    userinfoUrl: 'https://graph.microsoft.com/v1.0/me',
+    label: "Microsoft",
+    authorizeUrl:
+      "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    userinfoUrl: "https://graph.microsoft.com/v1.0/me",
     scopes: [
-      'openid',
-      'email',
-      'profile',
-      'offline_access',
-      'User.Read',
-      'Files.Read.All',
-      'Mail.Read',
+      "openid",
+      "email",
+      "profile",
+      "offline_access",
+      "User.Read",
+      "Files.Read.All",
+      "Mail.Read",
     ],
-    envClientId: 'MICROSOFT_CLIENT_ID',
-    envClientSecret: 'MICROSOFT_CLIENT_SECRET',
+    envClientId: "MICROSOFT_CLIENT_ID",
+    envClientSecret: "MICROSOFT_CLIENT_SECRET",
   },
 };
 
-export const OAUTH_PROVIDERS: OAuthProvider[] = ['google', 'microsoft'];
+export const OAUTH_PROVIDERS: OAuthProvider[] = ["google", "microsoft"];
 
 /**
  * OAuth app credentials for a provider, pulled from environment variables.
@@ -71,8 +72,8 @@ export function getOAuthClient(provider: OAuthProvider): {
   label: string;
 } | null {
   const meta = PROVIDER_META[provider];
-  const clientId = process.env[meta.envClientId] || '';
-  const clientSecret = process.env[meta.envClientSecret] || '';
+  const clientId = process.env[meta.envClientId] || "";
+  const clientSecret = process.env[meta.envClientSecret] || "";
   if (!clientId || !clientSecret) return null;
   return { clientId, clientSecret, label: meta.label };
 }
@@ -83,17 +84,18 @@ export function getOAuthClient(provider: OAuthProvider): {
  */
 export function buildCallbackUrl(host: string): string {
   const override = process.env.OAUTH_REDIRECT_BASE;
-  if (override) return `${override.replace(/\/$/, '')}/api/auth?action=callback`;
-  const proto = host.includes('localhost') ? 'http' : 'https';
+  if (override)
+    return `${override.replace(/\/$/, "")}/api/auth?action=callback`;
+  const proto = host.includes("localhost") ? "http" : "https";
   return `${proto}://${host}/api/auth?action=callback`;
 }
 
 export function base64UrlEncode(buffer: Buffer): string {
   return buffer
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 /**
@@ -101,26 +103,33 @@ export function base64UrlEncode(buffer: Buffer): string {
  * to the provider in the authorize URL.
  */
 export function generatePkce(): { verifier: string; challenge: string } {
-  const verifier = crypto.randomBytes(32).toString('base64url');
-  const challenge = base64UrlEncode(crypto.createHash('sha256').update(verifier).digest());
+  const verifier = crypto.randomBytes(32).toString("base64url");
+  const challenge = base64UrlEncode(
+    crypto.createHash("sha256").update(verifier).digest(),
+  );
   return { verifier, challenge };
 }
 
 export function buildAuthorizeUrl(
   provider: OAuthProvider,
-  opts: { clientId: string; redirectUri: string; state: string; codeChallenge: string },
+  opts: {
+    clientId: string;
+    redirectUri: string;
+    state: string;
+    codeChallenge: string;
+  },
 ): string {
   const meta = PROVIDER_META[provider];
   const params = new URLSearchParams({
     client_id: opts.clientId,
     redirect_uri: opts.redirectUri,
-    response_type: 'code',
-    scope: meta.scopes.join(' '),
+    response_type: "code",
+    scope: meta.scopes.join(" "),
     state: opts.state,
     code_challenge: opts.codeChallenge,
-    code_challenge_method: 'S256',
-    access_type: 'offline',
-    prompt: 'consent',
+    code_challenge_method: "S256",
+    access_type: "offline",
+    prompt: "consent",
   });
   return `${meta.authorizeUrl}?${params.toString()}`;
 }
@@ -139,7 +148,13 @@ interface TokenResponse {
  */
 export async function exchangeCodeForTokens(
   provider: OAuthProvider,
-  opts: { code: string; verifier: string; redirectUri: string; clientId: string; clientSecret: string },
+  opts: {
+    code: string;
+    verifier: string;
+    redirectUri: string;
+    clientId: string;
+    clientSecret: string;
+  },
 ): Promise<TokenResponse> {
   const meta = PROVIDER_META[provider];
   const body = new URLSearchParams({
@@ -148,11 +163,11 @@ export async function exchangeCodeForTokens(
     client_secret: opts.clientSecret,
     redirect_uri: opts.redirectUri,
     code_verifier: opts.verifier,
-    grant_type: 'authorization_code',
+    grant_type: "authorization_code",
   });
   const response = await fetch(meta.tokenUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
   });
   return (await response.json()) as TokenResponse;
@@ -170,11 +185,11 @@ export async function refreshAccessToken(
     client_id: opts.clientId,
     client_secret: opts.clientSecret,
     refresh_token: opts.refreshToken,
-    grant_type: 'refresh_token',
+    grant_type: "refresh_token",
   });
   const response = await fetch(meta.tokenUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body.toString(),
   });
   return (await response.json()) as TokenResponse;
@@ -200,18 +215,18 @@ export async function fetchUserInfo(
     });
     if (!response.ok) return null;
     const raw = (await response.json()) as Record<string, unknown>;
-    if (provider === 'google') {
+    if (provider === "google") {
       return {
-        email: String(raw.email || ''),
-        name: String(raw.name || raw.email || ''),
-        picture: String(raw.picture || ''),
+        email: String(raw.email || ""),
+        name: String(raw.name || raw.email || ""),
+        picture: String(raw.picture || ""),
       };
     }
     // Microsoft Graph /me
     return {
-      email: String(raw.mail || raw.userPrincipalName || raw.email || ''),
-      name: String(raw.displayName || raw.userPrincipalName || ''),
-      picture: String(raw.picture || ''),
+      email: String(raw.mail || raw.userPrincipalName || raw.email || ""),
+      name: String(raw.displayName || raw.userPrincipalName || ""),
+      picture: String(raw.picture || ""),
     };
   } catch {
     return null;
@@ -223,16 +238,16 @@ function toTokenSet(
   identity: UserInfo | null,
 ): OAuthTokenSet {
   const expiresAt =
-    typeof tokens.expires_in === 'number' && tokens.expires_in > 0
+    typeof tokens.expires_in === "number" && tokens.expires_in > 0
       ? new Date(Date.now() + tokens.expires_in * 1000)
       : null;
   return {
-    accessToken: tokens.access_token || '',
-    refreshToken: tokens.refresh_token || '',
+    accessToken: tokens.access_token || "",
+    refreshToken: tokens.refresh_token || "",
     expiresAt,
-    email: identity?.email || '',
-    name: identity?.name || '',
-    picture: identity?.picture || '',
+    email: identity?.email || "",
+    name: identity?.name || "",
+    picture: identity?.picture || "",
   };
 }
 
@@ -253,8 +268,12 @@ export async function saveOAuthTokens(
     { username },
     {
       $set: {
-        [`${field}accessTokenEncrypted`]: tokens.accessToken ? encrypt(tokens.accessToken) : '',
-        [`${field}refreshTokenEncrypted`]: tokens.refreshToken ? encrypt(tokens.refreshToken) : '',
+        [`${field}accessTokenEncrypted`]: tokens.accessToken
+          ? encrypt(tokens.accessToken)
+          : "",
+        [`${field}refreshTokenEncrypted`]: tokens.refreshToken
+          ? encrypt(tokens.refreshToken)
+          : "",
         [`${field}expiresAt`]: tokens.expiresAt || null,
         [`${field}email`]: tokens.email,
         [`${field}name`]: tokens.name,
@@ -275,12 +294,12 @@ export async function loadOAuthTokens(
   provider: OAuthProvider,
 ): Promise<OAuthTokenSet> {
   const empty: OAuthTokenSet = {
-    accessToken: '',
-    refreshToken: '',
+    accessToken: "",
+    refreshToken: "",
     expiresAt: null,
-    email: '',
-    name: '',
-    picture: '',
+    email: "",
+    name: "",
+    picture: "",
   };
   if (!username || !username.trim()) return empty;
 
@@ -289,38 +308,45 @@ export async function loadOAuthTokens(
     const settings = await UserSettingsModel.findOne({ username }).lean();
     if (!settings || !settings.oauth) return empty;
 
-    const stored = (settings.oauth as Record<string, Record<string, unknown>>)[provider];
+    const stored = (settings.oauth as Record<string, Record<string, unknown>>)[
+      provider
+    ];
     if (!stored) return empty;
 
     const getStr = (key: string): string => {
       const value = stored[key];
-      return typeof value === 'string' ? value : '';
+      return typeof value === "string" ? value : "";
     };
 
-    let accessToken = '';
-    let refreshToken = '';
-    if (getStr('accessTokenEncrypted')) {
+    let accessToken = "";
+    let refreshToken = "";
+    if (getStr("accessTokenEncrypted")) {
       try {
-        accessToken = decrypt(getStr('accessTokenEncrypted'));
+        accessToken = decrypt(getStr("accessTokenEncrypted"));
       } catch {
-        accessToken = '';
+        accessToken = "";
       }
     }
-    if (getStr('refreshTokenEncrypted')) {
+    if (getStr("refreshTokenEncrypted")) {
       try {
-        refreshToken = decrypt(getStr('refreshTokenEncrypted'));
+        refreshToken = decrypt(getStr("refreshTokenEncrypted"));
       } catch {
-        refreshToken = '';
+        refreshToken = "";
       }
     }
 
     return {
       accessToken,
       refreshToken,
-      expiresAt: stored.expiresAt instanceof Date ? stored.expiresAt : stored.expiresAt ? new Date(String(stored.expiresAt)) : null,
-      email: getStr('email'),
-      name: getStr('name'),
-      picture: getStr('picture'),
+      expiresAt:
+        stored.expiresAt instanceof Date
+          ? stored.expiresAt
+          : stored.expiresAt
+            ? new Date(String(stored.expiresAt))
+            : null,
+      email: getStr("email"),
+      name: getStr("name"),
+      picture: getStr("picture"),
     };
   } catch {
     return empty;
@@ -358,7 +384,10 @@ export async function getUsableAccessToken(
     if (!refreshed.access_token) return null;
     const identity = await fetchUserInfo(provider, refreshed.access_token);
     const tokenSet = toTokenSet(
-      { ...refreshed, refresh_token: refreshed.refresh_token || stored.refreshToken },
+      {
+        ...refreshed,
+        refresh_token: refreshed.refresh_token || stored.refreshToken,
+      },
       identity,
     );
     await saveOAuthTokens(username, provider, tokenSet);
@@ -382,12 +411,12 @@ export async function clearOAuthTokens(
     { username },
     {
       $set: {
-        [`${field}accessTokenEncrypted`]: '',
-        [`${field}refreshTokenEncrypted`]: '',
+        [`${field}accessTokenEncrypted`]: "",
+        [`${field}refreshTokenEncrypted`]: "",
         [`${field}expiresAt`]: null,
-        [`${field}email`]: '',
-        [`${field}name`]: '',
-        [`${field}picture`]: '',
+        [`${field}email`]: "",
+        [`${field}name`]: "",
+        [`${field}picture`]: "",
         updatedAt: new Date(),
       },
     },
@@ -395,11 +424,13 @@ export async function clearOAuthTokens(
   );
 }
 
-export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+export function parseCookies(
+  cookieHeader: string | undefined,
+): Record<string, string> {
   const result: Record<string, string> = {};
   if (!cookieHeader) return result;
-  for (const part of cookieHeader.split(';')) {
-    const idx = part.indexOf('=');
+  for (const part of cookieHeader.split(";")) {
+    const idx = part.indexOf("=");
     if (idx === -1) continue;
     const key = part.slice(0, idx).trim();
     const value = part.slice(idx + 1).trim();
