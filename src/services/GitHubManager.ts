@@ -1,7 +1,7 @@
 // GitHub Manager Service
 // Handles GitHub API interactions for self-managed repository workflow
 
-import { PullRequest } from './AgentCommunication';
+import { PullRequest } from "./AgentCommunication";
 
 export interface GitHubConfig {
   owner: string;
@@ -13,7 +13,7 @@ export interface GitHubConfig {
 export interface GitHubFile {
   path: string;
   content: string;
-  mode?: '100644' | '100755' | '040000' | '160000' | '120000';
+  mode?: "100644" | "100755" | "040000" | "160000" | "120000";
 }
 
 export interface CommitOptions {
@@ -26,7 +26,7 @@ export interface CommitOptions {
 
 export class GitHubManager {
   private config: GitHubConfig;
-  private baseURL = 'https://api.github.com';
+  private baseURL = "https://api.github.com";
 
   constructor(config: GitHubConfig) {
     this.config = config;
@@ -35,25 +35,29 @@ export class GitHubManager {
   // Get authorization header
   private getHeaders(): Record<string, string> {
     return {
-      'Authorization': `Bearer ${this.config.token}`,
-      'Accept': 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
+      Authorization: `Bearer ${this.config.token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
     };
   }
 
   // Create a new branch for agent work
-  async createBranch(branchName: string): Promise<{ name: string; sha: string }> {
+  async createBranch(
+    branchName: string,
+  ): Promise<{ name: string; sha: string }> {
     try {
       // Get base branch SHA
       const baseResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/ref/heads/${this.config.branch}`,
         {
-          headers: this.getHeaders()
-        }
+          headers: this.getHeaders(),
+        },
       );
 
       if (!baseResponse.ok) {
-        throw new Error(`Failed to get base branch: ${baseResponse.statusText}`);
+        throw new Error(
+          `Failed to get base branch: ${baseResponse.statusText}`,
+        );
       }
 
       const baseData = await baseResponse.json();
@@ -63,26 +67,28 @@ export class GitHubManager {
       const createResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/refs`,
         {
-          method: 'POST',
+          method: "POST",
           headers: this.getHeaders(),
           body: JSON.stringify({
             ref: `refs/heads/${branchName}`,
-            sha: baseSha
-          })
-        }
+            sha: baseSha,
+          }),
+        },
       );
 
       if (!createResponse.ok) {
-        throw new Error(`Failed to create branch: ${createResponse.statusText}`);
+        throw new Error(
+          `Failed to create branch: ${createResponse.statusText}`,
+        );
       }
 
       const data = await createResponse.json();
       return {
         name: branchName,
-        sha: data.object.sha
+        sha: data.object.sha,
       };
     } catch (error) {
-      console.error('[GitHubManager] Failed to create branch:', error);
+      console.error("[GitHubManager] Failed to create branch:", error);
       throw error;
     }
   }
@@ -91,13 +97,13 @@ export class GitHubManager {
   async commitFiles(
     branchName: string,
     files: GitHubFile[],
-    options: CommitOptions
+    options: CommitOptions,
   ): Promise<{ sha: string; url: string }> {
     try {
       // Get current tree
       const branchResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/ref/heads/${branchName}`,
-        { headers: this.getHeaders() }
+        { headers: this.getHeaders() },
       );
 
       if (!branchResponse.ok) {
@@ -110,7 +116,7 @@ export class GitHubManager {
       // Get commit tree
       const commitResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/commits/${commitSha}`,
-        { headers: this.getHeaders() }
+        { headers: this.getHeaders() },
       );
 
       if (!commitResponse.ok) {
@@ -124,18 +130,18 @@ export class GitHubManager {
       const treeResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/trees`,
         {
-          method: 'POST',
+          method: "POST",
           headers: this.getHeaders(),
           body: JSON.stringify({
             base_tree: treeSha,
-            tree: files.map(file => ({
+            tree: files.map((file) => ({
               path: file.path,
-              mode: file.mode || '100644',
-              type: 'blob',
-              content: file.content
-            }))
-          })
-        }
+              mode: file.mode || "100644",
+              type: "blob",
+              content: file.content,
+            })),
+          }),
+        },
       );
 
       if (!treeResponse.ok) {
@@ -148,22 +154,24 @@ export class GitHubManager {
       const newCommitResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/commits`,
         {
-          method: 'POST',
+          method: "POST",
           headers: this.getHeaders(),
           body: JSON.stringify({
             message: options.message,
             tree: treeData.sha,
             parents: [commitSha],
             author: options.author || {
-              name: 'VOLT Agent',
-              email: 'agent@volt.dev'
-            }
-          })
-        }
+              name: "VOLT Agent",
+              email: "agent@volt.dev",
+            },
+          }),
+        },
       );
 
       if (!newCommitResponse.ok) {
-        throw new Error(`Failed to create commit: ${newCommitResponse.statusText}`);
+        throw new Error(
+          `Failed to create commit: ${newCommitResponse.statusText}`,
+        );
       }
 
       const newCommitData = await newCommitResponse.json();
@@ -172,24 +180,26 @@ export class GitHubManager {
       const updateResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/refs/heads/${branchName}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: this.getHeaders(),
           body: JSON.stringify({
-            sha: newCommitData.sha
-          })
-        }
+            sha: newCommitData.sha,
+          }),
+        },
       );
 
       if (!updateResponse.ok) {
-        throw new Error(`Failed to update branch: ${updateResponse.statusText}`);
+        throw new Error(
+          `Failed to update branch: ${updateResponse.statusText}`,
+        );
       }
 
       return {
         sha: newCommitData.sha,
-        url: newCommitData.html_url
+        url: newCommitData.html_url,
       };
     } catch (error) {
-      console.error('[GitHubManager] Failed to commit files:', error);
+      console.error("[GitHubManager] Failed to commit files:", error);
       throw error;
     }
   }
@@ -199,21 +209,21 @@ export class GitHubManager {
     branchName: string,
     prTitle: string,
     prBody: string,
-    reviewers?: string[]
+    reviewers?: string[],
   ): Promise<PullRequest> {
     try {
       const prResponse = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls`,
         {
-          method: 'POST',
+          method: "POST",
           headers: this.getHeaders(),
           body: JSON.stringify({
             title: prTitle,
             body: prBody,
             head: branchName,
-            base: this.config.branch
-          })
-        }
+            base: this.config.branch,
+          }),
+        },
       );
 
       if (!prResponse.ok) {
@@ -227,12 +237,12 @@ export class GitHubManager {
         await fetch(
           `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls/${prData.number}/requested_reviewers`,
           {
-            method: 'POST',
+            method: "POST",
             headers: this.getHeaders(),
             body: JSON.stringify({
-              reviewers: reviewers
-            })
-          }
+              reviewers: reviewers,
+            }),
+          },
         );
       }
 
@@ -243,25 +253,25 @@ export class GitHubManager {
         title: prData.title,
         description: prData.body,
         branch: branchName,
-        createdBy: 'agent-system',
+        createdBy: "agent-system",
         createdAt: new Date(prData.created_at),
-        status: 'open',
-        meetingId: '',
-        taskId: '',
-        agentDiscussions: ''
+        status: "open",
+        meetingId: "",
+        taskId: "",
+        agentDiscussions: "",
       };
     } catch (error) {
-      console.error('[GitHubManager] Failed to create PR:', error);
+      console.error("[GitHubManager] Failed to create PR:", error);
       throw error;
     }
   }
 
   // Get pull request details
-  async getPullRequest(prNumber: number): Promise<any> {
+  async getPullRequest(prNumber: number): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}`,
-        { headers: this.getHeaders() }
+        { headers: this.getHeaders() },
       );
 
       if (!response.ok) {
@@ -270,7 +280,7 @@ export class GitHubManager {
 
       return await response.json();
     } catch (error) {
-      console.error('[GitHubManager] Failed to get PR:', error);
+      console.error("[GitHubManager] Failed to get PR:", error);
       throw error;
     }
   }
@@ -280,20 +290,20 @@ export class GitHubManager {
     prNumber: number,
     commitTitle?: string,
     commitMessage?: string,
-    squash: boolean = false
+    squash: boolean = false,
   ): Promise<{ sha: string; merged: boolean }> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/merge`,
         {
-          method: 'PUT',
+          method: "PUT",
           headers: this.getHeaders(),
           body: JSON.stringify({
             commit_title: commitTitle,
             commit_message: commitMessage,
-            merge_method: squash ? 'squash' : 'merge'
-          })
-        }
+            merge_method: squash ? "squash" : "merge",
+          }),
+        },
       );
 
       if (!response.ok) {
@@ -303,10 +313,10 @@ export class GitHubManager {
       const data = await response.json();
       return {
         sha: data.sha,
-        merged: data.merged
+        merged: data.merged,
       };
     } catch (error) {
-      console.error('[GitHubManager] Failed to merge PR:', error);
+      console.error("[GitHubManager] Failed to merge PR:", error);
       throw error;
     }
   }
@@ -317,12 +327,12 @@ export class GitHubManager {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: this.getHeaders(),
           body: JSON.stringify({
-            state: 'closed'
-          })
-        }
+            state: "closed",
+          }),
+        },
       );
 
       if (!response.ok) {
@@ -331,17 +341,17 @@ export class GitHubManager {
 
       return { closed: true };
     } catch (error) {
-      console.error('[GitHubManager] Failed to close PR:', error);
+      console.error("[GitHubManager] Failed to close PR:", error);
       throw error;
     }
   }
 
   // Get list of open PRs
-  async getOpenPullRequests(): Promise<any[]> {
+  async getOpenPullRequests(): Promise<Record<string, unknown>[]> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/pulls?state=open`,
-        { headers: this.getHeaders() }
+        { headers: this.getHeaders() },
       );
 
       if (!response.ok) {
@@ -350,7 +360,7 @@ export class GitHubManager {
 
       return await response.json();
     } catch (error) {
-      console.error('[GitHubManager] Failed to get PRs:', error);
+      console.error("[GitHubManager] Failed to get PRs:", error);
       throw error;
     }
   }
@@ -361,26 +371,26 @@ export class GitHubManager {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/refs/heads/${branchName}`,
         {
-          method: 'DELETE',
-          headers: this.getHeaders()
-        }
+          method: "DELETE",
+          headers: this.getHeaders(),
+        },
       );
 
       if (!response.ok) {
         throw new Error(`Failed to delete branch: ${response.statusText}`);
       }
     } catch (error) {
-      console.error('[GitHubManager] Failed to delete branch:', error);
+      console.error("[GitHubManager] Failed to delete branch:", error);
       throw error;
     }
   }
 
   // Get commit
-  async getCommit(sha: string): Promise<any> {
+  async getCommit(sha: string): Promise<Record<string, unknown>> {
     try {
       const response = await fetch(
         `${this.baseURL}/repos/${this.config.owner}/${this.config.repo}/git/commits/${sha}`,
-        { headers: this.getHeaders() }
+        { headers: this.getHeaders() },
       );
 
       if (!response.ok) {
@@ -389,21 +399,29 @@ export class GitHubManager {
 
       return await response.json();
     } catch (error) {
-      console.error('[GitHubManager] Failed to get commit:', error);
+      console.error("[GitHubManager] Failed to get commit:", error);
       throw error;
     }
   }
 
   // Helper: Generate branch name for agent task
-  static generateBranchName(agentRole: string, taskType: string, taskId: string): string {
-    const timestamp = new Date().toISOString().split('T')[0];
-    const cleanRole = agentRole.toLowerCase().replace(/\s+/g, '-');
-    const cleanType = taskType.toLowerCase().replace(/\s+/g, '-');
+  static generateBranchName(
+    agentRole: string,
+    taskType: string,
+    taskId: string,
+  ): string {
+    const timestamp = new Date().toISOString().split("T")[0];
+    const cleanRole = agentRole.toLowerCase().replace(/\s+/g, "-");
+    const cleanType = taskType.toLowerCase().replace(/\s+/g, "-");
     return `agent/${cleanRole}/${cleanType}/${taskId.substring(0, 8)}-${timestamp}`;
   }
 
   // Helper: Generate PR description from meeting context
-  static generatePRDescription(meetingId: string, taskTitle: string, agentDiscussions: string): string {
+  static generatePRDescription(
+    meetingId: string,
+    taskTitle: string,
+    agentDiscussions: string,
+  ): string {
     return `## Agent Meeting Summary
 
 **Meeting ID**: ${meetingId}
@@ -428,7 +446,9 @@ export function getGitHubManager(config?: GitHubConfig): GitHubManager {
     githubManagerInstance = new GitHubManager(config);
   }
   if (!githubManagerInstance) {
-    throw new Error('GitHubManager not initialized. Call getGitHubManager with config first.');
+    throw new Error(
+      "GitHubManager not initialized. Call getGitHubManager with config first.",
+    );
   }
   return githubManagerInstance;
 }

@@ -1,36 +1,48 @@
-import { connectToDatabase } from './utils/db';
-import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas';
+import { connectToDatabase } from '../shared/db.js';
+import { SessionModel, CheckpointModel, UserSettingsModel, AuditLogModel, DeploymentModel, WorkflowTaskModel, WorkspaceModel } from '../src/models/Schemas.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from '../shared/security.js';
 
 type ApiRequest = {
   method?: string;
   query: Record<string, string | string[] | undefined>;
   body?: Record<string, unknown>;
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
 };
 
 type ApiResponse = {
   status: (code: number) => ApiResponse;
   json: (payload: unknown) => ApiResponse;
-  setHeader: (name: string, value: string[]) => void;
+  setHeader: (name: string, value: string) => void;
 };
 
 const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : 'Unknown error';
 
 export default async function handler(req: ApiRequest, res: ApiResponse) {
-  try {
-    await connectToDatabase();
-  } catch (error: unknown) {
-    return res.status(500).json({ error: 'Database connection failed', details: getErrorMessage(error) });
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
   }
 
-  const { method } = req;
-  const { action, username } = req.query;
+  const { action } = req.query;
 
-  if (typeof username !== 'string' || !username.trim()) {
-    return res.status(400).json({ error: 'Username query parameter must be a non-empty string.' });
+  const isStatusQuery = action === 'getSecretStatus';
+
+  // All database actions require an authenticated session. The username is
+  // taken from the session, never from the client.
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
+
+  if (!isStatusQuery) {
+    try {
+      await connectToDatabase();
+    } catch (error: unknown) {
+      return res.status(500).json({ error: 'Database connection failed', details: getErrorMessage(error) });
+    }
   }
 
-  switch (method) {
+  switch (req.method) {
     case 'GET':
       if (action === 'getSessions') {
         try {
@@ -56,6 +68,25 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           return res.status(200).json(settings);
         } catch (err: unknown) {
           return res.status(500).json({ error: 'Failed to fetch settings', details: getErrorMessage(err) });
+        }
+      }
+      if (action === 'getSecretStatus') {
+        try {
+          const { hasStoredSecrets, loadUserSecrets } = await import('../shared/secrets.js');
+          const secrets = await loadUserSecrets(username);
+          const hasAny = await hasStoredSecrets(username);
+          return res.status(200).json({
+            stored: hasAny,
+            providers: {
+              groq: Boolean(secrets.groq),
+              openrouter: Boolean(secrets.openrouter),
+              nvidia: Boolean(secrets.nvidia),
+              huggingface: Boolean(secrets.huggingface),
+              githubToken: Boolean(secrets.githubToken)
+            }
+          });
+        } catch {
+          return res.status(200).json({ stored: false, providers: {} });
         }
       }
       if (action === 'getCheckpoints') {
@@ -140,6 +171,22 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           return res.status(500).json({ error: 'Failed to save settings', details: getErrorMessage(err) });
         }
       }
+      if (action === 'saveSecrets') {
+        try {
+          const { saveUserSecrets } = await import('../shared/secrets.js');
+          const body = req.body as { keys?: Record<string, string> };
+          await saveUserSecrets(username, body.keys || {});
+          await AuditLogModel.create({
+            username,
+            action: 'SECRETS_UPDATE',
+            details: 'Encrypted provider API secrets updated in the secure vault.',
+            status: 'SUCCESS'
+          });
+          return res.status(200).json({ ok: true });
+        } catch (err: unknown) {
+          return res.status(500).json({ error: 'Failed to save secrets', details: getErrorMessage(err) });
+        }
+      }
       if (action === 'saveCheckpoint') {
         try {
           const newCheckpoint = await CheckpointModel.create({ username, ...req.body });
@@ -185,7 +232,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       return res.status(400).json({ error: 'Invalid POST action' });
 
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
-      return res.status(405).json({ error: `Method ${method} not allowed` });
+      res.setHeader('Allow', 'GET, POST');
+      return res.status(405).json({ error: `Method ${req.method} not allowed` });
   }
 }

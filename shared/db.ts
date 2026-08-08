@@ -2,10 +2,18 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI || '';
 
-let cachedConnection = (global as any).mongoose;
+type MongooseInstance = Awaited<ReturnType<typeof mongoose.connect>>;
 
-if (!cachedConnection) {
-  cachedConnection = (global as any).mongoose = { conn: null, promise: null };
+interface CachedConnection {
+  conn: MongooseInstance | null;
+  promise: Promise<MongooseInstance> | null;
+}
+
+const globalForMongoose = globalThis as typeof globalThis & { mongoose?: CachedConnection };
+
+const cachedConnection: CachedConnection = globalForMongoose.mongoose || { conn: null, promise: null };
+if (!globalForMongoose.mongoose) {
+  globalForMongoose.mongoose = cachedConnection;
 }
 
 export async function connectToDatabase() {

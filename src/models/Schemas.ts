@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 // 1. Session History Schema
 export interface ISession extends Document {
@@ -11,7 +11,7 @@ export interface ISession extends Document {
   issues: Array<{
     id: number;
     type: string;
-    severity: 'Critical' | 'High' | 'Medium' | 'Low';
+    severity: "Critical" | "High" | "Medium" | "Low";
     line: number;
     description: string;
     original: string;
@@ -34,23 +34,25 @@ const SessionSchema: Schema = new Schema({
   branch: { type: String, required: true },
   originalCode: { type: String, required: true },
   fixedCode: { type: String },
-  issues: [{
-    id: { type: Number },
-    type: { type: String },
-    severity: { type: String, enum: ['Critical', 'High', 'Medium', 'Low'] },
-    line: { type: Number },
-    description: { type: String },
-    original: { type: String },
-    fixed: { type: String },
-    explanation: { type: String }
-  }],
+  issues: [
+    {
+      id: { type: Number },
+      type: { type: String },
+      severity: { type: String, enum: ["Critical", "High", "Medium", "Low"] },
+      line: { type: Number },
+      description: { type: String },
+      original: { type: String },
+      fixed: { type: String },
+      explanation: { type: String },
+    },
+  ],
   summary: { type: String },
   tokensUsed: { type: Number, default: 0 },
   promptTokens: { type: Number, default: 0 },
   completionTokens: { type: Number, default: 0 },
   modelUsed: { type: String },
   provider: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 // 2. Safe Git Checkpoint Schema (Epic 09 & 10)
@@ -69,13 +71,15 @@ const CheckpointSchema: Schema = new Schema({
   filePath: { type: String, required: true },
   codeBackup: { type: String, required: true },
   gitCommitSha: { type: String },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 // 3. User Settings & Encrypted Keys Schema (Epic 17 & Gap 7)
 export interface IUserSettings extends Document {
   username: string;
-  agentMode: 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
+  email: string;
+  passwordHash: string;
+  agentMode: "manual" | "assist" | "auto-syntax" | "auto-debug" | "team-review";
   debounceDelay: number;
   autoApplyFixes: boolean;
   enableSentinel: boolean;
@@ -95,12 +99,31 @@ export interface IUserSettings extends Document {
     huggingfaceKeyEncrypted: string;
     githubTokenEncrypted: string;
   };
+  oauth: {
+    google: OAuthTokenFields;
+    microsoft: OAuthTokenFields;
+  };
   updatedAt: Date;
+  createdAt: Date;
+}
+
+// OAuth token bundle for Google (Gmail/Drive) and Microsoft (OneDrive).
+// Access tokens are encrypted at rest; only expiry + account identity are
+// stored in plaintext so the UI can render status without exposing secrets.
+export interface OAuthTokenFields {
+  accessTokenEncrypted: string;
+  refreshTokenEncrypted: string;
+  expiresAt: Date | null;
+  email: string;
+  name: string;
+  picture: string;
 }
 
 const UserSettingsSchema: Schema = new Schema({
   username: { type: String, required: true, unique: true },
-  agentMode: { type: String, default: 'assist' },
+  email: { type: String, default: "" },
+  passwordHash: { type: String, default: "" },
+  agentMode: { type: String, default: "assist" },
   debounceDelay: { type: Number, default: 800 },
   autoApplyFixes: { type: Boolean, default: false },
   enableSentinel: { type: Boolean, default: false },
@@ -111,16 +134,35 @@ const UserSettingsSchema: Schema = new Schema({
     createBranches: { type: Boolean, default: false },
     runTests: { type: Boolean, default: true },
     pushBranches: { type: Boolean, default: false },
-    createPRs: { type: Boolean, default: false }
+    createPRs: { type: Boolean, default: false },
   },
   keys: {
-    groqKeyEncrypted: { type: String, default: '' },
-    openrouterKeyEncrypted: { type: String, default: '' },
-    nvidiaKeyEncrypted: { type: String, default: '' },
-    huggingfaceKeyEncrypted: { type: String, default: '' },
-    githubTokenEncrypted: { type: String, default: '' }
+    groqKeyEncrypted: { type: String, default: "" },
+    openrouterKeyEncrypted: { type: String, default: "" },
+    nvidiaKeyEncrypted: { type: String, default: "" },
+    huggingfaceKeyEncrypted: { type: String, default: "" },
+    githubTokenEncrypted: { type: String, default: "" },
   },
-  updatedAt: { type: Date, default: Date.now }
+  oauth: {
+    google: {
+      accessTokenEncrypted: { type: String, default: "" },
+      refreshTokenEncrypted: { type: String, default: "" },
+      expiresAt: { type: Date, default: null },
+      email: { type: String, default: "" },
+      name: { type: String, default: "" },
+      picture: { type: String, default: "" },
+    },
+    microsoft: {
+      accessTokenEncrypted: { type: String, default: "" },
+      refreshTokenEncrypted: { type: String, default: "" },
+      expiresAt: { type: Date, default: null },
+      email: { type: String, default: "" },
+      name: { type: String, default: "" },
+      picture: { type: String, default: "" },
+    },
+  },
+  updatedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // 4. Audit Log Schema
@@ -128,7 +170,7 @@ export interface IAuditLog extends Document {
   username: string;
   action: string;
   details: string;
-  status: 'SUCCESS' | 'WARNING' | 'FAILED';
+  status: "SUCCESS" | "WARNING" | "FAILED";
   createdAt: Date;
 }
 
@@ -136,15 +178,40 @@ const AuditLogSchema: Schema = new Schema({
   username: { type: String, required: true, index: true },
   action: { type: String, required: true },
   details: { type: String, required: true },
-  status: { type: String, enum: ['SUCCESS', 'WARNING', 'FAILED'], required: true },
-  createdAt: { type: Date, default: Date.now }
+  status: {
+    type: String,
+    enum: ["SUCCESS", "WARNING", "FAILED"],
+    required: true,
+  },
+  createdAt: { type: Date, default: Date.now },
+});
+
+// 4b. Auth Session Schema (real login — HttpOnly session token stored hashed)
+export interface IAuthSession extends Document {
+  tokenHash: string;
+  username: string;
+  createdAt: Date;
+  expiresAt: Date;
+  userAgent: string;
+  ip: string;
+  lastSeenAt: Date;
+}
+
+const AuthSessionSchema: Schema = new Schema({
+  tokenHash: { type: String, required: true, unique: true, index: true },
+  username: { type: String, required: true, index: true },
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: { type: Date, required: true, index: true },
+  userAgent: { type: String, default: "" },
+  ip: { type: String, default: "" },
+  lastSeenAt: { type: Date, default: Date.now },
 });
 
 // 5. Deployment Schema (v6.1)
 export interface IDeployment extends Document {
   username: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILED';
-  target: 'STAGING' | 'PRODUCTION';
+  status: "PENDING" | "IN_PROGRESS" | "SUCCESS" | "FAILED";
+  target: "STAGING" | "PRODUCTION";
   gitCommitSha: string;
   buildLogs: string;
   latency: number;
@@ -154,13 +221,17 @@ export interface IDeployment extends Document {
 
 const DeploymentSchema: Schema = new Schema({
   username: { type: String, required: true, index: true },
-  status: { type: String, enum: ['PENDING', 'IN_PROGRESS', 'SUCCESS', 'FAILED'], default: 'PENDING' },
-  target: { type: String, enum: ['STAGING', 'PRODUCTION'], required: true },
-  gitCommitSha: { type: String, default: '' },
-  buildLogs: { type: String, default: '' },
+  status: {
+    type: String,
+    enum: ["PENDING", "IN_PROGRESS", "SUCCESS", "FAILED"],
+    default: "PENDING",
+  },
+  target: { type: String, enum: ["STAGING", "PRODUCTION"], required: true },
+  gitCommitSha: { type: String, default: "" },
+  buildLogs: { type: String, default: "" },
   latency: { type: Number, default: 0 },
-  creator: { type: String, default: 'SYSTEM' },
-  createdAt: { type: Date, default: Date.now }
+  creator: { type: String, default: "SYSTEM" },
+  createdAt: { type: Date, default: Date.now },
 });
 
 // 6. Workflow Task Schema (v6.1)
@@ -168,7 +239,7 @@ export interface IWorkflowTask extends Document {
   username: string;
   taskId: string;
   agentSpecialty: string;
-  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
   logs: string;
   targetFile: string;
   createdAt: Date;
@@ -178,10 +249,14 @@ const WorkflowTaskSchema: Schema = new Schema({
   username: { type: String, required: true, index: true },
   taskId: { type: String, required: true, unique: true },
   agentSpecialty: { type: String, required: true },
-  status: { type: String, enum: ['PENDING', 'RUNNING', 'COMPLETED', 'FAILED'], default: 'PENDING' },
-  logs: { type: String, default: '' },
+  status: {
+    type: String,
+    enum: ["PENDING", "RUNNING", "COMPLETED", "FAILED"],
+    default: "PENDING",
+  },
+  logs: { type: String, default: "" },
   targetFile: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 // 7. Workspace Schema (v6.1)
@@ -198,17 +273,33 @@ export interface IWorkspace extends Document {
 const WorkspaceSchema: Schema = new Schema({
   username: { type: String, required: true, unique: true },
   repoPath: { type: String, required: true },
-  activeBranch: { type: String, default: 'main' },
+  activeBranch: { type: String, default: "main" },
   lintErrors: { type: Number, default: 0 },
   averageTime: { type: Number, default: 0 },
   totalTokensUsed: { type: Number, default: 0 },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
 });
 
-export const SessionModel = mongoose.models.Session || mongoose.model<ISession>('Session', SessionSchema);
-export const CheckpointModel = mongoose.models.Checkpoint || mongoose.model<ICheckpoint>('Checkpoint', CheckpointSchema);
-export const UserSettingsModel = mongoose.models.UserSettings || mongoose.model<IUserSettings>('UserSettings', UserSettingsSchema);
-export const AuditLogModel = mongoose.models.AuditLog || mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);
-export const DeploymentModel = mongoose.models.Deployment || mongoose.model<IDeployment>('Deployment', DeploymentSchema);
-export const WorkflowTaskModel = mongoose.models.WorkflowTask || mongoose.model<IWorkflowTask>('WorkflowTask', WorkflowTaskSchema);
-export const WorkspaceModel = mongoose.models.Workspace || mongoose.model<IWorkspace>('Workspace', WorkspaceSchema);
+export const SessionModel =
+  mongoose.models.Session || mongoose.model<ISession>("Session", SessionSchema);
+export const CheckpointModel =
+  mongoose.models.Checkpoint ||
+  mongoose.model<ICheckpoint>("Checkpoint", CheckpointSchema);
+export const UserSettingsModel =
+  mongoose.models.UserSettings ||
+  mongoose.model<IUserSettings>("UserSettings", UserSettingsSchema);
+export const AuditLogModel =
+  mongoose.models.AuditLog ||
+  mongoose.model<IAuditLog>("AuditLog", AuditLogSchema);
+export const AuthSessionModel =
+  mongoose.models.AuthSession ||
+  mongoose.model<IAuthSession>("AuthSession", AuthSessionSchema);
+export const DeploymentModel =
+  mongoose.models.Deployment ||
+  mongoose.model<IDeployment>("Deployment", DeploymentSchema);
+export const WorkflowTaskModel =
+  mongoose.models.WorkflowTask ||
+  mongoose.model<IWorkflowTask>("WorkflowTask", WorkflowTaskSchema);
+export const WorkspaceModel =
+  mongoose.models.Workspace ||
+  mongoose.model<IWorkspace>("Workspace", WorkspaceSchema);

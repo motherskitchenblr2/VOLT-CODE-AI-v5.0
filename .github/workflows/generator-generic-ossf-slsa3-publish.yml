@@ -16,7 +16,7 @@ jobs:
       digests: ${{ steps.hash.outputs.digests }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build artifacts
         run: |
@@ -37,7 +37,7 @@ jobs:
       id-token: write
       contents: write
     # ✅ Use a valid release tag (v2.0.0 is latest stable)
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       subjects: "${{ needs.build.outputs.digests }}"
       upload-assets: true
@@ -47,8 +47,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify Vercel
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: your-org/volt_code_ai
+          repository: motherskitchenblr2/VOLT-CODE-AI-v5.0
           event-type: vercel-deploy

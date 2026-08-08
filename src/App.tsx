@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Play,
   History,
@@ -11,72 +11,53 @@ import {
   AlertTriangle,
   Zap,
   Bug,
-  Code2,
   Shield,
-  Brain,
   Wrench,
   Sparkles,
   ChevronDown,
   Bot,
-  Terminal as TerminalIcon,
   Search,
   HelpCircle,
   Send,
   GitBranch,
-  Folder,
-  File,
   AlertCircle,
   RefreshCw,
   Crown,
   Loader2,
   Users,
   GitPullRequest,
-  Lightbulb,
-  Columns
-} from 'lucide-react';
-import 'highlight.js/styles/atom-one-dark.css';
-import { Analytics } from '@vercel/analytics/react';
-
-// Custom SVG Github icon because lucide-react v1.x does not include brand logos
-const Github: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="24"
-    height="24"
-    stroke="currentColor"
-    strokeWidth="2"
-    fill="none"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
-  </svg>
-);
+} from "lucide-react";
+import "highlight.js/styles/atom-one-dark.css";
+import { Analytics } from "@vercel/analytics/react";
 
 // v6.0 Upgraded Components & Services
-import { ResponsiveContainer } from './components/ResponsiveContainer';
-import { VisualDiff } from './components/VisualDiff';
-import { AdminCenter } from './components/AdminCenter';
-import { PullRequest } from './services/AgentCommunication';
-import { TerminalPanel } from './components/TerminalPanel';
-import { GitHubWorkspace } from './components/GitHubWorkspace';
-import { MeetingPanel } from './components/MeetingPanel';
-import { PRReviewDashboard } from './components/PRReviewDashboard';
-import { BossGuidancePanel } from './components/BossGuidancePanel';
-import { SplitEditorLayout } from './components/SplitEditorLayout';
-import { AIProviderSelector } from './components/AIProviderSelector';
-import { TODOListWidget } from './components/TODOListWidget';
-import { MeetingMinutesDisplay } from './components/MeetingMinutesDisplay';
-import { ProfessionalEditorCanvas } from './components/ProfessionalEditorCanvas';
+import { ResponsiveContainer } from "./components/ResponsiveContainer";
+import { VisualDiff } from "./components/VisualDiff";
+import { AdminCenter } from "./components/AdminCenter";
+import { PullRequest } from "./services/AgentCommunication";
+import { TerminalPanel } from "./components/TerminalPanel";
+import { GitHubWorkspace } from "./components/GitHubWorkspace";
+import { MeetingPanel } from "./components/MeetingPanel";
+import { PRReviewDashboard } from "./components/PRReviewDashboard";
+import { CloudAuth } from "./components/CloudAuth";
 
-import { PerformanceOptimizer, OptimizerReport } from './services/PerformanceOptimizer';
-import { ProviderRegistry, ProviderState } from './services/ProviderRegistry';
-import { RecoveryCenter } from './services/RecoveryCenter';
-import { RepairPlanner, PriorityReport } from './services/RepairPlanner';
-import { RepoIntelligence, HealthScoreDetails } from './services/RepoIntelligence';
-import { SentinelWatcher } from './services/SentinelWatcher';
-import { ConsensusEngine, MultiAgentOrchestrator } from './services/AgentWorkforce';
+import {
+  PerformanceOptimizer,
+  OptimizerReport,
+} from "./services/PerformanceOptimizer";
+import { ProviderRegistry, ProviderState } from "./services/ProviderRegistry";
+import { RecoveryCenter } from "./services/RecoveryCenter";
+import { RepairPlanner } from "./services/RepairPlanner";
+import {
+  RepoIntelligence,
+  HealthScoreDetails,
+} from "./services/RepoIntelligence";
+import { SentinelWatcher } from "./services/SentinelWatcher";
+import {
+  ConsensusEngine,
+  MultiAgentOrchestrator,
+} from "./services/AgentWorkforce";
+import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
 
 interface Session {
   id: string;
@@ -95,171 +76,446 @@ interface Session {
 interface Issue {
   id: number;
   type: string;
-  severity: 'Critical' | 'High' | 'Medium' | 'Low';
+  severity: "Critical" | "High" | "Medium" | "Low";
   description: string;
   explanation: string;
   original: string;
   fixed: string;
 }
 
-interface DiffLine {
-  type: 'added' | 'removed' | 'normal';
-  value: string;
-  lineNumOriginal?: number;
-  lineNumFixed?: number;
+interface Checkpoint {
+  checkpointId: string;
+  filePath: string;
+  codeBackup: string;
+  gitCommitSha: string;
+  createdAt: string;
 }
 
-type View = 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss' | 'meeting' | 'pr-review';
+interface AuditLog {
+  action: string;
+  details: string;
+  status: "SUCCESS" | "WARNING" | "FAILED";
+  createdAt: string;
+}
 
-type AgentMode = 'manual' | 'assist' | 'auto-syntax' | 'auto-debug' | 'team-review';
+interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body?: string | null;
+  pull_request?: unknown;
+  user?: { login?: string } | null;
+  created_at: string;
+}
+
+type View =
+  | "editor"
+  | "history"
+  | "settings"
+  | "sentinel"
+  | "about"
+  | "github"
+  | "admin"
+  | "diagnostics"
+  | "terminal"
+  | "boss"
+  | "meeting"
+  | "pr-review";
+
+type AgentMode =
+  "manual" | "assist" | "auto-syntax" | "auto-debug" | "team-review";
 
 export interface ModelConfig {
   id: string;
   name: string;
-  tag: 'BALANCED' | 'CODING' | 'REASONING' | 'FAST';
+  tag: "BALANCED" | "CODING" | "REASONING" | "FAST";
   ctx: string;
   color: string;
-  provider: 'Groq' | 'OpenRouter' | 'NVIDIA' | 'HuggingFace';
+  provider: "Groq" | "OpenRouter" | "NVIDIA" | "HuggingFace";
 }
 
 const FREE_MODELS: ModelConfig[] = [
   // Groq
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '128K', color: '#F97316', provider: 'Groq' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', tag: 'FAST', ctx: '128K', color: '#60A5FA', provider: 'Groq' },
-  { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill Llama 70B', tag: 'REASONING', ctx: '128K', color: '#3B82F6', provider: 'Groq' },
-  { id: 'deepseek-r1-distill-qwen-32b', name: 'DeepSeek R1 Distill Qwen 32B', tag: 'CODING', ctx: '128K', color: '#9333EA', provider: 'Groq' },
-  { id: 'gemma2-9b-it', name: 'Gemma 2 9B', tag: 'FAST', ctx: '8K', color: '#EF4444', provider: 'Groq' },
+  {
+    id: "llama-3.3-70b-versatile",
+    name: "Llama 3.3 70B",
+    tag: "BALANCED",
+    ctx: "128K",
+    color: "#F97316",
+    provider: "Groq",
+  },
+  {
+    id: "llama-3.1-8b-instant",
+    name: "Llama 3.1 8B",
+    tag: "FAST",
+    ctx: "128K",
+    color: "#60A5FA",
+    provider: "Groq",
+  },
+  {
+    id: "deepseek-r1-distill-llama-70b",
+    name: "DeepSeek R1 Distill Llama 70B",
+    tag: "REASONING",
+    ctx: "128K",
+    color: "#3B82F6",
+    provider: "Groq",
+  },
+  {
+    id: "deepseek-r1-distill-qwen-32b",
+    name: "DeepSeek R1 Distill Qwen 32B",
+    tag: "CODING",
+    ctx: "128K",
+    color: "#9333EA",
+    provider: "Groq",
+  },
+  {
+    id: "gemma2-9b-it",
+    name: "Gemma 2 9B",
+    tag: "FAST",
+    ctx: "8K",
+    color: "#EF4444",
+    provider: "Groq",
+  },
 
   // OpenRouter
-  { id: 'openrouter/auto', name: 'OpenRouter Auto', tag: 'BALANCED', ctx: 'varies', color: '#FF5F00', provider: 'OpenRouter' },
-  { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 Coder 32B', tag: 'CODING', ctx: '32K', color: '#9333EA', provider: 'OpenRouter' },
-  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', tag: 'REASONING', ctx: '160K', color: '#3B82F6', provider: 'OpenRouter' },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '131K', color: '#F97316', provider: 'OpenRouter' },
-  { id: 'google/gemma-3-27b-it', name: 'Gemma 3 27B', tag: 'FAST', ctx: '131K', color: '#EF4444', provider: 'OpenRouter' },
+  {
+    id: "openrouter/auto",
+    name: "OpenRouter Auto",
+    tag: "BALANCED",
+    ctx: "varies",
+    color: "#FF5F00",
+    provider: "OpenRouter",
+  },
+  {
+    id: "qwen/qwen-2.5-coder-32b-instruct",
+    name: "Qwen 2.5 Coder 32B",
+    tag: "CODING",
+    ctx: "32K",
+    color: "#9333EA",
+    provider: "OpenRouter",
+  },
+  {
+    id: "deepseek/deepseek-r1",
+    name: "DeepSeek R1",
+    tag: "REASONING",
+    ctx: "160K",
+    color: "#3B82F6",
+    provider: "OpenRouter",
+  },
+  {
+    id: "meta-llama/llama-3.3-70b-instruct",
+    name: "Llama 3.3 70B",
+    tag: "BALANCED",
+    ctx: "131K",
+    color: "#F97316",
+    provider: "OpenRouter",
+  },
+  {
+    id: "google/gemma-3-27b-it",
+    name: "Gemma 3 27B",
+    tag: "FAST",
+    ctx: "131K",
+    color: "#EF4444",
+    provider: "OpenRouter",
+  },
 
   // NVIDIA
-  { id: 'nvidia/llama-3.1-nemotron-70b-instruct', name: 'Llama 3.1 Nemotron 70B', tag: 'BALANCED', ctx: '128K', color: '#F97316', provider: 'NVIDIA' },
-  { id: 'meta/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '128K', color: '#F97316', provider: 'NVIDIA' },
-  { id: 'deepseek-ai/deepseek-r1', name: 'DeepSeek R1', tag: 'REASONING', ctx: '128K', color: '#3B82F6', provider: 'NVIDIA' },
-  { id: 'nvidia/nemotron-4-340b-instruct', name: 'Nemotron-4 340B', tag: 'CODING', ctx: '4K', color: '#10B981', provider: 'NVIDIA' },
-  { id: 'meta/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', tag: 'FAST', ctx: '128K', color: '#60A5FA', provider: 'NVIDIA' },
+  {
+    id: "nvidia/llama-3.1-nemotron-70b-instruct",
+    name: "Llama 3.1 Nemotron 70B",
+    tag: "BALANCED",
+    ctx: "128K",
+    color: "#F97316",
+    provider: "NVIDIA",
+  },
+  {
+    id: "meta/llama-3.3-70b-instruct",
+    name: "Llama 3.3 70B",
+    tag: "BALANCED",
+    ctx: "128K",
+    color: "#F97316",
+    provider: "NVIDIA",
+  },
+  {
+    id: "deepseek-ai/deepseek-r1",
+    name: "DeepSeek R1",
+    tag: "REASONING",
+    ctx: "128K",
+    color: "#3B82F6",
+    provider: "NVIDIA",
+  },
+  {
+    id: "nvidia/nemotron-4-340b-instruct",
+    name: "Nemotron-4 340B",
+    tag: "CODING",
+    ctx: "4K",
+    color: "#10B981",
+    provider: "NVIDIA",
+  },
+  {
+    id: "meta/llama-3.1-8b-instruct",
+    name: "Llama 3.1 8B",
+    tag: "FAST",
+    ctx: "128K",
+    color: "#60A5FA",
+    provider: "NVIDIA",
+  },
 
   // HuggingFace
-  { id: 'meta-llama/Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B', tag: 'BALANCED', ctx: '131K', color: '#F97316', provider: 'HuggingFace' },
-  { id: 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', name: 'DeepSeek R1 Qwen 32B', tag: 'REASONING', ctx: '32K', color: '#3B82F6', provider: 'HuggingFace' },
-  { id: 'Qwen/Qwen2.5-Coder-32B-Instruct', name: 'Qwen 2.5 Coder 32B', tag: 'CODING', ctx: '32K', color: '#9333EA', provider: 'HuggingFace' },
-  { id: 'google/gemma-2-9b-it', name: 'Gemma 2 9B', tag: 'FAST', ctx: '8K', color: '#EF4444', provider: 'HuggingFace' },
-  { id: 'mistralai/Mistral-7B-Instruct-v0.3', name: 'Mistral 7B', tag: 'FAST', ctx: '32K', color: '#6EE7B7', provider: 'HuggingFace' },
+  {
+    id: "meta-llama/Llama-3.3-70B-Instruct",
+    name: "Llama 3.3 70B",
+    tag: "BALANCED",
+    ctx: "131K",
+    color: "#F97316",
+    provider: "HuggingFace",
+  },
+  {
+    id: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+    name: "DeepSeek R1 Qwen 32B",
+    tag: "REASONING",
+    ctx: "32K",
+    color: "#3B82F6",
+    provider: "HuggingFace",
+  },
+  {
+    id: "Qwen/Qwen2.5-Coder-32B-Instruct",
+    name: "Qwen 2.5 Coder 32B",
+    tag: "CODING",
+    ctx: "32K",
+    color: "#9333EA",
+    provider: "HuggingFace",
+  },
+  {
+    id: "google/gemma-2-9b-it",
+    name: "Gemma 2 9B",
+    tag: "FAST",
+    ctx: "8K",
+    color: "#EF4444",
+    provider: "HuggingFace",
+  },
+  {
+    id: "mistralai/Mistral-7B-Instruct-v0.3",
+    name: "Mistral 7B",
+    tag: "FAST",
+    ctx: "32K",
+    color: "#6EE7B7",
+    provider: "HuggingFace",
+  },
 ];
 
 const pluginOptions = [
-  'Test Runner',
-  'Console Trace',
-  'Diff Reviewer',
-  'Repo Scanner',
-  'API Schema Reader',
-  'Dependency Audit'
+  "Test Runner",
+  "Console Trace",
+  "Diff Reviewer",
+  "Repo Scanner",
+  "API Schema Reader",
+  "Dependency Audit",
 ];
 
 const skillOptions = [
-  'Syntax Repair',
-  'Bug Isolation',
-  'Patch Generator',
-  'Fix Verification',
-  'Root Cause Drilldown',
-  'Regression Guard'
+  "Syntax Repair",
+  "Bug Isolation",
+  "Patch Generator",
+  "Fix Verification",
+  "Root Cause Drilldown",
+  "Regression Guard",
 ];
 
 const modeOptions: AgentMode[] = [
-  'manual',
-  'assist',
-  'auto-syntax',
-  'auto-debug',
-  'team-review'
+  "manual",
+  "assist",
+  "auto-syntax",
+  "auto-debug",
+  "team-review",
 ];
 
 const detectLanguage = (codeStr: string, filePath?: string): string => {
   if (filePath) {
-    const ext = filePath.split('.').pop()?.toLowerCase();
-    if (ext === 'yaml' || ext === 'yml') return 'yaml';
-    if (ext === 'py') return 'python';
-    if (ext === 'cpp' || ext === 'cc' || ext === 'h') return 'cpp';
-    if (ext === 'html' || ext === 'htm') return 'html';
-    if (ext === 'css') return 'css';
-    if (ext === 'js' || ext === 'jsx') return 'javascript';
-    if (ext === 'ts' || ext === 'tsx') return 'typescript';
+    const ext = filePath.split(".").pop()?.toLowerCase();
+    if (ext === "yaml" || ext === "yml") return "yaml";
+    if (ext === "py") return "python";
+    if (ext === "cpp" || ext === "cc" || ext === "h") return "cpp";
+    if (ext === "html" || ext === "htm") return "html";
+    if (ext === "css") return "css";
+    if (ext === "js" || ext === "jsx") return "javascript";
+    if (ext === "ts" || ext === "tsx") return "typescript";
   }
 
-  if (!codeStr || !codeStr.trim()) return 'unknown';
+  if (!codeStr || !codeStr.trim()) return "unknown";
 
   // YAML detection (run this first before any JS/TS triggers since YAML config might contain scripts/commands)
   if (
-    codeStr.includes('yaml-language-server') ||
-    codeStr.includes('rules:') ||
-    codeStr.includes('reviews:') ||
-    codeStr.includes('early_access:') ||
-    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) && !codeStr.includes('{') && !codeStr.includes('}'))
+    codeStr.includes("yaml-language-server") ||
+    codeStr.includes("rules:") ||
+    codeStr.includes("reviews:") ||
+    codeStr.includes("early_access:") ||
+    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) &&
+      !codeStr.includes("{") &&
+      !codeStr.includes("}"))
   ) {
-    return 'yaml';
+    return "yaml";
   }
 
-  if ((codeStr.includes('def ') || codeStr.includes('import ')) && codeStr.includes(':')) return 'python';
-  if (codeStr.includes('#include') || codeStr.includes('int main')) return 'cpp';
-  if (codeStr.includes('<html') || codeStr.includes('<div') || codeStr.includes('<!DOCTYPE html>')) return 'html';
-  if (codeStr.includes('{') && codeStr.includes('}') && codeStr.includes(':')) return 'css';
-  if (codeStr.includes('const ') || codeStr.includes('let ') || codeStr.includes('function ') || codeStr.includes('console.log')) return 'javascript';
-  return 'unknown';
+  if (
+    (codeStr.includes("def ") || codeStr.includes("import ")) &&
+    codeStr.includes(":")
+  )
+    return "python";
+  if (codeStr.includes("#include") || codeStr.includes("int main"))
+    return "cpp";
+  if (
+    codeStr.includes("<html") ||
+    codeStr.includes("<div") ||
+    codeStr.includes("<!DOCTYPE html>")
+  )
+    return "html";
+  if (codeStr.includes("{") && codeStr.includes("}") && codeStr.includes(":"))
+    return "css";
+  if (
+    codeStr.includes("const ") ||
+    codeStr.includes("let ") ||
+    codeStr.includes("function ") ||
+    codeStr.includes("console.log")
+  )
+    return "javascript";
+  return "unknown";
 };
+
+const getErrorMessage = (err: unknown): string => {
+  return err instanceof Error ? err.message : String(err);
+};
+
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>('editor');
+  const [currentView, setCurrentView] = useState<View>("editor");
   const [code, setCode] = useState(
-    'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}'
+    'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}',
   );
-  const [language, setLanguage] = useState('javascript');
-  const [detectedLanguage, setDetectedLanguage] = useState('javascript');
+  const [language, setLanguage] = useState("javascript");
+  const [detectedLanguage, setDetectedLanguage] = useState("javascript");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [fixedCode, setFixedCode] = useState('');
+  const [fixedCode, setFixedCode] = useState("");
   const [showDiff, setShowDiff] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('dev_user');
+  const [username, setUsername] = useState("dev_user");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginMode, setLoginMode] = useState<"login" | "register">("login");
+  const [loginError, setLoginError] = useState("");
+  const [loginBusy, setLoginBusy] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [scanProgress, setScanProgress] = useState(0);
   const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
-  const [selectedPlugin, setSelectedPlugin] = useState('Test Runner');
-  const [selectedSkill, setSelectedSkill] = useState('Syntax Repair');
-  const [agentStatus, setAgentStatus] = useState('idle');
-  const [agentMode, setAgentMode] = useState<AgentMode>('assist');
+  const [selectedPlugin, setSelectedPlugin] = useState("Test Runner");
+  const [selectedSkill, setSelectedSkill] = useState("Syntax Repair");
+  const [, setAgentStatus] = useState("idle");
+  const [agentMode, setAgentMode] = useState<AgentMode>("assist");
   const [tokensUsed, setTokensUsed] = useState(0);
   const [promptTokens, setPromptTokens] = useState(0);
   const [completionTokens, setCompletionTokens] = useState(0);
-  const [currentModelName, setCurrentModelName] = useState('');
+  const [, setCurrentModelName] = useState("");
   const [autoApplyFixes, setAutoApplyFixes] = useState(false);
   const [enableSentinel, setEnableSentinel] = useState(false);
-  const [enableAgentSuggestions, setEnableAgentSuggestions] = useState(false);
-  const [agentSuggestions, setAgentSuggestions] = useState<string[]>([]);
 
   // v5.0 Added States
-  const [aboutDocPage, setAboutDocPage] = useState<'whitepaper' | 'changelog' | 'comparison'>('whitepaper');
+  const [aboutDocPage, setAboutDocPage] = useState<
+    "whitepaper" | "changelog" | "comparison"
+  >("whitepaper");
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    `[SYSTEM] Volt Diagnostic Engine initialized. Ready for v5.0 operations.`
+    `[SYSTEM] Volt Diagnostic Engine initialized. Ready for v5.0 operations.`,
   ]);
-  const [showTerminal, setShowTerminal] = useState(true);
-  const [historySearch, setHistorySearch] = useState('');
+  const [historySearch, setHistorySearch] = useState("");
   const [debounceDelay, setDebounceDelay] = useState(800);
   const [showTokenUsage, setShowTokenUsage] = useState(true);
   const [showShortcutsCheatSheet, setShowShortcutsCheatSheet] = useState(false);
-  
+
   // Custom API Keys
-  const [openrouterKey, setOpenrouterKey] = useState(localStorage.getItem('volt_openrouter_key') || '');
-  const [groqKey, setGroqKey] = useState(localStorage.getItem('volt_groq_key') || '');
-  const [nvidiaKey, setNvidiaKey] = useState(localStorage.getItem('volt_nvidia_key') || '');
-  const [huggingfaceKey, setHuggingfaceKey] = useState(localStorage.getItem('volt_huggingface_key') || '');
-  
+  const [openrouterKey, setOpenrouterKey] = useState(
+    localStorage.getItem("volt_openrouter_key") || "",
+  );
+  const [groqKey, setGroqKey] = useState(
+    localStorage.getItem("volt_groq_key") || "",
+  );
+  const [nvidiaKey, setNvidiaKey] = useState(
+    localStorage.getItem("volt_nvidia_key") || "",
+  );
+  const [huggingfaceKey, setHuggingfaceKey] = useState(
+    localStorage.getItem("volt_huggingface_key") || "",
+  );
+
+  // Live AI Provider model catalog (fetched from /api/models)
+  const {
+    availability: liveProviderAvailability,
+    loading: liveProviderLoading,
+    lastUpdated: liveProviderUpdated,
+    refresh: refreshLiveProviders,
+  } = useLiveProviderModels(
+    {
+      groq: groqKey,
+      openrouter: openrouterKey,
+      nvidia: nvidiaKey,
+      huggingface: huggingfaceKey,
+    },
+    username,
+  );
+
+  // Secure vault: which secrets are stored encrypted in MongoDB
+  const [vaultStored, setVaultStored] = useState(false);
+  const [vaultSyncState, setVaultSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const fetchVaultStatus = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/database?action=getSecretStatus&username=${encodeURIComponent(username)}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setVaultStored(Boolean(data.stored));
+      }
+    } catch {
+      setVaultStored(false);
+    }
+  }, [username]);
+
+  useEffect(() => {
+    fetchVaultStatus();
+  }, [fetchVaultStatus]);
+
+  // Debounced push of provider keys to the MongoDB secret vault (encrypted server-side).
+  useEffect(() => {
+    const hasAnyKey = groqKey || openrouterKey || nvidiaKey || huggingfaceKey;
+    if (!hasAnyKey) return;
+    setVaultSyncState("saving");
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/database?action=saveSecrets&username=${encodeURIComponent(username)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              keys: {
+                groq: groqKey,
+                openrouter: openrouterKey,
+                nvidia: nvidiaKey,
+                huggingface: huggingfaceKey,
+              },
+            }),
+          },
+        );
+        setVaultSyncState(res.ok ? "saved" : "error");
+        if (res.ok) fetchVaultStatus();
+      } catch {
+        setVaultSyncState("error");
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, fetchVaultStatus]);
+
   // Auto-Language Deduction Warning Modal
   const [showLangAlert, setShowLangAlert] = useState(false);
 
@@ -268,118 +524,131 @@ const App: React.FC = () => {
     const reg = new ProviderRegistry();
     return reg.getAllProviders();
   });
-  
-  const [optimizerReport, setOptimizerReport] = useState<OptimizerReport>(() => 
+
+  const [optimizerReport, setOptimizerReport] = useState<OptimizerReport>(() =>
     PerformanceOptimizer.generateReport(
-      'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}'
-    )
+      'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}',
+    ),
   );
 
-  const [checkpoints, setCheckpoints] = useState<any[]>([]);
+  const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [acceptedHunkIds, setAcceptedHunkIds] = useState<number[]>([]);
   const [consensusPassed, setConsensusPassed] = useState<boolean | null>(null);
   const [consensusScore, setConsensusScore] = useState<number | null>(null);
   const [consensusFeedback, setConsensusFeedback] = useState<string[]>([]);
-  const [agentBreakdown, setAgentBreakdown] = useState<Record<string, number>>({});
-  
+  const [agentBreakdown, setAgentBreakdown] = useState<Record<string, number>>(
+    {},
+  );
+
   const [repoHealth, setRepoHealth] = useState<HealthScoreDetails>({
     totalScore: 98,
     lintWarnings: 2,
     complexityPenalty: 0,
     circularCyclesCount: 0,
-    testPassRate: 100
+    testPassRate: 100,
   });
 
   const [isMaintenanceActive, setIsMaintenanceActive] = useState(false);
   const [isSystemHalted, setIsSystemHalted] = useState(false);
-  const [activeAgents, setActiveAgents] = useState(0);
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [activeAgents] = useState(0);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   // Globally accessible logging and toast utilities (declared early to prevent TDZ/ordering errors)
-  const addLog = useCallback((msg: string, type: 'info' | 'success' | 'error' | 'warn' = 'info') => {
-    const timestamp = new Date().toLocaleTimeString();
-    const prefix = type === 'success' ? '✔ [SUCCESS]' : type === 'error' ? '✖ [ERROR]' : type === 'warn' ? '⚠ [WARNING]' : 'ℹ [INFO]';
-    setTerminalLogs(prev => [...prev, `[${timestamp}] ${prefix} ${msg}`]);
-  }, []);
+  const addLog = useCallback(
+    (msg: string, type: "info" | "success" | "error" | "warn" = "info") => {
+      const timestamp = new Date().toLocaleTimeString();
+      const prefix =
+        type === "success"
+          ? "✔ [SUCCESS]"
+          : type === "error"
+            ? "✖ [ERROR]"
+            : type === "warn"
+              ? "⚠ [WARNING]"
+              : "ℹ [INFO]";
+      setTerminalLogs((prev) => [...prev, `[${timestamp}] ${prefix} ${msg}`]);
+    },
+    [],
+  );
 
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'warn' = 'info') => {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 px-5 py-3 rounded-xl font-semibold z-[120] border ${
-      type === 'error' ? 'bg-red-950/80 text-red-400 border-red-500' : 
-      type === 'success' ? 'bg-black/90 text-[#FF5F00] border-[#FF5F00]' :
-      type === 'warn' ? 'bg-amber-950/80 text-amber-400 border-amber-500' :
-      'bg-[#121212]/90 text-white border-white/20'
-    } shadow-lg backdrop-blur-md`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 5000);
-  }, []);
+  const showToast = useCallback(
+    (message: string, type: "success" | "error" | "info" | "warn" = "info") => {
+      const toast = document.createElement("div");
+      toast.className = `fixed bottom-4 right-4 px-5 py-3 rounded-xl font-semibold z-[120] border ${
+        type === "error"
+          ? "bg-red-950/80 text-red-400 border-red-500"
+          : type === "success"
+            ? "bg-black/90 text-[#FF5F00] border-[#FF5F00]"
+            : type === "warn"
+              ? "bg-amber-950/80 text-amber-400 border-amber-500"
+              : "bg-[#121212]/90 text-white border-white/20"
+      } shadow-lg backdrop-blur-md`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    },
+    [],
+  );
 
   // Instantiating hooks/refs
   const consensusEngine = useRef(new ConsensusEngine());
   const repoIntelligence = useRef(new RepoIntelligence());
-  const sentinelWatcher = useRef(new SentinelWatcher(
-    (msg, type) => addLog(msg, type)
-  ));
+  const sentinelWatcher = useRef(
+    new SentinelWatcher((msg, type) => addLog(msg, type)),
+  );
 
   // GitHub Workspace State
-  const [repoPath, setRepoPath] = useState(localStorage.getItem('volt_github_repo') || 'motherskitchenblr2/VOLT-CODE-AI-v5.0');
-  const [repoBranch, setRepoBranch] = useState(localStorage.getItem('volt_github_branch') || 'main');
-  const [githubToken, setGithubToken] = useState(localStorage.getItem('volt_github_token') || '');
-  const [githubFiles, setGithubFiles] = useState<{ path: string; type: string; sha: string }[]>([]);
-  const [githubIssues, setGithubIssues] = useState<any[]>([]);
+  const [repoPath, setRepoPath] = useState(
+    localStorage.getItem("volt_github_repo") ||
+      "motherskitchenblr2/VOLT-CODE-AI-v5.0",
+  );
+  const [repoBranch, setRepoBranch] = useState(
+    localStorage.getItem("volt_github_branch") || "main",
+  );
+  const [githubToken, setGithubToken] = useState(
+    localStorage.getItem("volt_github_token") || "",
+  );
+  const [githubFiles, setGithubFiles] = useState<
+    { path: string; type: string; sha: string }[]
+  >([]);
+  const [githubIssues, setGithubIssues] = useState<GitHubIssue[]>([]);
   const [isFetchingGithub, setIsFetchingGithub] = useState(false);
-  const [loadedFilePath, setLoadedFilePath] = useState('');
-  const [loadedFileSha, setLoadedFileSha] = useState('');
-  const [commitMessage, setCommitMessage] = useState('fix: update code diagnostics');
+  const [loadedFilePath, setLoadedFilePath] = useState("");
+  const [loadedFileSha, setLoadedFileSha] = useState("");
+  const [commitMessage, setCommitMessage] = useState(
+    "fix: update code diagnostics",
+  );
 
-  // Multi-tab interactive terminal state
-  const [terminalTab, setTerminalTab] = useState<'diagnostic' | 'powershell' | 'ubuntu' | 'cmd'>('diagnostic');
-  const [terminalInput, setTerminalInput] = useState('');
-  const [powershellLogs, setPowershellLogs] = useState<string[]>([
-    'Windows PowerShell',
-    'Copyright (C) Microsoft Corporation. All rights reserved.',
-    '',
-    'PS C:\\Workspace\\Volt-Code-AI> '
-  ]);
-  const [ubuntuLogs, setUbuntuLogs] = useState<string[]>([
-    'Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-88-generic x86_64)',
-    'Last login: Thu Jun 25 04:30:11 2026 from 192.168.1.5',
-    '',
-    'volt-user@ubuntu:~/workspace$ '
-  ]);
-  const [cmdLogs, setCmdLogs] = useState<string[]>([
-    'Microsoft Windows [Version 10.0.22631.3296]',
-    '(c) Microsoft Corporation. All rights reserved.',
-    '',
-    'C:\\Workspace\\Volt-Code-AI> '
-  ]);
   // Sentinel State telemetry
   const [sentinelIssues, setSentinelIssues] = useState<Issue[]>([]);
-  const [lastSentinelScan, setLastSentinelScan] = useState<string>('Never');
-  const [isSentinelScanning, setIsSentinelScanning] = useState(false);
+  const [lastSentinelScan, setLastSentinelScan] = useState<string>("Never");
+  const [, setIsSentinelScanning] = useState(false);
   const [sentinelStats, setSentinelStats] = useState({
     totalRuns: 0,
     totalBugsFixed: 0,
     timeSavedMinutes: 0,
-    tokensConsumed: 0
+    tokensConsumed: 0,
   });
 
-
-
   // Boss Chat State (v6.1 Boss of the App Cockpit)
-  const [bossMessages, setBossMessages] = useState<Array<{ role: 'user' | 'agent', content: string }>>([
-    { role: 'agent', content: 'Volt AI Core v6.0 Orchestrator ready. All agent modules loaded.' },
+  const [bossMessages, setBossMessages] = useState<
+    Array<{ role: "user" | "agent"; content: string }>
+  >([
+    {
+      role: "agent",
+      content:
+        "Volt AI Core v6.0 Orchestrator ready. All agent modules loaded.",
+    },
   ]);
-  const [bossInput, setBossInput] = useState('');
+  const [bossInput, setBossInput] = useState("");
   const [isBossLoading, setIsBossLoading] = useState(false);
-  const [agentInput, setAgentInput] = useState('');
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
   const fetchAuditLogs = useCallback(async () => {
     try {
-      const res = await fetch(`/api/database?action=getAuditLogs&username=${encodeURIComponent(username)}`);
+      const res = await fetch(
+        `/api/database?action=getAuditLogs&username=${encodeURIComponent(username)}`,
+      );
       if (res.ok) {
         const data = await res.json();
         setAuditLogs(data || []);
@@ -387,33 +656,45 @@ const App: React.FC = () => {
     } catch {
       // Mock fallback
       setAuditLogs([
-        { action: 'SYSTEM_BOOT', details: 'Volt AI v6.0 Core engine successfully initialized.', status: 'SUCCESS', createdAt: new Date().toISOString() },
-        { action: 'SECURITY_CHECK', details: 'Environment encryption validation constraints satisfied.', status: 'SUCCESS', createdAt: new Date().toISOString() }
+        {
+          action: "SYSTEM_BOOT",
+          details: "Volt AI v6.0 Core engine successfully initialized.",
+          status: "SUCCESS",
+          createdAt: new Date().toISOString(),
+        },
+        {
+          action: "SECURITY_CHECK",
+          details: "Environment encryption validation constraints satisfied.",
+          status: "SUCCESS",
+          createdAt: new Date().toISOString(),
+        },
       ]);
     }
   }, [username]);
 
   const loadCheckpoints = useCallback(async () => {
     try {
-      const res = await fetch(`/api/database?action=getCheckpoints&username=${encodeURIComponent(username)}`);
+      const res = await fetch(
+        `/api/database?action=getCheckpoints&username=${encodeURIComponent(username)}`,
+      );
       if (res.ok) {
         const data = await res.json();
         setCheckpoints(data || []);
       } else {
         // Local fallback
-        const localCheckpoints: any[] = [];
+        const localCheckpoints: Checkpoint[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.startsWith('backup_')) {
-            const checkpointId = key.replace('backup_', '');
+          if (key && key.startsWith("backup_")) {
+            const checkpointId = key.replace("backup_", "");
             const val = localStorage.getItem(key);
             if (val) {
               const parsed = JSON.parse(val);
               localCheckpoints.push({
                 checkpointId,
                 filePath: parsed.filePath,
-                createdAt: parsed.timestamp
-              });
+                createdAt: parsed.timestamp,
+              } as Checkpoint);
             }
           }
         }
@@ -424,112 +705,165 @@ const App: React.FC = () => {
     }
   }, [username]);
 
-  const createCheckpoint = useCallback(async (filePath: string, codeBackup: string): Promise<string> => {
-    const checkpointId = 'ck_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
-    const payload = {
-      checkpointId,
-      filePath,
-      codeBackup,
-      gitCommitSha: 'local_sha_rc2'
-    };
+  const createCheckpoint = useCallback(
+    async (filePath: string, codeBackup: string): Promise<string> => {
+      const checkpointId =
+        "ck_" +
+        Date.now().toString(36) +
+        "_" +
+        Math.random().toString(36).slice(2, 6);
+      const payload = {
+        checkpointId,
+        filePath,
+        codeBackup,
+        gitCommitSha: "local_sha_rc2",
+      };
 
-    // Save to localStorage as a fallback
-    localStorage.setItem(`backup_${checkpointId}`, JSON.stringify({
-      filePath,
-      content: codeBackup,
-      timestamp: new Date().toISOString()
-    }));
+      // Save to localStorage as a fallback
+      localStorage.setItem(
+        `backup_${checkpointId}`,
+        JSON.stringify({
+          filePath,
+          content: codeBackup,
+          timestamp: new Date().toISOString(),
+        }),
+      );
 
-    try {
-      await fetch(`/api/database?action=saveCheckpoint&username=${encodeURIComponent(username)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      addLog(`[RECOVERY] Checkpoint ${checkpointId} created and registered inside database registers.`, 'success');
-    } catch (err) {
-      addLog(`[RECOVERY] Saved checkpoint ${checkpointId} in local storage cache (database offline).`, 'warn');
-    }
-
-    loadCheckpoints();
-    return checkpointId;
-  }, [username, addLog, loadCheckpoints]);
-
-  const onRestoreCheckpoint = useCallback(async (checkpointId: string) => {
-    const recovery = new RecoveryCenter(
-      (msg, type) => addLog(msg, type as any),
-      username
-    );
-    try {
-      const recoveredCode = await recovery.undoLastRepair(checkpointId);
-      setCode(recoveredCode);
-      showToast(`Checkpoint ${checkpointId} restored successfully!`, 'success');
-    } catch (err: any) {
-      showToast(`Restore failed: ${err.message}`, 'error');
-    }
-  }, [username, addLog]);
-
-  const onRefreshProviderHealth = useCallback(async (providerName: string) => {
-    const reg = new ProviderRegistry();
-    const targetKey = providerName.toLowerCase();
-    let keyRaw = '';
-    if (targetKey === 'groq') keyRaw = groqKey;
-    else if (targetKey === 'openrouter') keyRaw = openrouterKey;
-    else if (targetKey === 'nvidia') keyRaw = nvidiaKey;
-    else if (targetKey === 'huggingface') keyRaw = huggingfaceKey;
-
-    const start = performance.now();
-    const checkFn = async () => {
-      if (keyRaw) {
-        const response = await fetch('/api/provider-validate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, provider: targetKey, keyRaw })
-        });
-        if (!response.ok) throw new Error('Unresponsive');
-      } else {
-        let testUrl = 'https://api.groq.com';
-        if (targetKey === 'openrouter') testUrl = 'https://openrouter.ai';
-        else if (targetKey === 'nvidia') testUrl = 'https://integrate.api.nvidia.com';
-        else if (targetKey === 'huggingface') testUrl = 'https://huggingface.co';
-
-        await fetch(testUrl, { mode: 'no-cors' });
+      try {
+        await fetch(
+          `/api/database?action=saveCheckpoint&username=${encodeURIComponent(username)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+        addLog(
+          `[RECOVERY] Checkpoint ${checkpointId} created and registered inside database registers.`,
+          "success",
+        );
+      } catch {
+        addLog(
+          `[RECOVERY] Saved checkpoint ${checkpointId} in local storage cache (database offline).`,
+          "warn",
+        );
       }
-      return Math.round(performance.now() - start);
-    };
 
-    try {
-      const updated = await reg.refreshProviderHealth(providerName, checkFn);
-      setProviders(prev => prev.map(p => p.name.toLowerCase() === targetKey ? { ...p, ...updated } : p));
-      addLog(`AI Provider health checked for ${providerName}. Status: ${updated.status}, Latency: ${updated.latencyMs}ms`, 'success');
-    } catch (err: any) {
-      const latencyFallback = Math.round(performance.now() - start);
-      setProviders(prev => prev.map(p => p.name.toLowerCase() === targetKey ? { ...p, status: 'RED', latencyMs: latencyFallback, connected: false } : p));
-      addLog(`AI Provider health check failed or timed out for ${providerName}.`, 'error');
-    }
-  }, [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, addLog]);
+      loadCheckpoints();
+      return checkpointId;
+    },
+    [username, addLog, loadCheckpoints],
+  );
+
+  const onRestoreCheckpoint = useCallback(
+    async (checkpointId: string) => {
+      const recovery = new RecoveryCenter(
+        (msg, type) => addLog(msg, type),
+        username,
+      );
+      try {
+        const recoveredCode = await recovery.undoLastRepair(checkpointId);
+        setCode(recoveredCode);
+        showToast(
+          `Checkpoint ${checkpointId} restored successfully!`,
+          "success",
+        );
+      } catch (err: unknown) {
+        showToast(`Restore failed: ${getErrorMessage(err)}`, "error");
+      }
+    },
+    [username, addLog],
+  );
+
+  const onRefreshProviderHealth = useCallback(
+    async (providerName: string) => {
+      const reg = new ProviderRegistry();
+      const targetKey = providerName.toLowerCase();
+      let keyRaw = "";
+      if (targetKey === "groq") keyRaw = groqKey;
+      else if (targetKey === "openrouter") keyRaw = openrouterKey;
+      else if (targetKey === "nvidia") keyRaw = nvidiaKey;
+      else if (targetKey === "huggingface") keyRaw = huggingfaceKey;
+
+      const start = performance.now();
+      const checkFn = async () => {
+        if (keyRaw) {
+          const response = await fetch("/api/provider-validate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, provider: targetKey, keyRaw }),
+          });
+          if (!response.ok) throw new Error("Unresponsive");
+        } else {
+          let testUrl = "https://api.groq.com";
+          if (targetKey === "openrouter") testUrl = "https://openrouter.ai";
+          else if (targetKey === "nvidia")
+            testUrl = "https://integrate.api.nvidia.com";
+          else if (targetKey === "huggingface")
+            testUrl = "https://huggingface.co";
+
+          await fetch(testUrl, { mode: "no-cors" });
+        }
+        return Math.round(performance.now() - start);
+      };
+
+      try {
+        const updated = await reg.refreshProviderHealth(providerName, checkFn);
+        setProviders((prev) =>
+          prev.map((p) =>
+            p.name.toLowerCase() === targetKey ? { ...p, ...updated } : p,
+          ),
+        );
+        addLog(
+          `AI Provider health checked for ${providerName}. Status: ${updated.status}, Latency: ${updated.latencyMs}ms`,
+          "success",
+        );
+      } catch {
+        const latencyFallback = Math.round(performance.now() - start);
+        setProviders((prev) =>
+          prev.map((p) =>
+            p.name.toLowerCase() === targetKey
+              ? {
+                  ...p,
+                  status: "RED",
+                  latencyMs: latencyFallback,
+                  connected: false,
+                }
+              : p,
+          ),
+        );
+        addLog(
+          `AI Provider health check failed or timed out for ${providerName}.`,
+          "error",
+        );
+      }
+    },
+    [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, addLog],
+  );
 
   const onToggleHunk = useCallback((id: number) => {
-    setAcceptedHunkIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    setAcceptedHunkIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
   }, []);
 
   useEffect(() => {
-    const savedSessions = localStorage.getItem('codeSessions');
+    const savedSessions = localStorage.getItem("codeSessions");
     if (savedSessions) {
       try {
         const parsed = JSON.parse(savedSessions);
         if (Array.isArray(parsed)) {
           setSessions(parsed);
         } else {
-          console.error('Saved sessions is not an array:', parsed);
+          console.error("Saved sessions is not an array:", parsed);
         }
       } catch (err) {
-        console.error('Failed to parse saved sessions from localStorage:', err);
+        console.error("Failed to parse saved sessions from localStorage:", err);
       }
     }
     const detected = detectLanguage(code, loadedFilePath);
     setDetectedLanguage(detected);
-    if (language === 'auto') {
+    if (language === "auto") {
       setLanguage(detected);
     }
     fetchAuditLogs();
@@ -542,41 +876,53 @@ const App: React.FC = () => {
     setOptimizerReport(report);
 
     const fileList = [
-      { path: loadedFilePath || 'editor_buffer.ts', content: code },
-      ...githubFiles.map(f => ({ path: f.path, content: '' }))
+      { path: loadedFilePath || "editor_buffer.ts", content: code },
+      ...githubFiles.map((f) => ({ path: f.path, content: "" })),
     ];
-    repoIntelligence.current.buildKnowledgeGraph(fileList, ['react', 'lucide-react', 'framer-motion']);
-    
+    repoIntelligence.current.buildKnowledgeGraph(fileList, [
+      "react",
+      "lucide-react",
+      "framer-motion",
+    ]);
+
     const cycles = repoIntelligence.current.detectCircularDependencies();
     const health = repoIntelligence.current.calculateHealthScore(
       fileList.length,
       issues.length + (enableSentinel ? sentinelIssues.length : 0),
       100,
-      cycles.length
+      cycles.length,
     );
     setRepoHealth(health);
-  }, [code, loadedFilePath, githubFiles, issues, sentinelIssues, enableSentinel]);
+  }, [
+    code,
+    loadedFilePath,
+    githubFiles,
+    issues,
+    sentinelIssues,
+    enableSentinel,
+  ]);
 
   useEffect(() => {
     if (enableSentinel) {
       sentinelWatcher.current.startFpsMonitor();
     }
+    return () => {
+      sentinelWatcher.current.stopFpsMonitor();
+    };
   }, [enableSentinel]);
 
   useEffect(() => {
     if (terminalEndRef.current) {
-      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      terminalEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [terminalLogs]);
 
   const saveSessions = (newSessions: Session[]) => {
-    localStorage.setItem('codeSessions', JSON.stringify(newSessions));
+    localStorage.setItem("codeSessions", JSON.stringify(newSessions));
     setSessions(newSessions);
   };
 
   // addLog utility has been moved up to resolve initialization ordering issues.
-
-
 
   // Debounced Sentinel Scanner Watcher
   useEffect(() => {
@@ -585,35 +931,44 @@ const App: React.FC = () => {
 
     const timer = setTimeout(async () => {
       setIsSentinelScanning(true);
-      addLog(`[SENTINEL] Debounced watcher triggered passive code scan...`, 'info');
+      addLog(
+        `[SENTINEL] Debounced watcher triggered passive code scan...`,
+        "info",
+      );
       try {
-        const res = await fetch('/api/openrouter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/openrouter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             code,
-            language: language === 'auto' ? detectedLanguage : language,
-            model: 'mistralai/mistral-7b-instruct:free', // use fastest
-            agentMode: 'manual',
-            skill: 'Syntax Repair',
-            plugin: selectedPlugin
-          })
+            language: language === "auto" ? detectedLanguage : language,
+            model: "mistralai/mistral-7b-instruct:free", // use fastest
+            agentMode: "manual",
+            skill: "Syntax Repair",
+            plugin: selectedPlugin,
+          }),
         });
         if (res.ok) {
           const data = await res.json();
           if (active && data && data.issues) {
             setSentinelIssues(data.issues);
-            setSentinelStats(prev => ({
+            setSentinelStats((prev) => ({
               ...prev,
               totalRuns: prev.totalRuns + 1,
-              tokensConsumed: prev.tokensConsumed + (data.tokensUsed || 0)
+              tokensConsumed: prev.tokensConsumed + (data.tokensUsed || 0),
             }));
-            addLog(`[SENTINEL] Passive scan completed. Found ${data.issues.length} potential issue(s).`, data.issues.length > 0 ? 'warn' : 'success');
+            addLog(
+              `[SENTINEL] Passive scan completed. Found ${data.issues.length} potential issue(s).`,
+              data.issues.length > 0 ? "warn" : "success",
+            );
             setLastSentinelScan(new Date().toLocaleTimeString());
           }
         } else {
           if (active) {
-            addLog(`[SENTINEL] Passive scan failed with HTTP ${res.status}`, 'error');
+            addLog(
+              `[SENTINEL] Passive scan failed with HTTP ${res.status}`,
+              "error",
+            );
           }
         }
       } catch (err) {
@@ -629,17 +984,23 @@ const App: React.FC = () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [code, enableSentinel, debounceDelay, language, detectedLanguage, selectedPlugin, addLog]);
-
-
+  }, [
+    code,
+    enableSentinel,
+    debounceDelay,
+    language,
+    detectedLanguage,
+    selectedPlugin,
+    addLog,
+  ]);
 
   const handleCodeChange = (newCode: string) => {
     // FIX 1: Clean escaped HTML entities
-    const cleanedCode = newCode.replace(/&lt;br&gt;/g, '\n');
+    const cleanedCode = newCode.replace(/&lt;br&gt;/g, "\n");
     setCode(cleanedCode);
     const detected = detectLanguage(cleanedCode);
     setDetectedLanguage(detected);
-    if (language === 'auto') {
+    if (language === "auto") {
       setLanguage(detected);
     }
   };
@@ -647,17 +1008,20 @@ const App: React.FC = () => {
   // showToast utility has been moved up to resolve initialization ordering issues.
 
   const escapeRegExp = (str: string) => {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   };
 
   const analyzeCode = useCallback(async () => {
     setIsAnalyzing(true);
     setIsScanning(true);
     setScanProgress(0);
-    setAgentStatus('analyzing');
+    setAgentStatus("analyzing");
     setCurrentModelName(selectedModel.name);
 
-    addLog(`Initiating code analysis. Mode: ${agentMode.toUpperCase()}, Skill: ${selectedSkill.toUpperCase()}, Tool: ${selectedPlugin.toUpperCase()}`, 'info');
+    addLog(
+      `Initiating code analysis. Mode: ${agentMode.toUpperCase()}, Skill: ${selectedSkill.toUpperCase()}, Tool: ${selectedPlugin.toUpperCase()}`,
+      "info",
+    );
 
     const scanInterval = setInterval(() => {
       setScanProgress((prev) => {
@@ -672,20 +1036,27 @@ const App: React.FC = () => {
     setIsScanning(false);
 
     try {
-      const activeLanguage = language === 'auto' ? detectedLanguage : language;
-      const isJSorTS = activeLanguage === 'javascript' || activeLanguage === 'typescript';
-      const activeSkill = (!isJSorTS && selectedSkill === 'Syntax Repair') ? 'Bug Isolation' : selectedSkill;
+      const activeLanguage = language === "auto" ? detectedLanguage : language;
+      const isJSorTS =
+        activeLanguage === "javascript" || activeLanguage === "typescript";
+      const activeSkill =
+        !isJSorTS && selectedSkill === "Syntax Repair"
+          ? "Bug Isolation"
+          : selectedSkill;
 
-      if (agentMode === 'team-review') {
-        addLog(`[ORCHESTRATOR] Spawning TriageAgent and initiating Multi-Agent DAG workflow...`, 'info');
+      if (agentMode === "team-review") {
+        addLog(
+          `[ORCHESTRATOR] Spawning TriageAgent and initiating Multi-Agent DAG workflow...`,
+          "info",
+        );
         const orchestrator = new MultiAgentOrchestrator();
         const keys = {
           groq: groqKey,
           openrouter: openrouterKey,
           nvidia: nvidiaKey,
-          huggingface: huggingfaceKey
+          huggingface: huggingfaceKey,
         };
-        
+
         const result = await orchestrator.runOrchestration(
           `Resolve and optimize: ${selectedSkill} with ${selectedPlugin}. Source code validation.`,
           code,
@@ -694,8 +1065,9 @@ const App: React.FC = () => {
           {
             language: activeLanguage,
             filePath: loadedFilePath,
-            circularCycles: repoIntelligence.current.detectCircularDependencies().length
-          }
+            circularCycles:
+              repoIntelligence.current.detectCircularDependencies().length,
+          },
         );
 
         const lastAttempt = result.history[result.history.length - 1];
@@ -706,79 +1078,97 @@ const App: React.FC = () => {
         setConsensusPassed(result.success);
         setConsensusFeedback(finalFeedback);
         setAgentBreakdown({
-          'Triage Agent': 100,
-          'Parallel Worker DAG': result.success ? 100 : 60,
-          'Senior Consensus Matrix': finalScore
+          "Triage Agent": 100,
+          "Parallel Worker DAG": result.success ? 100 : 60,
+          "Senior Consensus Matrix": finalScore,
         });
 
         setIssues([
           {
             id: 1,
-            type: 'Multi-Agent Team Review Fixes',
-            severity: 'High',
-            description: `Unified changes generated by the Parallel Multi-Agent Worker DAG after ${result.history.length} self-correction attempts. Status: ${result.success ? 'PASSED' : 'REJECTED'}.`,
+            type: "Multi-Agent Team Review Fixes",
+            severity: "High",
+            description: `Unified changes generated by the Parallel Multi-Agent Worker DAG after ${result.history.length} self-correction attempts. Status: ${result.success ? "PASSED" : "REJECTED"}.`,
             original: code,
             fixed: result.finalCode,
-            explanation: `Parallel workers triaged this file: ${result.subtasks.join(' -> ')}. Team feedback: ${finalFeedback.join('; ')}`
-          }
+            explanation: `Parallel workers triaged this file: ${result.subtasks.join(" -> ")}. Team feedback: ${finalFeedback.join("; ")}`,
+          },
         ]);
         setAcceptedHunkIds([1]);
         setFixedCode(result.finalCode);
-        
-        setAgentStatus('complete');
-        addLog(`[ORCHESTRATOR] Workflow complete. Success: ${result.success}. Final Consensus Score: ${finalScore}/100. Attempts: ${result.history.length}`, result.success ? 'success' : 'warn');
-        showToast(`Orchestrator complete! Consensus score: ${finalScore}/100`, result.success ? 'success' : 'warn');
+
+        setAgentStatus("complete");
+        addLog(
+          `[ORCHESTRATOR] Workflow complete. Success: ${result.success}. Final Consensus Score: ${finalScore}/100. Attempts: ${result.history.length}`,
+          result.success ? "success" : "warn",
+        );
+        showToast(
+          `Orchestrator complete! Consensus score: ${finalScore}/100`,
+          result.success ? "success" : "warn",
+        );
         setShowDiff(true);
         setIsAnalyzing(false);
         return;
       }
 
-      addLog(`Sending fetch payload to OpenRouter Gateway for evaluation...`, 'info');
-      const res = await fetch('/api/openrouter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      addLog(
+        `Sending fetch payload to OpenRouter Gateway for evaluation...`,
+        "info",
+      );
+      const res = await fetch("/api/openrouter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code,
           language: activeLanguage,
           model: selectedModel.id,
           agentMode,
           skill: activeSkill,
-          plugin: selectedPlugin
-        })
+          plugin: selectedPlugin,
+        }),
       });
 
       if (!res.ok) {
         if (res.status === 429) {
-          showToast('Rate limit reached. Free tier allows 20 req/min. Retry in 30s.', 'error');
-          addLog(`OpenRouter error status 429: Too Many Requests`, 'error');
+          showToast(
+            "Rate limit reached. Free tier allows 20 req/min. Retry in 30s.",
+            "error",
+          );
+          addLog(`OpenRouter error status 429: Too Many Requests`, "error");
         } else if (res.status === 500) {
-          showToast('Model temporarily unavailable. Try a different model.', 'error');
-          addLog(`OpenRouter error status 500: Server Error`, 'error');
+          showToast(
+            "Model temporarily unavailable. Try a different model.",
+            "error",
+          );
+          addLog(`OpenRouter error status 500: Server Error`, "error");
         } else {
-          showToast('Network error. Check your connection.', 'error');
-          addLog(`Connection error status ${res.status}`, 'error');
+          showToast("Network error. Check your connection.", "error");
+          addLog(`Connection error status ${res.status}`, "error");
         }
         setIsAnalyzing(false);
-        setAgentStatus('error');
+        setAgentStatus("error");
         return;
       }
 
       const data = await res.json();
-      
+
       if (!data || !data.issues) {
-        showToast('Model returned empty response. Try again.', 'error');
-        addLog(`Malformed openrouter response object`, 'error');
+        showToast("Model returned empty response. Try again.", "error");
+        addLog(`Malformed openrouter response object`, "error");
         setIsAnalyzing(false);
-        setAgentStatus('error');
+        setAgentStatus("error");
         return;
       }
 
       const cycles = repoIntelligence.current.detectCircularDependencies();
-      const evalResult = await consensusEngine.current.evaluateCodePatch(data.fixedCode || code, {
-        circularCycles: cycles.length,
-        filePath: loadedFilePath,
-        language: activeLanguage
-      });
+      const evalResult = await consensusEngine.current.evaluateCodePatch(
+        data.fixedCode || code,
+        {
+          circularCycles: cycles.length,
+          filePath: loadedFilePath,
+          language: activeLanguage,
+        },
+      );
 
       setConsensusScore(evalResult.compositeScore);
       setConsensusPassed(evalResult.passed);
@@ -787,171 +1177,232 @@ const App: React.FC = () => {
 
       if (data.issues) {
         setIssues(data.issues);
-        setAcceptedHunkIds(data.issues.map((i: any) => i.id));
+        setAcceptedHunkIds(data.issues.map((i: { id: number }) => i.id));
       }
       if (data.fixedCode) setFixedCode(data.fixedCode);
-      
+
       if (data.tokensUsed) {
         setTokensUsed(data.tokensUsed);
         setPromptTokens(data.promptTokens || 0);
         setCompletionTokens(data.completionTokens || 0);
       }
 
-      setAgentStatus('complete');
-      addLog(`Analysis complete. Consensus composite score: ${evalResult.compositeScore}/100 (${evalResult.passed ? 'PASSED' : 'REJECTED'}). Model: ${data.modelUsed || selectedModel.id}`, evalResult.passed ? 'success' : 'warn');
-      showToast(`Analysis complete! Consensus score: ${evalResult.compositeScore}/100`, evalResult.passed ? 'success' : 'warn');
-      
+      setAgentStatus("complete");
+      addLog(
+        `Analysis complete. Consensus composite score: ${evalResult.compositeScore}/100 (${evalResult.passed ? "PASSED" : "REJECTED"}). Model: ${data.modelUsed || selectedModel.id}`,
+        evalResult.passed ? "success" : "warn",
+      );
+      showToast(
+        `Analysis complete! Consensus score: ${evalResult.compositeScore}/100`,
+        evalResult.passed ? "success" : "warn",
+      );
+
       if (autoApplyFixes && data.fixedCode && evalResult.passed) {
-        const targetPath = loadedFilePath || `temp_editor_code.${activeLanguage === 'python' ? 'py' : activeLanguage === 'javascript' ? 'js' : activeLanguage === 'yaml' ? 'yaml' : 'txt'}`;
+        const targetPath =
+          loadedFilePath ||
+          `temp_editor_code.${activeLanguage === "python" ? "py" : activeLanguage === "javascript" ? "js" : activeLanguage === "yaml" ? "yaml" : "txt"}`;
         await createCheckpoint(targetPath, code);
         setCode(data.fixedCode);
-        addLog(`Auto-Apply enabled & Consensus Passed. Directly updated code with fixes.`, 'success');
+        addLog(
+          `Auto-Apply enabled & Consensus Passed. Directly updated code with fixes.`,
+          "success",
+        );
       } else if (autoApplyFixes && !evalResult.passed) {
-        addLog(`Auto-Apply skipped: Consensus score (${evalResult.compositeScore}) did not satisfy the 90% quality gate.`, 'warn');
-        showToast('Auto-Apply blocked by Quality Consensus Gate.', 'error');
+        addLog(
+          `Auto-Apply skipped: Consensus score (${evalResult.compositeScore}) did not satisfy the 90% quality gate.`,
+          "warn",
+        );
+        showToast("Auto-Apply blocked by Quality Consensus Gate.", "error");
         setShowDiff(true);
       } else {
         setShowDiff(true);
       }
-    } catch (err: any) {
-      console.error('OpenRouter API error:', err);
-      addLog(`Runtime connection failed: ${err?.message || err}`, 'error');
-      showToast('Connection failed. Check your internet.', 'error');
-      setAgentStatus('error');
+    } catch (err: unknown) {
+      console.error("OpenRouter API error:", err);
+      addLog(`Runtime connection failed: ${getErrorMessage(err)}`, "error");
+      showToast("Connection failed. Check your internet.", "error");
+      setAgentStatus("error");
     } finally {
       setIsAnalyzing(false);
     }
-  }, [code, language, detectedLanguage, selectedModel, agentMode, selectedSkill, selectedPlugin, autoApplyFixes, groqKey, openrouterKey, nvidiaKey, huggingfaceKey, addLog, createCheckpoint, loadedFilePath]);
+  }, [
+    code,
+    language,
+    detectedLanguage,
+    selectedModel,
+    agentMode,
+    selectedSkill,
+    selectedPlugin,
+    autoApplyFixes,
+    groqKey,
+    openrouterKey,
+    nvidiaKey,
+    huggingfaceKey,
+    addLog,
+    createCheckpoint,
+    loadedFilePath,
+  ]);
 
   const applyAllFixes = useCallback(async () => {
     if (!fixedCode) return;
 
-    const activeLanguage = language === 'auto' ? detectedLanguage : language;
-    const targetPath = loadedFilePath || `temp_editor_code.${activeLanguage === 'python' ? 'py' : activeLanguage === 'javascript' ? 'js' : activeLanguage === 'yaml' ? 'yaml' : 'txt'}`;
+    const activeLanguage = language === "auto" ? detectedLanguage : language;
+    const targetPath =
+      loadedFilePath ||
+      `temp_editor_code.${activeLanguage === "python" ? "py" : activeLanguage === "javascript" ? "js" : activeLanguage === "yaml" ? "yaml" : "txt"}`;
 
-    const btn = document.getElementById('fix-all-btn');
+    const btn = document.getElementById("fix-all-btn");
     if (btn) {
-      btn.classList.add('animate-pulse');
-      setTimeout(() => btn.classList.remove('animate-pulse'), 800);
+      btn.classList.add("animate-pulse");
+      setTimeout(() => btn.classList.remove("animate-pulse"), 800);
     }
 
     // Create Checkpoint *after* approval but *before* modifications
     const checkpointId = await createCheckpoint(targetPath, code);
 
     // Apply only accepted hunks
-const allFixed = issues.reduce((acc, issue) => {
-  if (!acceptedHunkIds.includes(issue.id)) return acc;
-  const escaped = escapeRegExp(issue.original);
-  return acc.replace(new RegExp(escaped, 'g'), () => issue.fixed);
-}, code);
-    
+    const allFixed = issues.reduce((acc, issue) => {
+      if (!acceptedHunkIds.includes(issue.id)) return acc;
+      const escaped = escapeRegExp(issue.original);
+      return acc.replace(new RegExp(escaped, "g"), () => issue.fixed);
+    }, code);
+
     setCode(allFixed);
     setShowDiff(false);
-    addLog(`Successfully patched and updated accepted hunks. Checkpoint: ${checkpointId}.`, 'success');
+    addLog(
+      `Successfully patched and updated accepted hunks. Checkpoint: ${checkpointId}.`,
+      "success",
+    );
 
     // Run verification tests if applicable
-    addLog('[TESTS] Running automated quality validation tests...', 'info');
+    addLog("[TESTS] Running automated quality validation tests...", "info");
     const testSuccess = Math.random() > 0.15; // 85% success rate
     if (testSuccess) {
-      addLog('[TESTS] Automated verification tests PASSED.', 'success');
-      showToast('Patches applied and verified successfully!', 'success');
+      addLog("[TESTS] Automated verification tests PASSED.", "success");
+      showToast("Patches applied and verified successfully!", "success");
     } else {
-      addLog('[TESTS] Test execution failed on applied fixes. Recommend reviewing test output logs.', 'warn');
-      showToast('Patches applied but tests failed verification.', 'warn');
+      addLog(
+        "[TESTS] Test execution failed on applied fixes. Recommend reviewing test output logs.",
+        "warn",
+      );
+      showToast("Patches applied but tests failed verification.", "warn");
     }
 
     // Stats update for Sentinel
-    setSentinelStats(prev => ({
+    setSentinelStats((prev) => ({
       ...prev,
-      totalBugsFixed: prev.totalBugsFixed + issues.filter(i => acceptedHunkIds.includes(i.id)).length,
-      timeSavedMinutes: prev.timeSavedMinutes + (issues.filter(i => acceptedHunkIds.includes(i.id)).length * 2)
+      totalBugsFixed:
+        prev.totalBugsFixed +
+        issues.filter((i) => acceptedHunkIds.includes(i.id)).length,
+      timeSavedMinutes:
+        prev.timeSavedMinutes +
+        issues.filter((i) => acceptedHunkIds.includes(i.id)).length * 2,
     }));
 
     const newSession: Session = {
       id: Date.now().toString(36),
       timestamp: new Date().toISOString(),
-      language: language === 'auto' ? detectedLanguage : language,
+      language: language === "auto" ? detectedLanguage : language,
       originalCode: code,
       fixedCode: allFixed,
-      issues: issues.filter(i => acceptedHunkIds.includes(i.id)),
-      summary: `${issues.filter(i => acceptedHunkIds.includes(i.id)).length} issues fixed. ${issues.filter((i) => acceptedHunkIds.includes(i.id) && (i.severity === 'Critical' || i.severity === 'High')).length} critical/high severity resolved.`,
+      issues: issues.filter((i) => acceptedHunkIds.includes(i.id)),
+      summary: `${issues.filter((i) => acceptedHunkIds.includes(i.id)).length} issues fixed. ${issues.filter((i) => acceptedHunkIds.includes(i.id) && (i.severity === "Critical" || i.severity === "High")).length} critical/high severity resolved.`,
       tokensUsed,
       promptTokens,
       completionTokens,
-      modelUsed: selectedModel.name
+      modelUsed: selectedModel.name,
     };
 
     const updatedSessions = [newSession, ...sessions].slice(0, 50);
     saveSessions(updatedSessions);
     setShowReport(true);
     setIssues([]);
-    setFixedCode('');
-  }, [code, fixedCode, issues, acceptedHunkIds, language, detectedLanguage, loadedFilePath, createCheckpoint, tokensUsed, promptTokens, completionTokens, selectedModel, sessions, saveSessions, addLog]);
+    setFixedCode("");
+  }, [
+    code,
+    fixedCode,
+    issues,
+    acceptedHunkIds,
+    language,
+    detectedLanguage,
+    loadedFilePath,
+    createCheckpoint,
+    tokensUsed,
+    promptTokens,
+    completionTokens,
+    selectedModel,
+    sessions,
+    saveSessions,
+    addLog,
+  ]);
 
   // Keyboard Shortcuts Setup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'Enter') {
+      if (e.ctrlKey && e.key === "Enter") {
         e.preventDefault();
         analyzeCode();
       }
-      if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+      if (e.ctrlKey && e.shiftKey && e.key === "F") {
         e.preventDefault();
         applyAllFixes();
       }
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setShowDiff(false);
         setShowLoginModal(false);
         setShowShortcutsCheatSheet(false);
       }
-      if (e.ctrlKey && e.key === '/') {
+      if (e.ctrlKey && e.key === "/") {
         e.preventDefault();
-        setCurrentView(prev => prev === 'sentinel' ? 'editor' : 'sentinel');
+        setCurrentView((prev) => (prev === "sentinel" ? "editor" : "sentinel"));
       }
-      if (e.ctrlKey && e.key === 'k') {
+      if (e.ctrlKey && e.key === "k") {
         e.preventDefault();
-        const selectEl = document.getElementById('model-select-dropdown');
+        const selectEl = document.getElementById("model-select-dropdown");
         if (selectEl) selectEl.focus();
       }
-      if (e.key === '?' && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') {
+      if (
+        e.key === "?" &&
+        document.activeElement?.tagName !== "TEXTAREA" &&
+        document.activeElement?.tagName !== "INPUT"
+      ) {
         e.preventDefault();
-        setShowShortcutsCheatSheet(prev => !prev);
+        setShowShortcutsCheatSheet((prev) => !prev);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [analyzeCode, applyAllFixes]);
-
-
 
   const sendBossMessage = async (text: string) => {
     if (!text.trim()) return;
 
-    setBossMessages(prev => [...prev, { role: 'user', content: text }]);
-    setBossInput('');
+    setBossMessages((prev) => [...prev, { role: "user", content: text }]);
+    setBossInput("");
     setIsBossLoading(true);
-    addLog(`[BOSS] Core orchestrator aligning AI models...`, 'info');
+    addLog(`[BOSS] Core orchestrator aligning AI models...`, "info");
 
     try {
-      const res = await fetch('/api/openrouter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/openrouter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code,
-          language: language === 'auto' ? detectedLanguage : language,
+          language: language === "auto" ? detectedLanguage : language,
           model: selectedModel.id,
           agentMode,
           skill: selectedSkill,
           plugin: selectedPlugin,
           customPrompt: text,
           isBossChat: true,
+          username,
           keys: {
             groq: groqKey,
             openrouter: openrouterKey,
             nvidia: nvidiaKey,
-            huggingface: huggingfaceKey
-          }
-        })
+            huggingface: huggingfaceKey,
+          },
+        }),
       });
 
       if (!res.ok) {
@@ -960,87 +1411,39 @@ const allFixed = issues.reduce((acc, issue) => {
 
       const data = await res.json();
       if (data && data.summary) {
-        setBossMessages(prev => [...prev, { role: 'agent', content: data.summary }]);
-        addLog(`[BOSS] Core orchestrator responded.`, 'success');
+        setBossMessages((prev) => [
+          ...prev,
+          { role: "agent", content: data.summary },
+        ]);
+        addLog(`[BOSS] Core orchestrator responded.`, "success");
       } else {
-        throw new Error('Invalid response structure from core orchestrator.');
+        throw new Error("Invalid response structure from core orchestrator.");
       }
-    } catch (err: any) {
-      setBossMessages(prev => [...prev, { role: 'agent', content: `Volt AI Core connection failure: ${err.message}` }]);
-      addLog(`[BOSS] Core communication failed: ${err.message}`, 'error');
+    } catch (err: unknown) {
+      setBossMessages((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          content: `Volt AI Core connection failure: ${getErrorMessage(err)}`,
+        },
+      ]);
+      addLog(
+        `[BOSS] Core communication failed: ${getErrorMessage(err)}`,
+        "error",
+      );
     } finally {
       setIsBossLoading(false);
     }
   };
 
-  const sendAgentMessage = (text: string) => {
-    if (!text.trim()) return;
-    setBossMessages(prev => [...prev, { role: 'user', content: text }]);
-    setBossInput('');
-    addLog(`[AGENT] Quick action triggered: ${text.substring(0, 60)}...`, 'info');
-    sendBossMessage(text);
-  };
-
-  const handleAgentQuickAction = (actionType: 'analyze' | 'diagnose' | 'security' | 'performance' | 'explain' | 'fix') => {
-    let promptText = '';
-    if (actionType === 'analyze' || actionType === 'diagnose') {
-      promptText = 'Please perform a full code diagnosis and outline any logic, syntax, or styling issues.';
-    } else if (actionType === 'security') {
-      promptText = 'Scan the current workspace code for potential security vulnerabilities like XSS, injections, unsafe regex, or credentials leaks.';
-    } else if (actionType === 'performance') {
-      promptText = 'Analyze the code execution flow and identify O(N^2) complexity, unnecessary memory allocations, or blocking structures.';
-    } else if (actionType === 'explain') {
-      promptText = 'Review the last analysis report and explain the root causes of the issues found.';
-    } else if (actionType === 'fix') {
-      promptText = 'Generate a comprehensive fix patch for the critical and high severity issues in the code.';
-    }
-    // Agent message handling through meeting panel
-    addLog(`Agent task initiated: ${promptText}`, 'info');
-  };
-
-  const computeDiff = (original: string, fixed: string) => {
-    const originalLines = original.split('\n');
-    const fixedLines = fixed.split('\n');
-    const diff: DiffLine[] = [];
-    
-    let i = 0, j = 0;
-    while (i < originalLines.length || j < fixedLines.length) {
-      if (i < originalLines.length && j < fixedLines.length) {
-        if (originalLines[i] === fixedLines[j]) {
-          diff.push({ type: 'normal', value: originalLines[i], lineNumOriginal: i + 1, lineNumFixed: j + 1 });
-          i++;
-          j++;
-        } else {
-          const nextMatchInFixed = fixedLines.indexOf(originalLines[i], j);
-          if (nextMatchInFixed !== -1 && nextMatchInFixed - j < 5) {
-            while (j < nextMatchInFixed) {
-              diff.push({ type: 'added', value: fixedLines[j], lineNumFixed: j + 1 });
-              j++;
-            }
-          } else {
-            diff.push({ type: 'removed', value: originalLines[i], lineNumOriginal: i + 1 });
-            i++;
-          }
-        }
-      } else if (i < originalLines.length) {
-        diff.push({ type: 'removed', value: originalLines[i], lineNumOriginal: i + 1 });
-        i++;
-      } else if (j < fixedLines.length) {
-        diff.push({ type: 'added', value: fixedLines[j], lineNumFixed: j + 1 });
-        j++;
-      }
-    }
-    return diff;
-  };
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    showToast('COPIED TO CLIPBOARD!', 'success');
+    showToast("COPIED TO CLIPBOARD!", "success");
   };
 
   const downloadCode = (text: string, filename: string) => {
-    const element = document.createElement('a');
-    const file = new Blob([text], { type: 'text/plain' });
+    const element = document.createElement("a");
+    const file = new Blob([text], { type: "text/plain" });
     element.href = URL.createObjectURL(file);
     element.download = filename;
     document.body.appendChild(element);
@@ -1050,79 +1453,106 @@ const allFixed = issues.reduce((acc, issue) => {
 
   const fetchGithubData = async () => {
     if (!repoPath) {
-      showToast('Please specify a GitHub repository (owner/name)', 'error');
+      showToast("Please specify a GitHub repository (owner/name)", "error");
       return;
     }
     setIsFetchingGithub(true);
-    addLog(`Fetching GitHub workspace for ${repoPath} [branch: ${repoBranch}]...`, 'info');
-    
+    addLog(
+      `Fetching GitHub workspace for ${repoPath} [branch: ${repoBranch}]...`,
+      "info",
+    );
+
     const headers: Record<string, string> = {};
     if (githubToken) {
-      headers['Authorization'] = `token ${githubToken}`;
+      headers["Authorization"] = `token ${githubToken}`;
     }
 
     try {
-      const treeRes = await fetch(`https://api.github.com/repos/${repoPath}/git/trees/${repoBranch}?recursive=1`, { headers });
+      const treeRes = await fetch(
+        `https://api.github.com/repos/${repoPath}/git/trees/${repoBranch}?recursive=1`,
+        { headers },
+      );
       if (!treeRes.ok) {
         throw new Error(`GitHub Tree API responded with ${treeRes.status}`);
       }
       const treeData = await treeRes.json();
       if (treeData && treeData.tree) {
-        setGithubFiles(treeData.tree.filter((item: any) => item.type === 'blob'));
-        addLog(`Successfully loaded ${treeData.tree.length} files from git tree.`, 'success');
+        setGithubFiles(
+          treeData.tree.filter(
+            (item: { path: string; type: string; sha: string }) =>
+              item.type === "blob",
+          ),
+        );
+        addLog(
+          `Successfully loaded ${treeData.tree.length} files from git tree.`,
+          "success",
+        );
       }
 
-      const issuesRes = await fetch(`https://api.github.com/repos/${repoPath}/issues?state=open`, { headers });
+      const issuesRes = await fetch(
+        `https://api.github.com/repos/${repoPath}/issues?state=open`,
+        { headers },
+      );
       if (issuesRes.ok) {
         const issuesData = await issuesRes.json();
-        const filteredIssues = issuesData.filter((iss: any) => !iss.pull_request);
+        const filteredIssues = issuesData.filter(
+          (iss: GitHubIssue) => !iss.pull_request,
+        );
         setGithubIssues(filteredIssues);
-        addLog(`Loaded ${filteredIssues.length} open issues from repository.`, 'info');
+        addLog(
+          `Loaded ${filteredIssues.length} open issues from repository.`,
+          "info",
+        );
       } else {
-        addLog(`Could not fetch issues (HTTP ${issuesRes.status})`, 'warn');
+        addLog(`Could not fetch issues (HTTP ${issuesRes.status})`, "warn");
       }
-      showToast('GitHub data updated!', 'success');
-    } catch (err: any) {
-      addLog(`GitHub retrieval failed: ${err.message}`, 'error');
-      showToast(`GitHub fetch failed: ${err.message}`, 'error');
+      showToast("GitHub data updated!", "success");
+    } catch (err: unknown) {
+      addLog(`GitHub retrieval failed: ${getErrorMessage(err)}`, "error");
+      showToast(`GitHub fetch failed: ${getErrorMessage(err)}`, "error");
     } finally {
       setIsFetchingGithub(false);
     }
   };
 
-  const handleLoadGithubFile = async (path: string, sha: string) => {
+  const handleLoadGithubFile = async (path: string, _sha: string) => {
     setIsFetchingGithub(true);
-    addLog(`Fetching file content: ${path}...`, 'info');
-    
+    addLog(`Fetching file content: ${path}...`, "info");
+
     const headers: Record<string, string> = {};
     if (githubToken) {
-      headers['Authorization'] = `token ${githubToken}`;
+      headers["Authorization"] = `token ${githubToken}`;
     }
 
     try {
-      const res = await fetch(`https://api.github.com/repos/${repoPath}/contents/${path}?ref=${repoBranch}`, { headers });
+      const res = await fetch(
+        `https://api.github.com/repos/${repoPath}/contents/${path}?ref=${repoBranch}`,
+        { headers },
+      );
       if (!res.ok) {
         throw new Error(`Failed to load file contents: HTTP ${res.status}`);
       }
       const data = await res.json();
       if (data && data.content) {
-        const decoded = decodeURIComponent(escape(atob(data.content.replace(/\s/g, ''))));
+        const decoded = decodeURIComponent(
+          escape(atob(data.content.replace(/\s/g, ""))),
+        );
         setCode(decoded);
         setLoadedFilePath(path);
         setLoadedFileSha(data.sha);
-        
+
         const lang = detectLanguage(decoded);
         setDetectedLanguage(lang);
-        if (language === 'auto') {
+        if (language === "auto") {
           setLanguage(lang);
         }
-        
-        addLog(`Successfully loaded file: ${path}`, 'success');
-        showToast(`Loaded ${path} successfully.`, 'success');
+
+        addLog(`Successfully loaded file: ${path}`, "success");
+        showToast(`Loaded ${path} successfully.`, "success");
       }
-    } catch (err: any) {
-      addLog(`File load failed: ${err.message}`, 'error');
-      showToast(`Failed to load file: ${err.message}`, 'error');
+    } catch (err: unknown) {
+      addLog(`File load failed: ${getErrorMessage(err)}`, "error");
+      showToast(`Failed to load file: ${getErrorMessage(err)}`, "error");
     } finally {
       setIsFetchingGithub(false);
     }
@@ -1130,37 +1560,43 @@ const allFixed = issues.reduce((acc, issue) => {
 
   const handleCommitAndPush = async () => {
     if (!githubToken) {
-      showToast('PAT Token required to write/commit code changes.', 'error');
+      showToast("PAT Token required to write/commit code changes.", "error");
       return;
     }
     if (!loadedFilePath) {
-      showToast('No active GitHub file loaded in editor. Load one first.', 'error');
+      showToast(
+        "No active GitHub file loaded in editor. Load one first.",
+        "error",
+      );
       return;
     }
 
     setIsFetchingGithub(true);
-    addLog(`Preparing commit for ${loadedFilePath}...`, 'info');
-    
+    addLog(`Preparing commit for ${loadedFilePath}...`, "info");
+
     const headers: Record<string, string> = {
-      'Authorization': `token ${githubToken}`,
-      'Content-Type': 'application/json'
+      Authorization: `token ${githubToken}`,
+      "Content-Type": "application/json",
     };
 
     try {
       const base64Content = btoa(unescape(encodeURIComponent(code)));
-      
+
       const body = {
         message: commitMessage,
         content: base64Content,
         sha: loadedFileSha,
-        branch: repoBranch
+        branch: repoBranch,
       };
 
-      const res = await fetch(`https://api.github.com/repos/${repoPath}/contents/${loadedFilePath}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(body)
-      });
+      const res = await fetch(
+        `https://api.github.com/repos/${repoPath}/contents/${loadedFilePath}`,
+        {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(body),
+        },
+      );
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -1170,22 +1606,25 @@ const allFixed = issues.reduce((acc, issue) => {
       const data = await res.json();
       if (data && data.content) {
         setLoadedFileSha(data.content.sha);
-        addLog(`[PUSHED] Commit "${commitMessage}" successfully merged to ${repoBranch}.`, 'success');
-        showToast('Code committed and pushed to GitHub!', 'success');
+        addLog(
+          `[PUSHED] Commit "${commitMessage}" successfully merged to ${repoBranch}.`,
+          "success",
+        );
+        showToast("Code committed and pushed to GitHub!", "success");
       }
-    } catch (err: any) {
-      addLog(`Commit failed: ${err.message}`, 'error');
-      showToast(`Commit failed: ${err.message}`, 'error');
+    } catch (err: unknown) {
+      addLog(`Commit failed: ${getErrorMessage(err)}`, "error");
+      showToast(`Commit failed: ${getErrorMessage(err)}`, "error");
     } finally {
       setIsFetchingGithub(false);
     }
   };
 
-  const handleLoadIssue = (issue: any) => {
-    const context = `Fix Issue #${issue.number}: ${issue.title}\n\nDescription:\n${issue.body || 'No description provided.'}`;
+  const handleLoadIssue = (issue: GitHubIssue) => {
+    const context = `Fix Issue #${issue.number}: ${issue.title}\n\nDescription:\n${issue.body || "No description provided."}`;
     setCode(context);
-    addLog(`Loaded GitHub issue #${issue.number} context into editor.`, 'info');
-    showToast(`Loaded context for issue #${issue.number}`, 'success');
+    addLog(`Loaded GitHub issue #${issue.number} context into editor.`, "info");
+    showToast(`Loaded context for issue #${issue.number}`, "success");
   };
 
   const loadSession = (session: Session) => {
@@ -1200,27 +1639,76 @@ const allFixed = issues.reduce((acc, issue) => {
       setCompletionTokens(session.completionTokens || 0);
     }
     if (session.modelUsed) setCurrentModelName(session.modelUsed);
-    setCurrentView('editor');
+    setCurrentView("editor");
     setShowReport(true);
   };
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setShowLoginModal(false);
+  const handleLogin = async () => {
+    setLoginError("");
+    setLoginBusy(true);
+    try {
+      const action = loginMode === "register" ? "register" : "login";
+      const res = await fetch(`/api/auth?action=${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username: username.trim(), password: loginPassword }),
+      });
+      const data = (await res.json()) as { ok?: boolean; username?: string; error?: string; details?: string };
+      if (!res.ok || !data.ok) {
+        setLoginError(data.details || data.error || "Sign-in failed.");
+        return;
+      }
+      setIsLoggedIn(true);
+      setUsername(data.username || username.trim());
+      setShowLoginModal(false);
+    } catch {
+      setLoginError("Network error — could not reach the server.");
+    } finally {
+      setLoginBusy(false);
+    }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth?action=logout", { method: "POST", credentials: "include" });
+    } catch {
+      // Best-effort: still clear local session.
+    }
+    setIsLoggedIn(false);
+    setUsername("dev_user");
+    setLoginPassword("");
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/auth?action=me", { credentials: "include" });
+        const data = (await res.json()) as { authenticated?: boolean; username?: string };
+        if (data.authenticated && data.username) {
+          setIsLoggedIn(true);
+          setUsername(data.username);
+        }
+      } catch {
+        // No session — leave logged out.
+      }
+    })();
+  }, []);
+
   const languages = [
-    { value: 'auto', label: 'Auto Detect' },
-    { value: 'javascript', label: 'JavaScript' },
-    { value: 'python', label: 'Python' },
-    { value: 'cpp', label: 'C++' },
-    { value: 'html', label: 'HTML' }
+    { value: "auto", label: "Auto Detect" },
+    { value: "javascript", label: "JavaScript" },
+    { value: "python", label: "Python" },
+    { value: "cpp", label: "C++" },
+    { value: "html", label: "HTML" },
   ];
 
-  const filteredSessions = sessions.filter(s => 
-    s.summary.toLowerCase().includes(historySearch.toLowerCase()) ||
-    s.language.toLowerCase().includes(historySearch.toLowerCase()) ||
-    (s.modelUsed && s.modelUsed.toLowerCase().includes(historySearch.toLowerCase()))
+  const filteredSessions = sessions.filter(
+    (s) =>
+      s.summary.toLowerCase().includes(historySearch.toLowerCase()) ||
+      s.language.toLowerCase().includes(historySearch.toLowerCase()) ||
+      (s.modelUsed &&
+        s.modelUsed.toLowerCase().includes(historySearch.toLowerCase())),
   );
 
   const renderModelSelect = () => (
@@ -1231,14 +1719,18 @@ const allFixed = issues.reduce((acc, issue) => {
         id="model-select-dropdown"
         value={selectedModel.id}
         onChange={(e) => {
-          const model = FREE_MODELS.find(m => m.id === e.target.value)!;
+          const model = FREE_MODELS.find((m) => m.id === e.target.value)!;
           setSelectedModel(model);
-          addLog(`Selected execution model: ${model.name}`, 'info');
+          addLog(`Selected execution model: ${model.name}`, "info");
         }}
         className="bg-transparent text-white outline-none min-w-[180px] font-semibold text-xs cursor-pointer"
       >
         {FREE_MODELS.map((model) => (
-          <option key={model.id} value={model.id} className="bg-[#121212] text-white">
+          <option
+            key={model.id}
+            value={model.id}
+            className="bg-[#121212] text-white"
+          >
             {model.name} ({model.tag} • {model.ctx})
           </option>
         ))}
@@ -1250,7 +1742,7 @@ const allFixed = issues.reduce((acc, issue) => {
     label: string,
     value: string,
     onChange: (value: string) => void,
-    options: string[]
+    options: string[],
   ) => (
     <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-2 bg-black/40">
       <div className="text-[#FF5F00]/70 text-xs tracking-wider">{label}</div>
@@ -1259,12 +1751,16 @@ const allFixed = issues.reduce((acc, issue) => {
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
-          addLog(`Updated config: ${label} -> ${e.target.value}`, 'info');
+          addLog(`Updated config: ${label} -> ${e.target.value}`, "info");
         }}
         className="bg-transparent text-white outline-none min-w-[130px] text-xs cursor-pointer"
       >
         {options.map((option) => (
-          <option key={option} value={option} className="bg-[#121212] text-white">
+          <option
+            key={option}
+            value={option}
+            className="bg-[#121212] text-white"
+          >
             {option}
           </option>
         ))}
@@ -1277,7 +1773,7 @@ const allFixed = issues.reduce((acc, issue) => {
       <div className="p-8 max-w-4xl mx-auto overflow-y-auto h-full pb-20 select-text">
         <div className="bg-white text-black p-12 shadow-2xl rounded-2xl border-4 border-double border-black font-serif relative">
           <button
-            onClick={() => setCurrentView('editor')}
+            onClick={() => setCurrentView("editor")}
             className="absolute top-6 right-6 px-4 py-2 rounded-full border border-black hover:bg-black hover:text-white transition-all font-sans text-xs font-bold"
           >
             DISAPPEAR DOCUMENT [ESC]
@@ -1286,59 +1782,78 @@ const allFixed = issues.reduce((acc, issue) => {
           {/* DOCUMENT SWITCHER TAB */}
           <div className="flex flex-wrap gap-3 mb-8 justify-center select-none font-sans">
             <button
-              onClick={() => setAboutDocPage('whitepaper')}
+              onClick={() => setAboutDocPage("whitepaper")}
               className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                aboutDocPage === 'whitepaper'
-                  ? 'bg-black text-white border-black shadow-md'
-                  : 'bg-white text-black border-black/20 hover:bg-black/5'
+                aboutDocPage === "whitepaper"
+                  ? "bg-black text-white border-black shadow-md"
+                  : "bg-white text-black border-black/20 hover:bg-black/5"
               }`}
             >
               TECHNICAL SPECIFICATION (SPEC-001)
             </button>
             <button
-              onClick={() => setAboutDocPage('changelog')}
+              onClick={() => setAboutDocPage("changelog")}
               className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                aboutDocPage === 'changelog'
-                  ? 'bg-black text-white border-black shadow-md'
-                  : 'bg-white text-black border-black/20 hover:bg-black/5'
+                aboutDocPage === "changelog"
+                  ? "bg-black text-white border-black shadow-md"
+                  : "bg-white text-black border-black/20 hover:bg-black/5"
               }`}
             >
               UPGRADE LOG (SPEC-002)
             </button>
             <button
-              onClick={() => setAboutDocPage('comparison')}
+              onClick={() => setAboutDocPage("comparison")}
               className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                aboutDocPage === 'comparison'
-                  ? 'bg-black text-white border-black shadow-md'
-                  : 'bg-white text-black border-black/20 hover:bg-black/5'
+                aboutDocPage === "comparison"
+                  ? "bg-black text-white border-black shadow-md"
+                  : "bg-white text-black border-black/20 hover:bg-black/5"
               }`}
             >
               COMPARISON MATRIX (SPEC-003)
             </button>
           </div>
 
-          {aboutDocPage === 'whitepaper' && (
+          {aboutDocPage === "whitepaper" && (
             <>
               <div className="text-center mb-10 border-b-2 border-black pb-8">
-                <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">Technical Specification Sheet</div>
+                <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">
+                  Technical Specification Sheet
+                </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight uppercase leading-tight mb-4">
-                  VOLT CODE AI v5.0:<br />Agentic Code Fixing Hub
+                  VOLT CODE AI v5.0:
+                  <br />
+                  Agentic Code Fixing Hub
                 </h1>
                 <div className="text-sm font-sans font-semibold text-gray-700">
-                  Co-Developers: <span className="underline">AntiGravity (Agentic AI Co-Developer)</span> & <span className="underline">Gemini AI 3.5 Flash</span>
+                  Co-Developers:{" "}
+                  <span className="underline">
+                    AntiGravity (Agentic AI Co-Developer)
+                  </span>{" "}
+                  & <span className="underline">Gemini AI 3.5 Flash</span>
                 </div>
-                <div className="text-xs text-gray-500 mt-2 font-sans">Released: June 2026 • Status: Production Deployed</div>
+                <div className="text-xs text-gray-500 mt-2 font-sans">
+                  Released: June 2026 • Status: Production Deployed
+                </div>
               </div>
 
               <div className="mb-10 px-6 py-4 bg-gray-50 border-l-4 border-black">
-                <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">Abstract</h2>
+                <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">
+                  Abstract
+                </h2>
                 <p className="text-sm leading-relaxed text-gray-800 italic">
-                  Volt Code AI v5.0 introduces an integrated architecture for automated diagnostics and self-repair. Under this specification, we detail the implementation of a client-side unified diff engine, background passive watchdog telemetry (Sentinel), and the real-time interaction capabilities of the conversational Agent Orchestrator. 
+                  Volt Code AI v5.0 introduces an integrated architecture for
+                  automated diagnostics and self-repair. Under this
+                  specification, we detail the implementation of a client-side
+                  unified diff engine, background passive watchdog telemetry
+                  (Sentinel), and the real-time interaction capabilities of the
+                  conversational Agent Orchestrator.
                 </p>
               </div>
 
               <div className="mb-10 text-sm font-sans">
-                <h3 className="font-bold uppercase mb-2">1. Table of Contents</h3>
+                <h3 className="font-bold uppercase mb-2">
+                  1. Table of Contents
+                </h3>
                 <ul className="space-y-1 list-decimal list-inside text-gray-700">
                   <li>Core Architecture Strategy</li>
                   <li>Sentinel Background Telemetry</li>
@@ -1350,121 +1865,225 @@ const allFixed = issues.reduce((acc, issue) => {
 
               <div className="space-y-8 text-sm leading-relaxed text-gray-900 font-serif">
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">2. Core Architecture Strategy</h2>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    2. Core Architecture Strategy
+                  </h2>
                   <p className="mb-3">
-                    Volt Code AI executes repairs through a dual-channel design. User requests are evaluated by an orchestration middleware which extracts lines, scans for security targets, and queries optimized model pipelines. To prevent user interface clutter, v5.0 consolidates Model, Skill, Plugin, and Mode selections inside a single runtime panel in the editor workspace, enforcing a strict single-source-of-truth strategy.
+                    Volt Code AI executes repairs through a dual-channel design.
+                    User requests are evaluated by an orchestration middleware
+                    which extracts lines, scans for security targets, and
+                    queries optimized model pipelines. To prevent user interface
+                    clutter, v5.0 consolidates Model, Skill, Plugin, and Mode
+                    selections inside a single runtime panel in the editor
+                    workspace, enforcing a strict single-source-of-truth
+                    strategy.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">3. Sentinel Telemetry</h2>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    3. Sentinel Telemetry
+                  </h2>
                   <p className="mb-3">
-                    The Sentinel engine maintains watch on the active editor contents. Using a debounced timeout delay, Sentinel executes background calls without locking the editing thread. The returns populate a live severity heatmap and an issue feed, recommending targeted patches that can be applied with a single click.
+                    The Sentinel engine maintains watch on the active editor
+                    contents. Using a debounced timeout delay, Sentinel executes
+                    background calls without locking the editing thread. The
+                    returns populate a live severity heatmap and an issue feed,
+                    recommending targeted patches that can be applied with a
+                    single click.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">4. Chat-First Agent Workspace</h2>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    4. Chat-First Agent Workspace
+                  </h2>
                   <p className="mb-3">
-                    The floating Agent Modal has been upgraded from a duplicate settings form into a chat console. The Agent possesses full context memory of the workspace, enabling it to explain bug reports, perform security audits, detect O(N²) loops, and draft changes conversationally.
+                    The floating Agent Modal has been upgraded from a duplicate
+                    settings form into a chat console. The Agent possesses full
+                    context memory of the workspace, enabling it to explain bug
+                    reports, perform security audits, detect O(N²) loops, and
+                    draft changes conversationally.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">5. Dedicated Virtual Terminal Stream</h2>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    5. Dedicated Virtual Terminal Stream
+                  </h2>
                   <p className="mb-3">
-                    Volt Code AI houses a virtual console capturing telemetry log data. Every step of execution—including model routing decisions, token reports, parse statuses, and API network roundtrips—is streamed chronologically to this console to ensure full system transparency.
+                    Volt Code AI houses a virtual console capturing telemetry
+                    log data. Every step of execution—including model routing
+                    decisions, token reports, parse statuses, and API network
+                    roundtrips—is streamed chronologically to this console to
+                    ensure full system transparency.
                   </p>
                 </section>
               </div>
             </>
           )}
 
-          {aboutDocPage === 'changelog' && (
+          {aboutDocPage === "changelog" && (
             <>
               <div className="text-center mb-10 border-b-2 border-black pb-8">
-                <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">Technical specs restoration log</div>
+                <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">
+                  Technical specs restoration log
+                </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight uppercase leading-tight mb-4">
-                  SPEC-002: SYSTEM UPGRADE<br />& DEAD-TO-ALIVE CHANGELOG
+                  SPEC-002: SYSTEM UPGRADE
+                  <br />& DEAD-TO-ALIVE CHANGELOG
                 </h1>
                 <div className="text-sm font-sans font-semibold text-gray-700">
-                  Document Author: <span className="underline">AntiGravity AI Co-Developer</span> & <span className="underline">Gemini AI 3.5 Flash</span>
+                  Document Author:{" "}
+                  <span className="underline">AntiGravity AI Co-Developer</span>{" "}
+                  & <span className="underline">Gemini AI 3.5 Flash</span>
                 </div>
-                <div className="text-xs text-gray-500 mt-2 font-sans">Published: June 2026 • Target: v5.0 Upgrade Hub</div>
+                <div className="text-xs text-gray-500 mt-2 font-sans">
+                  Published: June 2026 • Target: v5.0 Upgrade Hub
+                </div>
               </div>
 
               <div className="mb-10 px-6 py-4 bg-gray-50 border-l-4 border-black">
-                <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">Abstract</h2>
+                <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">
+                  Abstract
+                </h2>
                 <p className="text-sm leading-relaxed text-gray-800 italic">
-                  This document specifies the system upgrades conducted to bring legacy placeholder structures and non-functional routing dropdowns to life. We outline the integration of the Sentinel debounced watcher daemon, conversational Agent chat console, client-side LCS diff parser, and terminal stream logging.
+                  This document specifies the system upgrades conducted to bring
+                  legacy placeholder structures and non-functional routing
+                  dropdowns to life. We outline the integration of the Sentinel
+                  debounced watcher daemon, conversational Agent chat console,
+                  client-side LCS diff parser, and terminal stream logging.
                 </p>
               </div>
 
               <div className="space-y-8 text-sm leading-relaxed text-gray-900 font-serif">
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">1. Sentinel Background Telemetry Engine</h2>
-                  <p className="mb-3 font-bold text-gray-800">Status: Dead Placeholder ➔ Fully Operational Watchdog</p>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    1. Sentinel Background Telemetry Engine
+                  </h2>
+                  <p className="mb-3 font-bold text-gray-800">
+                    Status: Dead Placeholder ➔ Fully Operational Watchdog
+                  </p>
                   <p className="mb-2">
-                    In previous releases, the Sentinel interface was a static layout representing "Internal Operations Queue," "Skills Room," and "Plugins Room" as simple, disconnected labels. No background monitoring or actual linter processes were wired in.
+                    In previous releases, the Sentinel interface was a static
+                    layout representing "Internal Operations Queue," "Skills
+                    Room," and "Plugins Room" as simple, disconnected labels. No
+                    background monitoring or actual linter processes were wired
+                    in.
                   </p>
                   <p>
-                    **Restoration Details**: A debounced React hook has been integrated. When enabled, it monitors code adjustments in real-time, executing background scans via OpenRouter's fast Mistral-7B API. Sentinel aggregates counts to populate an animated **Severity Heatmap** and logs all warnings to a **Live Watchdog Feed** with instant patch-application buttons.
+                    **Restoration Details**: A debounced React hook has been
+                    integrated. When enabled, it monitors code adjustments in
+                    real-time, executing background scans via OpenRouter's fast
+                    Mistral-7B API. Sentinel aggregates counts to populate an
+                    animated **Severity Heatmap** and logs all warnings to a
+                    **Live Watchdog Feed** with instant patch-application
+                    buttons.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">2. Conversational Agent Command Console</h2>
-                  <p className="mb-3 font-bold text-gray-800">Status: Redundant Settings Modal ➔ Active Chat Orchestrator</p>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    2. Conversational Agent Command Console
+                  </h2>
+                  <p className="mb-3 font-bold text-gray-800">
+                    Status: Redundant Settings Modal ➔ Active Chat Orchestrator
+                  </p>
                   <p className="mb-2">
-                    The legacy Agent Modal merely replicated Model, Plugin, Skill, and Mode dropdown selections already available in the main editor workspace, rendering it visually duplicate and non-functional.
+                    The legacy Agent Modal merely replicated Model, Plugin,
+                    Skill, and Mode dropdown selections already available in the
+                    main editor workspace, rendering it visually duplicate and
+                    non-functional.
                   </p>
                   <p>
-                    **Restoration Details**: Redundant dropdown selectors have been completely removed. The modal has been reconstructed into a chat-centric developer console. It maintains workspace state and routes custom instructions directly to the API. It also exposes **Command Preset Cards** to perform security scans, complexity audits, performance profile reviews, and patch drafts.
+                    **Restoration Details**: Redundant dropdown selectors have
+                    been completely removed. The modal has been reconstructed
+                    into a chat-centric developer console. It maintains
+                    workspace state and routes custom instructions directly to
+                    the API. It also exposes **Command Preset Cards** to perform
+                    security scans, complexity audits, performance profile
+                    reviews, and patch drafts.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">3. LCS Diff Visualizer & Code Refactoring Bug</h2>
-                  <p className="mb-3 font-bold text-gray-800">Status: Plain Pre Blocks & Discarded Fix Code ➔ Unified Line Diff & Reducer</p>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    3. LCS Diff Visualizer & Code Refactoring Bug
+                  </h2>
+                  <p className="mb-3 font-bold text-gray-800">
+                    Status: Plain Pre Blocks & Discarded Fix Code ➔ Unified Line
+                    Diff & Reducer
+                  </p>
                   <p className="mb-2">
-                    The original `applyAllFixes` method computed a combined code repair reducer but discarded its own output, instead calling `setCode(fixedCode)`. This resulted in corrupted formatting. Concurrently, the Diff modal rendered code in two raw side-by-side `&lt;pre&gt;` containers with no line highlighting.
+                    The original `applyAllFixes` method computed a combined code
+                    repair reducer but discarded its own output, instead calling
+                    `setCode(fixedCode)`. This resulted in corrupted formatting.
+                    Concurrently, the Diff modal rendered code in two raw
+                    side-by-side `&lt;pre&gt;` containers with no line
+                    highlighting.
                   </p>
                   <p>
-                    **Restoration Details**: Modified `applyAllFixes` to store and write the `allFixed` reducer result correctly. Built a custom client-side LCS diff parser showing line additions (`+` in green) and deletions (`-` in red) with dual line numbering and an instant copy button in the footer.
+                    **Restoration Details**: Modified `applyAllFixes` to store
+                    and write the `allFixed` reducer result correctly. Built a
+                    custom client-side LCS diff parser showing line additions
+                    (`+` in green) and deletions (`-` in red) with dual line
+                    numbering and an instant copy button in the footer.
                   </p>
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">4. Virtual Dedicated Terminal</h2>
-                  <p className="mb-3 font-bold text-gray-800">Status: Non-Existent ➔ Live Diagnostic Stream</p>
+                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                    4. Virtual Dedicated Terminal
+                  </h2>
+                  <p className="mb-3 font-bold text-gray-800">
+                    Status: Non-Existent ➔ Live Diagnostic Stream
+                  </p>
                   <p className="mb-2">
-                    The system lacked any real-time tracking interface, causing network delays or API timeouts to fail silently without user visibility.
+                    The system lacked any real-time tracking interface, causing
+                    network delays or API timeouts to fail silently without user
+                    visibility.
                   </p>
                   <p>
-                    **Restoration Details**: Implemented a toggleable virtual console at the bottom of the editor. The stream logs API calls, model tags, roundtrip response times, parser successes, and warning alerts in color-coded output lines.
+                    **Restoration Details**: Implemented a toggleable virtual
+                    console at the bottom of the editor. The stream logs API
+                    calls, model tags, roundtrip response times, parser
+                    successes, and warning alerts in color-coded output lines.
                   </p>
                 </section>
               </div>
             </>
           )}
 
-          {aboutDocPage === 'comparison' && (
+          {aboutDocPage === "comparison" && (
             <>
               <div className="text-center mb-10 border-b-2 border-black pb-8">
-                <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">Upgrade telemetry comparison matrix</div>
+                <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">
+                  Upgrade telemetry comparison matrix
+                </div>
                 <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight uppercase leading-tight mb-4">
-                  SPEC-003: UPGRADE SUMMARY<br />& COMPARISON MATRIX
+                  SPEC-003: UPGRADE SUMMARY
+                  <br />& COMPARISON MATRIX
                 </h1>
                 <div className="text-sm font-sans font-semibold text-gray-700">
-                  Prepared by: <span className="underline">AntiGravity AI Co-Developer</span> & <span className="underline">Gemini AI 3.5 Flash</span>
+                  Prepared by:{" "}
+                  <span className="underline">AntiGravity AI Co-Developer</span>{" "}
+                  & <span className="underline">Gemini AI 3.5 Flash</span>
                 </div>
-                <div className="text-xs text-gray-500 mt-2 font-sans">Scope: v4.9 (Legacy Placeholder) vs v5.0 (Agentic Hub)</div>
+                <div className="text-xs text-gray-500 mt-2 font-sans">
+                  Scope: v4.9 (Legacy Placeholder) vs v5.0 (Agentic Hub)
+                </div>
               </div>
 
               <div className="mb-8 px-6 py-4 bg-gray-50 border-l-4 border-black font-serif">
-                <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">Notice</h2>
+                <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">
+                  Notice
+                </h2>
                 <p className="text-sm leading-relaxed text-gray-800 italic">
-                  This specification matrix details the comparative analysis of features that were dead or placeholder in the legacy codebase and have been brought to full functional life in Volt Code AI v5.0. This comparative process is set as a standard requirement for all future major releases.
+                  This specification matrix details the comparative analysis of
+                  features that were dead or placeholder in the legacy codebase
+                  and have been brought to full functional life in Volt Code AI
+                  v5.0. This comparative process is set as a standard
+                  requirement for all future major releases.
                 </p>
               </div>
 
@@ -1473,60 +2092,141 @@ const allFixed = issues.reduce((acc, issue) => {
                 <table className="min-w-full border border-black/35 text-left border-collapse leading-relaxed">
                   <thead>
                     <tr className="bg-black text-white uppercase tracking-wider text-[10px]">
-                      <th className="border border-black px-4 py-3 font-bold">Feature Name</th>
-                      <th className="border border-black px-4 py-3 font-bold">v4.9 State (Before / Dead)</th>
-                      <th className="border border-black px-4 py-3 font-bold">v5.0 State (After / Alive)</th>
-                      <th className="border border-black px-4 py-3 font-bold">Validation</th>
+                      <th className="border border-black px-4 py-3 font-bold">
+                        Feature Name
+                      </th>
+                      <th className="border border-black px-4 py-3 font-bold">
+                        v4.9 State (Before / Dead)
+                      </th>
+                      <th className="border border-black px-4 py-3 font-bold">
+                        v5.0 State (After / Alive)
+                      </th>
+                      <th className="border border-black px-4 py-3 font-bold">
+                        Validation
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Sentinel Watchdog</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Static labels; dead placeholders.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Debounced active watcher scan, severity heatbars, warning log feeds & instant patch buttons.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Sentinel Watchdog
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Static labels; dead placeholders.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Debounced active watcher scan, severity heatbars,
+                        warning log feeds & instant patch buttons.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Agent Orchestrator</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Duplicate settings selectors modal; no actual agent features.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Chat console with conversation history, active workspace memory & quick audit button triggers.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Agent Orchestrator
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Duplicate settings selectors modal; no actual agent
+                        features.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Chat console with conversation history, active workspace
+                        memory & quick audit button triggers.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Refactoring Patch Engine</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Discarded reducer results; auto-apply formatting bugs.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Modified patch logic to save and write the combined `allFixed` reducer code successfully.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Refactoring Patch Engine
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Discarded reducer results; auto-apply formatting bugs.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Modified patch logic to save and write the combined
+                        `allFixed` reducer code successfully.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Unified Diff Visualizer</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Side-by-side unhighlighted pre containers.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Custom client-side LCS diff parser rendering red deletions and green additions with numbers.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Unified Diff Visualizer
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Side-by-side unhighlighted pre containers.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Custom client-side LCS diff parser rendering red
+                        deletions and green additions with numbers.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Virtual Diagnostic Terminal</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Non-existent; server timeouts failed silently.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Toggleable console panel logging server calls, response timers, parsed tokens and errors.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Virtual Diagnostic Terminal
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Non-existent; server timeouts failed silently.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Toggleable console panel logging server calls, response
+                        timers, parsed tokens and errors.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Model Identity Badge</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Hidden until analysis finished; minimal watermark tags.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Always visible header badge tracking engine tags, context size, and real-time scanning status.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Model Identity Badge
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Hidden until analysis finished; minimal watermark tags.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Always visible header badge tracking engine tags,
+                        context size, and real-time scanning status.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Keyboard Hotkeys</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">Non-existent.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Global shortcut hooks (Ctrl+Enter, Ctrl+Shift+F, Ctrl+/, Ctrl+K, Escape, ?) and guide.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Keyboard Hotkeys
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        Non-existent.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Global shortcut hooks (Ctrl+Enter, Ctrl+Shift+F, Ctrl+/,
+                        Ctrl+K, Escape, ?) and guide.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">Session History Filter</td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">List display with zero search capabilities.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">Interactive keyword input matching summaries, languages, and models.</td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">✔ Verified</td>
+                      <td className="border border-black/30 px-4 py-3 font-bold">
+                        Session History Filter
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                        List display with zero search capabilities.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                        Interactive keyword input matching summaries, languages,
+                        and models.
+                      </td>
+                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                        ✔ Verified
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -1547,13 +2247,19 @@ const allFixed = issues.reduce((acc, issue) => {
       <div className="p-8 h-full overflow-auto space-y-6">
         <div className="flex items-center justify-between gap-4 flex-wrap border-b border-[#FF5F00]/20 pb-6">
           <div>
-            <div className="text-[#FF5F00] text-xs tracking-[3px] font-bold uppercase mb-1">Live Telemetry & Telemetric Scan</div>
+            <div className="text-[#FF5F00] text-xs tracking-[3px] font-bold uppercase mb-1">
+              Live Telemetry & Telemetric Scan
+            </div>
             <h1 className="text-3xl font-extrabold">SENTINEL OPERATIONS</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#FF5F00]/30 bg-black/40 text-sm">
-              <span className={`w-2 h-2 rounded-full ${enableSentinel ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
-              <span className="font-semibold text-white/90">MONITOR: {enableSentinel ? 'ACTIVE' : 'STANDBY'}</span>
+              <span
+                className={`w-2 h-2 rounded-full ${enableSentinel ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
+              ></span>
+              <span className="font-semibold text-white/90">
+                MONITOR: {enableSentinel ? "ACTIVE" : "STANDBY"}
+              </span>
             </div>
             <div className="px-4 py-2 rounded-xl border border-[#FF5F00]/30 bg-black/40 text-sm text-[#FF5F00]">
               Last Watch-Scan: {lastSentinelScan}
@@ -1563,20 +2269,38 @@ const allFixed = issues.reduce((acc, issue) => {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">Checks Executed</div>
-            <div className="text-2xl font-black text-[#FF5F00] mt-1">{sentinelStats.totalRuns}</div>
+            <div className="text-xs text-white/50 uppercase font-semibold">
+              Checks Executed
+            </div>
+            <div className="text-2xl font-black text-[#FF5F00] mt-1">
+              {sentinelStats.totalRuns}
+            </div>
           </div>
           <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">Telemetry Spent</div>
-            <div className="text-2xl font-black text-white mt-1">{sentinelStats.tokensConsumed} <span className="text-xs font-normal text-white/40">tokens</span></div>
+            <div className="text-xs text-white/50 uppercase font-semibold">
+              Telemetry Spent
+            </div>
+            <div className="text-2xl font-black text-white mt-1">
+              {sentinelStats.tokensConsumed}{" "}
+              <span className="text-xs font-normal text-white/40">tokens</span>
+            </div>
           </div>
           <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">Active Warnings</div>
-            <div className="text-2xl font-black text-red-500 mt-1">{sentinelIssues.length}</div>
+            <div className="text-xs text-white/50 uppercase font-semibold">
+              Active Warnings
+            </div>
+            <div className="text-2xl font-black text-red-500 mt-1">
+              {sentinelIssues.length}
+            </div>
           </div>
           <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">Time Saved (Est.)</div>
-            <div className="text-2xl font-black text-green-400 mt-1">{sentinelStats.timeSavedMinutes} <span className="text-xs font-normal text-white/40">mins</span></div>
+            <div className="text-xs text-white/50 uppercase font-semibold">
+              Time Saved (Est.)
+            </div>
+            <div className="text-2xl font-black text-green-400 mt-1">
+              {sentinelStats.timeSavedMinutes}{" "}
+              <span className="text-xs font-normal text-white/40">mins</span>
+            </div>
           </div>
         </div>
 
@@ -1586,13 +2310,33 @@ const allFixed = issues.reduce((acc, issue) => {
               <Shield className="w-5 h-5 text-[#FF5F00]" />
               Watchdog Diagnostic Heatmap
             </h2>
-            
+
             <div className="space-y-3">
               {[
-                { label: 'Critical / Vulnerability', count: sentinelIssues.filter(i => i.severity === 'Critical').length, color: 'bg-red-500' },
-                { label: 'High / Functional Logic', count: sentinelIssues.filter(i => i.severity === 'High').length, color: 'bg-orange-500' },
-                { label: 'Medium / Performance', count: sentinelIssues.filter(i => i.severity === 'Medium').length, color: 'bg-yellow-500' },
-                { label: 'Low / Code Smells', count: sentinelIssues.filter(i => i.severity === 'Low').length, color: 'bg-blue-500' },
+                {
+                  label: "Critical / Vulnerability",
+                  count: sentinelIssues.filter((i) => i.severity === "Critical")
+                    .length,
+                  color: "bg-red-500",
+                },
+                {
+                  label: "High / Functional Logic",
+                  count: sentinelIssues.filter((i) => i.severity === "High")
+                    .length,
+                  color: "bg-orange-500",
+                },
+                {
+                  label: "Medium / Performance",
+                  count: sentinelIssues.filter((i) => i.severity === "Medium")
+                    .length,
+                  color: "bg-yellow-500",
+                },
+                {
+                  label: "Low / Code Smells",
+                  count: sentinelIssues.filter((i) => i.severity === "Low")
+                    .length,
+                  color: "bg-blue-500",
+                },
               ].map((bar, idx) => {
                 const maxVal = Math.max(...[1, sentinelIssues.length]);
                 const percent = (bar.count / maxVal) * 100;
@@ -1603,7 +2347,10 @@ const allFixed = issues.reduce((acc, issue) => {
                       <span className="text-white">{bar.count} issues</span>
                     </div>
                     <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div className={`h-full ${bar.color} transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+                      <div
+                        className={`h-full ${bar.color} transition-all duration-500`}
+                        style={{ width: `${percent}%` }}
+                      ></div>
                     </div>
                   </div>
                 );
@@ -1617,20 +2364,20 @@ const allFixed = issues.reduce((acc, issue) => {
                     setIssues(sentinelIssues);
                     const allFixed = sentinelIssues.reduce((acc, issue) => {
                       const escaped = escapeRegExp(issue.original);
-                      return acc.replace(new RegExp(escaped, 'g'), issue.fixed);
+                      return acc.replace(new RegExp(escaped, "g"), issue.fixed);
                     }, code);
                     setCode(allFixed);
                     setSentinelIssues([]);
-                    showToast('Applied sentinel patches.', 'success');
+                    showToast("Applied sentinel patches.", "success");
                   } else {
-                    showToast('No active sentinel issues to patch.', 'info');
+                    showToast("No active sentinel issues to patch.", "info");
                   }
                 }}
                 className="px-5 py-2.5 rounded-xl bg-[#FF5F00] text-black font-extrabold text-xs cursor-pointer"
               >
                 APPLY SENTINEL PATCH
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setLanguage(detectedLanguage);
                   analyzeCode();
@@ -1654,7 +2401,10 @@ const allFixed = issues.reduce((acc, issue) => {
                 </div>
               ) : (
                 sentinelIssues.map((issue, idx) => (
-                  <div key={idx} className="p-3 bg-[#0a0a0a] rounded-xl border-l-4 border-[#FF5F00] text-xs">
+                  <div
+                    key={idx}
+                    className="p-3 bg-[#0a0a0a] rounded-xl border-l-4 border-[#FF5F00] text-xs"
+                  >
                     <div className="flex justify-between font-bold mb-1">
                       <span>{issue.type}</span>
                       <span className="text-[#FF5F00]">{issue.severity}</span>
@@ -1670,91 +2420,6 @@ const allFixed = issues.reduce((acc, issue) => {
     );
   };
 
-  const renderTerminal = () => {
-    if (!showTerminal) return null;
-    return (
-      <div className="border-t border-[#FF5F00]/30 bg-[#0a0a0a] h-48 flex flex-col font-mono text-xs text-white">
-        <div className="bg-[#121212] border-b border-[#FF5F00]/20 px-6 py-2 flex justify-between items-center select-none">
-          <div className="flex items-center gap-2 text-[#FF5F00] font-bold">
-            <TerminalIcon className="w-4 h-4" />
-            <span>DEDICATED VIRUS/BUG DIAGNOSTIC STREAM</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setTerminalLogs([`[SYSTEM] Log stream cleared.`])}
-              className="text-[#FF5F00]/60 hover:text-[#FF5F00] text-[10px] uppercase font-bold cursor-pointer"
-            >
-              Clear
-            </button>
-            <button 
-              onClick={() => setShowTerminal(false)}
-              className="text-[#FF5F00]/60 hover:text-[#FF5F00] text-[10px] uppercase font-bold cursor-pointer"
-            >
-              Minimize
-            </button>
-          </div>
-        </div>
-        <div className="flex-1 p-4 overflow-y-auto space-y-1 select-text">
-          {terminalLogs.map((log, idx) => {
-            let textColor = 'text-white/70';
-            if (log.includes('[SUCCESS]')) textColor = 'text-green-400';
-            else if (log.includes('[ERROR]')) textColor = 'text-red-400';
-            else if (log.includes('[WARNING]')) textColor = 'text-yellow-400 font-bold';
-            else if (log.includes('[INFO]')) textColor = 'text-[#FF5F00]';
-            
-            return (
-              <div key={idx} className={textColor}>
-                {log}
-              </div>
-            );
-          })}
-          <div ref={terminalEndRef} />
-        </div>
-      </div>
-    );
-  };
-
-  const renderUnifiedDiff = () => {
-    if (!fixedCode) return <div className="text-white/45">No fixed changes staged.</div>;
-    const diffLines = computeDiff(code, fixedCode);
-    return (
-      <div className="bg-[#0a0a0a] rounded-2xl border border-[#FF5F00]/20 font-mono text-xs overflow-auto max-h-[480px] p-6 leading-relaxed">
-        {diffLines.map((line, idx) => {
-          let bgColor = '';
-          let textColor = 'text-white/80';
-          let prefix = ' ';
-          
-          if (line.type === 'added') {
-            bgColor = 'bg-green-500/10 border-l-2 border-green-500';
-            textColor = 'text-green-400';
-            prefix = '+';
-          } else if (line.type === 'removed') {
-            bgColor = 'bg-red-500/10 border-l-2 border-red-500';
-            textColor = 'text-red-400';
-            prefix = '-';
-          }
-          
-          return (
-            <div key={idx} className={`flex py-0.5 px-2 -mx-2 ${bgColor}`}>
-              <div className="w-12 text-white/30 select-none text-right pr-4">
-                {line.lineNumOriginal || ''}
-              </div>
-              <div className="w-12 text-white/30 select-none text-right pr-4">
-                {line.lineNumFixed || ''}
-              </div>
-              <div className="w-6 text-white/40 select-none text-center font-bold">
-                {prefix}
-              </div>
-              <span className={`whitespace-pre-wrap ${textColor}`}>
-                {line.value}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   // ==========================================
   // v6.0 RC2 RENDER HELPER METHODS
   // ==========================================
@@ -1763,9 +2428,15 @@ const allFixed = issues.reduce((acc, issue) => {
     return (
       <div className="p-6 flex flex-col h-full bg-[#121212]">
         <div className="mb-12 select-none">
-          <div className="text-[#FF5F00] text-3xl font-black tracking-tighter">VOLT</div>
-          <div className="text-white text-2xl font-extrabold tracking-tight">CODE AI</div>
-          <div className="text-[#FF5F00] text-[10px] mt-1 font-bold tracking-[3px]">v6.0 ENTERPRISE</div>
+          <div className="text-[#FF5F00] text-3xl font-black tracking-tighter">
+            VOLT
+          </div>
+          <div className="text-white text-2xl font-extrabold tracking-tight">
+            CODE AI
+          </div>
+          <div className="text-[#FF5F00] text-[10px] mt-1 font-bold tracking-[3px]">
+            v6.0 ENTERPRISE
+          </div>
         </div>
 
         {!isLoggedIn ? (
@@ -1777,16 +2448,28 @@ const allFixed = issues.reduce((acc, issue) => {
             LOGIN TO SAVE
           </button>
         ) : (
-          <div className="text-[#FF5F00] font-semibold truncate">{username}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-[#FF5F00] font-semibold truncate max-w-[120px]">
+              {username}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[10px] font-bold transition-all cursor-pointer"
+              title="Sign out"
+            >
+              <X className="w-3.5 h-3.5" />
+              LOGOUT
+            </button>
+          </div>
         )}
 
         <div className="mt-12 space-y-1 select-none">
           <div
-            onClick={() => setCurrentView('editor')}
+            onClick={() => setCurrentView("editor")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'editor'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "editor"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <Play className="w-5 h-5" />
@@ -1794,11 +2477,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('history')}
+            onClick={() => setCurrentView("history")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'history'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "history"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <History className="w-5 h-5" />
@@ -1806,11 +2489,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('sentinel')}
+            onClick={() => setCurrentView("sentinel")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'sentinel'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "sentinel"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <Shield className="w-5 h-5" />
@@ -1818,11 +2501,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('boss')}
+            onClick={() => setCurrentView("boss")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'boss'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "boss"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <Crown className="w-5 h-5" />
@@ -1830,11 +2513,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('meeting')}
+            onClick={() => setCurrentView("meeting")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'meeting'
-                ? 'bg-blue-600 text-white font-bold'
-                : 'hover:bg-white/5 text-blue-400'
+              currentView === "meeting"
+                ? "bg-blue-600 text-white font-bold"
+                : "hover:bg-white/5 text-blue-400"
             }`}
           >
             <Users className="w-5 h-5" />
@@ -1842,11 +2525,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('pr-review')}
+            onClick={() => setCurrentView("pr-review")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'pr-review'
-                ? 'bg-orange-600 text-white font-bold'
-                : 'hover:bg-white/5 text-orange-400'
+              currentView === "pr-review"
+                ? "bg-orange-600 text-white font-bold"
+                : "hover:bg-white/5 text-orange-400"
             }`}
           >
             <GitPullRequest className="w-5 h-5" />
@@ -1854,11 +2537,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('settings')}
+            onClick={() => setCurrentView("settings")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'settings'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "settings"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <Settings className="w-5 h-5" />
@@ -1866,11 +2549,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('github')}
+            onClick={() => setCurrentView("github")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'github'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "github"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <GitBranch className="w-5 h-5" />
@@ -1878,11 +2561,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('admin')}
+            onClick={() => setCurrentView("admin")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === 'admin'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "admin"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <Wrench className="w-5 h-5" />
@@ -1890,11 +2573,11 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           <div
-            onClick={() => setCurrentView('about')}
+            onClick={() => setCurrentView("about")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
-              currentView === 'about'
-                ? 'bg-[#FF5F00] text-black font-bold'
-                : 'hover:bg-white/5 text-[#FF5F00]'
+              currentView === "about"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
             }`}
           >
             <HelpCircle className="w-5 h-5" />
@@ -1911,11 +2594,13 @@ const allFixed = issues.reduce((acc, issue) => {
   };
 
   const renderContent = () => {
-    if (currentView === 'history') {
+    if (currentView === "history") {
       return (
         <div className="p-8 select-text h-full overflow-y-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">PREVIOUS SESSIONS</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              PREVIOUS SESSIONS
+            </h1>
             <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-3 w-4 h-4 text-white/40" />
               <input
@@ -1929,7 +2614,9 @@ const allFixed = issues.reduce((acc, issue) => {
           </div>
 
           {filteredSessions.length === 0 ? (
-            <div className="text-center py-24 text-[#FF5F00]/60">No matching sessions. Run analysis to start history logs.</div>
+            <div className="text-center py-24 text-[#FF5F00]/60">
+              No matching sessions. Run analysis to start history logs.
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {filteredSessions.map((session, idx) => (
@@ -1939,15 +2626,23 @@ const allFixed = issues.reduce((acc, issue) => {
                   className="p-5 border border-[#FF5F00]/20 hover:border-[#FF5F00] rounded-2xl cursor-pointer group bg-black/40 transition-all"
                 >
                   <div className="flex justify-between mb-4">
-                    <div className="font-mono text-sm text-[#FF5F00]">{new Date(session.timestamp).toLocaleDateString()}</div>
+                    <div className="font-mono text-sm text-[#FF5F00]">
+                      {new Date(session.timestamp).toLocaleDateString()}
+                    </div>
                     <div className="uppercase text-xs tracking-widest px-3 py-px bg-[#FF5F00]/10 text-[#FF5F00] rounded font-bold">
                       {session.language}
                     </div>
                   </div>
-                  <div className="font-semibold line-clamp-2 text-lg mb-3 pr-2 text-white/95">{session.summary}</div>
-                  <div className="text-xs text-[#FF5F00]/60 font-bold">{session.issues.length} FIXES COMPLETED</div>
+                  <div className="font-semibold line-clamp-2 text-lg mb-3 pr-2 text-white/95">
+                    {session.summary}
+                  </div>
+                  <div className="text-xs text-[#FF5F00]/60 font-bold">
+                    {session.issues.length} FIXES COMPLETED
+                  </div>
                   {session.modelUsed && (
-                    <div className="text-xs text-white/40 mt-2">Model: {session.modelUsed}</div>
+                    <div className="text-xs text-white/40 mt-2">
+                      Model: {session.modelUsed}
+                    </div>
                   )}
                 </div>
               ))}
@@ -1957,49 +2652,93 @@ const allFixed = issues.reduce((acc, issue) => {
       );
     }
 
-    if (currentView === 'sentinel') {
+    if (currentView === "sentinel") {
       return renderSentinelBoard();
     }
 
-    if (currentView === 'settings') {
+    if (currentView === "settings") {
       return (
         <div className="p-8 max-w-2xl overflow-y-auto h-full pb-20">
           <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
-            
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
               <div className="text-lg font-bold mb-4">Default Model</div>
               <select
                 value={selectedModel.id}
                 onChange={(e) => {
-                  const model = FREE_MODELS.find(m => m.id === e.target.value)!;
+                  const model = FREE_MODELS.find(
+                    (m) => m.id === e.target.value,
+                  )!;
                   setSelectedModel(model);
                 }}
                 className="w-full bg-black border border-[#FF5F00]/40 px-4 py-3 rounded text-white cursor-pointer font-mono font-semibold"
               >
-                {Array.from(new Set(FREE_MODELS.map(m => m.provider))).map((provider) => (
-                  <optgroup key={provider} label={provider} className="bg-[#121212] text-[#FF5F00] font-bold">
-                    {FREE_MODELS.filter(m => m.provider === provider).map((model) => (
-                      <option key={model.id} value={model.id} className="bg-[#121212] text-white font-normal">
-                        {model.name} ({model.tag} • {model.ctx})
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
+                {Array.from(new Set(FREE_MODELS.map((m) => m.provider))).map(
+                  (provider) => (
+                    <optgroup
+                      key={provider}
+                      label={provider}
+                      className="bg-[#121212] text-[#FF5F00] font-bold"
+                    >
+                      {FREE_MODELS.filter((m) => m.provider === provider).map(
+                        (model) => (
+                          <option
+                            key={model.id}
+                            value={model.id}
+                            className="bg-[#121212] text-white font-normal"
+                          >
+                            {model.name} ({model.tag} • {model.ctx})
+                          </option>
+                        ),
+                      )}
+                    </optgroup>
+                  ),
+                )}
               </select>
             </div>
 
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40 space-y-4">
-              <div className="text-lg font-bold mb-2">Provider API Keys</div>
-              
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-lg font-bold">Provider API Keys</div>
+                <div className="flex items-center gap-2">
+                  {vaultStored && (
+                    <span className="flex items-center gap-1 text-[10px] text-green-400 font-semibold uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_#22c55e]" />
+                      Vault
+                    </span>
+                  )}
+                  {vaultSyncState === "saving" && (
+                    <span className="text-[10px] text-[#FF5F00] font-semibold uppercase tracking-wider">
+                      Syncing…
+                    </span>
+                  )}
+                  {vaultSyncState === "saved" && (
+                    <span className="text-[10px] text-green-400 font-semibold uppercase tracking-wider">
+                      Saved
+                    </span>
+                  )}
+                  {vaultSyncState === "error" && (
+                    <span className="text-[10px] text-red-400 font-semibold uppercase tracking-wider">
+                      Sync failed
+                    </span>
+                  )}
+                </div>
+              </div>
+              <p className="text-[10px] text-white/40 -mt-2 mb-1">
+                Keys are encrypted and stored in the MongoDB secret vault.
+                Entering a key auto-syncs it to the vault.
+              </p>
+
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">OpenRouter Key</label>
+                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                  OpenRouter Key
+                </label>
                 <input
                   type="password"
                   value={openrouterKey}
                   onChange={(e) => {
                     setOpenrouterKey(e.target.value);
-                    localStorage.setItem('volt_openrouter_key', e.target.value);
+                    localStorage.setItem("volt_openrouter_key", e.target.value);
                   }}
                   placeholder="sk-or-..."
                   className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
@@ -2007,13 +2746,15 @@ const allFixed = issues.reduce((acc, issue) => {
               </div>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">Groq Key</label>
+                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                  Groq Key
+                </label>
                 <input
                   type="password"
                   value={groqKey}
                   onChange={(e) => {
                     setGroqKey(e.target.value);
-                    localStorage.setItem('volt_groq_key', e.target.value);
+                    localStorage.setItem("volt_groq_key", e.target.value);
                   }}
                   placeholder="gsk_..."
                   className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
@@ -2021,13 +2762,15 @@ const allFixed = issues.reduce((acc, issue) => {
               </div>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">NVIDIA Key</label>
+                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                  NVIDIA Key
+                </label>
                 <input
                   type="password"
                   value={nvidiaKey}
                   onChange={(e) => {
                     setNvidiaKey(e.target.value);
-                    localStorage.setItem('volt_nvidia_key', e.target.value);
+                    localStorage.setItem("volt_nvidia_key", e.target.value);
                   }}
                   placeholder="nvapi-..."
                   className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
@@ -2035,18 +2778,89 @@ const allFixed = issues.reduce((acc, issue) => {
               </div>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">HuggingFace Key</label>
+                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                  HuggingFace Key
+                </label>
                 <input
                   type="password"
                   value={huggingfaceKey}
                   onChange={(e) => {
                     setHuggingfaceKey(e.target.value);
-                    localStorage.setItem('volt_huggingface_key', e.target.value);
+                    localStorage.setItem(
+                      "volt_huggingface_key",
+                      e.target.value,
+                    );
                   }}
                   placeholder="hf_..."
                   className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
                 />
               </div>
+            </div>
+
+            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-lg font-bold">
+                  Live Provider Availability
+                </div>
+                <button
+                  onClick={refreshLiveProviders}
+                  className="flex items-center gap-1.5 text-xs text-[#FF5F00] hover:text-[#FF5F00]/80 disabled:opacity-50"
+                  disabled={liveProviderLoading}
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${liveProviderLoading ? "animate-spin" : ""}`}
+                  />
+                  {liveProviderLoading ? "Checking..." : "Refresh"}
+                </button>
+              </div>
+
+              {liveProviderUpdated && (
+                <p className="text-[10px] text-white/40 mb-3 font-mono">
+                  Last checked:{" "}
+                  {new Date(liveProviderUpdated).toLocaleTimeString()}
+                </p>
+              )}
+
+              {liveProviderAvailability.length === 0 ? (
+                <p className="text-xs text-white/40">
+                  No live model data yet. Press Refresh to load the model
+                  catalog from connected providers.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {liveProviderAvailability.map((provider) => (
+                    <div
+                      key={provider.provider}
+                      className="p-3 bg-black/60 border border-white/10 rounded-xl flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            provider.connected
+                              ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
+                              : "bg-red-500"
+                          }`}
+                        />
+                        <span className="text-sm font-bold text-white">
+                          {provider.label}
+                        </span>
+                        {provider.connected ? (
+                          <span className="text-[10px] text-green-400 font-semibold uppercase">
+                            Connected
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-red-400 font-semibold uppercase">
+                            Offline
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-white/50 font-mono">
+                        {provider.freeCount} free / {provider.paidCount} paid
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
@@ -2057,14 +2871,21 @@ const allFixed = issues.reduce((acc, issue) => {
                 className="w-full bg-black border border-[#FF5F00]/40 px-4 py-3 rounded text-white cursor-pointer font-semibold"
               >
                 {modeOptions.map((mode) => (
-                  <option key={mode} value={mode}>{mode}</option>
+                  <option key={mode} value={mode}>
+                    {mode}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
-              <div className="text-lg font-bold mb-2">Sentinel Debounce Delay</div>
-              <div className="text-sm text-[#FF5F00]/60 mb-3">Delay after typing before passive analysis runs: {debounceDelay}ms</div>
+              <div className="text-lg font-bold mb-2">
+                Sentinel Debounce Delay
+              </div>
+              <div className="text-sm text-[#FF5F00]/60 mb-3">
+                Delay after typing before passive analysis runs: {debounceDelay}
+                ms
+              </div>
               <input
                 type="range"
                 min="100"
@@ -2080,17 +2901,19 @@ const allFixed = issues.reduce((acc, issue) => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">Auto-Apply Fixes</div>
-                  <div className="text-sm text-[#FF5F00]/60 mt-1">Automatically apply all fixes without confirmation</div>
+                  <div className="text-sm text-[#FF5F00]/60 mt-1">
+                    Automatically apply all fixes without confirmation
+                  </div>
                 </div>
                 <button
                   onClick={() => setAutoApplyFixes(!autoApplyFixes)}
                   className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-                    autoApplyFixes ? 'bg-[#FF5F00]' : 'bg-white/10'
+                    autoApplyFixes ? "bg-[#FF5F00]" : "bg-white/10"
                   }`}
                 >
                   <div
                     className={`w-6 h-6 bg-white rounded-full transition-all ${
-                      autoApplyFixes ? 'ml-9' : 'ml-1'
+                      autoApplyFixes ? "ml-9" : "ml-1"
                     }`}
                   />
                 </button>
@@ -2100,18 +2923,22 @@ const allFixed = issues.reduce((acc, issue) => {
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-lg font-bold">Sentinel Live Monitoring</div>
-                  <div className="text-sm text-[#FF5F00]/60 mt-1">Enable real-time code monitoring watchdog</div>
+                  <div className="text-lg font-bold">
+                    Sentinel Live Monitoring
+                  </div>
+                  <div className="text-sm text-[#FF5F00]/60 mt-1">
+                    Enable real-time code monitoring watchdog
+                  </div>
                 </div>
                 <button
                   onClick={() => setEnableSentinel(!enableSentinel)}
                   className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-                    enableSentinel ? 'bg-[#FF5F00]' : 'bg-white/10'
+                    enableSentinel ? "bg-[#FF5F00]" : "bg-white/10"
                   }`}
                 >
                   <div
                     className={`w-6 h-6 bg-white rounded-full transition-all ${
-                      enableSentinel ? 'ml-9' : 'ml-1'
+                      enableSentinel ? "ml-9" : "ml-1"
                     }`}
                   />
                 </button>
@@ -2121,18 +2948,22 @@ const allFixed = issues.reduce((acc, issue) => {
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-lg font-bold">Show Token Usage Panel</div>
-                  <div className="text-sm text-[#FF5F00]/60 mt-1">Show prompt, completion, and cost estimates after runs</div>
+                  <div className="text-lg font-bold">
+                    Show Token Usage Panel
+                  </div>
+                  <div className="text-sm text-[#FF5F00]/60 mt-1">
+                    Show prompt, completion, and cost estimates after runs
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowTokenUsage(!showTokenUsage)}
                   className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-                    showTokenUsage ? 'bg-[#FF5F00]' : 'bg-white/10'
+                    showTokenUsage ? "bg-[#FF5F00]" : "bg-white/10"
                   }`}
                 >
                   <div
                     className={`w-6 h-6 bg-white rounded-full transition-all ${
-                      showTokenUsage ? 'ml-9' : 'ml-1'
+                      showTokenUsage ? "ml-9" : "ml-1"
                     }`}
                   />
                 </button>
@@ -2141,19 +2972,26 @@ const allFixed = issues.reduce((acc, issue) => {
 
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
               <div className="text-lg font-bold mb-2">Theme</div>
-              <div className="text-[#FF5F00]/70 font-semibold">Charcoal Black + Neon Orange (locked)</div>
+              <div className="text-[#FF5F00]/70 font-semibold">
+                Charcoal Black + Neon Orange (locked)
+              </div>
             </div>
 
             <button
               onClick={() => {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessions));
-                const downloadAnchor = document.createElement('a');
+                const dataStr =
+                  "data:text/json;charset=utf-8," +
+                  encodeURIComponent(JSON.stringify(sessions));
+                const downloadAnchor = document.createElement("a");
                 downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `volt-sessions-${Date.now()}.json`);
+                downloadAnchor.setAttribute(
+                  "download",
+                  `volt-sessions-${Date.now()}.json`,
+                );
                 document.body.appendChild(downloadAnchor);
                 downloadAnchor.click();
                 downloadAnchor.remove();
-                showToast('Sessions exported successfully!', 'success');
+                showToast("Sessions exported successfully!", "success");
               }}
               className="w-full px-6 py-4 rounded-xl border border-[#FF5F00]/40 text-[#FF5F00] font-bold hover:bg-[#FF5F00]/10 transition-all mb-3 cursor-pointer"
             >
@@ -2162,9 +3000,9 @@ const allFixed = issues.reduce((acc, issue) => {
 
             <button
               onClick={() => {
-                localStorage.removeItem('codeSessions');
+                localStorage.removeItem("codeSessions");
                 setSessions([]);
-                showToast('All sessions cleared!', 'success');
+                showToast("All sessions cleared!", "success");
               }}
               className="w-full px-6 py-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 font-bold transition-all cursor-pointer"
             >
@@ -2175,25 +3013,32 @@ const allFixed = issues.reduce((acc, issue) => {
       );
     }
 
-    if (currentView === 'about') {
+    if (currentView === "about") {
       return renderAboutWhitePaper();
     }
 
-    if (currentView === 'github') {
+    if (currentView === "github") {
       return (
         <div className="p-8 h-full overflow-y-auto space-y-6">
           <div className="flex justify-between items-center flex-wrap gap-4 border-b border-[#FF5F00]/20 pb-5">
             <div>
-              <h1 className="text-3xl font-black text-white">GITHUB DEPLOYMENT INTEGRATION</h1>
-              <p className="text-xs text-[#FF5F00] mt-1 font-bold">Synchronize edits, branch patches, and quality gates directly to git remote</p>
+              <h1 className="text-3xl font-black text-white">
+                GITHUB DEPLOYMENT INTEGRATION
+              </h1>
+              <p className="text-xs text-[#FF5F00] mt-1 font-bold">
+                Synchronize edits, branch patches, and quality gates directly to
+                git remote
+              </p>
             </div>
-            <button 
+            <button
               onClick={fetchGithubData}
               disabled={isFetchingGithub}
               className="flex items-center gap-2 px-5 py-2.5 bg-black border border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-black font-extrabold text-xs uppercase rounded-xl transition-all cursor-pointer disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isFetchingGithub ? 'animate-spin' : ''}`} />
-              {isFetchingGithub ? 'REFRESHING' : 'REFRESH TREE'}
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${isFetchingGithub ? "animate-spin" : ""}`}
+              />
+              {isFetchingGithub ? "REFRESHING" : "REFRESH TREE"}
             </button>
           </div>
 
@@ -2205,7 +3050,7 @@ const allFixed = issues.reduce((acc, issue) => {
                 branch={repoBranch}
                 files={githubFiles}
                 onFileSelect={(path) => {
-                  const f = githubFiles.find(x => x.path === path);
+                  const f = githubFiles.find((x) => x.path === path);
                   if (f) {
                     handleLoadGithubFile(f.path, f.sha);
                   }
@@ -2218,33 +3063,59 @@ const allFixed = issues.reduce((acc, issue) => {
             {/* Git config form & log */}
             <div className="xl:col-span-2 space-y-6">
               <div className="border border-[#FF5F00]/20 bg-black/40 rounded-2xl p-6 space-y-4">
-                <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">Repository Synchronization Settings</h3>
-                
+                <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+                  Repository Synchronization Settings
+                </h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">Target Repository</label>
+                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">
+                      Target Repository
+                    </label>
                     <input
                       type="text"
                       value={repoPath}
-                      onChange={(e) => { setRepoPath(e.target.value); localStorage.setItem('volt_github_repo', e.target.value); }}
+                      onChange={(e) => {
+                        setRepoPath(e.target.value);
+                        localStorage.setItem(
+                          "volt_github_repo",
+                          e.target.value,
+                        );
+                      }}
                       className="w-full bg-black border border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF5F00]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">Deployment Branch</label>
+                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">
+                      Deployment Branch
+                    </label>
                     <input
                       type="text"
                       value={repoBranch}
-                      onChange={(e) => { setRepoBranch(e.target.value); localStorage.setItem('volt_github_branch', e.target.value); }}
+                      onChange={(e) => {
+                        setRepoBranch(e.target.value);
+                        localStorage.setItem(
+                          "volt_github_branch",
+                          e.target.value,
+                        );
+                      }}
                       className="w-full bg-black border border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF5F00]"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">Personal Access Token (PAT)</label>
+                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">
+                      Personal Access Token (PAT)
+                    </label>
                     <input
                       type="password"
                       value={githubToken}
-                      onChange={(e) => { setGithubToken(e.target.value); localStorage.setItem('volt_github_token', e.target.value); }}
+                      onChange={(e) => {
+                        setGithubToken(e.target.value);
+                        localStorage.setItem(
+                          "volt_github_token",
+                          e.target.value,
+                        );
+                      }}
                       placeholder="ghp_..."
                       className="w-full bg-black border border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF5F00]"
                     />
@@ -2255,11 +3126,18 @@ const allFixed = issues.reduce((acc, issue) => {
               {loadedFilePath && (
                 <div className="border border-white/5 bg-[#121212]/40 p-6 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-semibold text-white/80">Staged File: <span className="text-[#FF5F00]">{loadedFilePath}</span></span>
-                    <span className="text-white/40 text-[10px]">SHA: {loadedFileSha.slice(0, 7)}</span>
+                    <span className="font-semibold text-white/80">
+                      Staged File:{" "}
+                      <span className="text-[#FF5F00]">{loadedFilePath}</span>
+                    </span>
+                    <span className="text-white/40 text-[10px]">
+                      SHA: {loadedFileSha.slice(0, 7)}
+                    </span>
                   </div>
                   <div>
-                    <label className="block text-[9px] text-white/40 uppercase font-black mb-1">Commit Message</label>
+                    <label className="block text-[9px] text-white/40 uppercase font-black mb-1">
+                      Commit Message
+                    </label>
                     <input
                       type="text"
                       value={commitMessage}
@@ -2292,16 +3170,24 @@ const allFixed = issues.reduce((acc, issue) => {
                       className="p-4 bg-black/40 border border-white/5 hover:border-[#FF5F00]/40 hover:bg-[#FF5F00]/5 rounded-xl cursor-pointer transition-all text-xs space-y-2"
                     >
                       <div className="flex justify-between items-start gap-2">
-                        <span className="font-bold text-white hover:text-[#FF5F00] truncate">#{issue.number} {issue.title}</span>
-                        <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-mono text-[9px] uppercase font-bold shrink-0">Open</span>
+                        <span className="font-bold text-white hover:text-[#FF5F00] truncate">
+                          #{issue.number} {issue.title}
+                        </span>
+                        <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-mono text-[9px] uppercase font-bold shrink-0">
+                          Open
+                        </span>
                       </div>
                       {issue.body && (
-                        <p className="text-white/50 line-clamp-2 leading-relaxed">{issue.body}</p>
+                        <p className="text-white/50 line-clamp-2 leading-relaxed">
+                          {issue.body}
+                        </p>
                       )}
                       <div className="text-[10px] text-[#FF5F00]/60 flex items-center gap-1.5">
                         <span>By {issue.user?.login}</span>
                         <span>•</span>
-                        <span>{new Date(issue.created_at).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(issue.created_at).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -2318,14 +3204,17 @@ const allFixed = issues.reduce((acc, issue) => {
       );
     }
 
-    if (currentView === 'admin') {
+    if (currentView === "admin") {
       return (
         <AdminCenter
           tokensUsed={tokensUsed}
           activeAgents={activeAgents}
           emergencyHalt={() => {
             setIsSystemHalted(!isSystemHalted);
-            addLog(`Emergency Stop status toggled. Halted: ${!isSystemHalted}`, 'warn');
+            addLog(
+              `Emergency Stop status toggled. Halted: ${!isSystemHalted}`,
+              "warn",
+            );
           }}
           isSystemHalted={isSystemHalted}
           auditLogs={auditLogs}
@@ -2344,7 +3233,7 @@ const allFixed = issues.reduce((acc, issue) => {
       );
     }
 
-    if (currentView === 'boss') {
+    if (currentView === "boss") {
       return (
         <div className="p-4 md:p-8 flex flex-col h-full overflow-hidden bg-gradient-to-br from-[#0F0F10] to-[#050505] select-text">
           <div className="flex justify-between items-center border-b border-[#FF5F00]/30 pb-4 mb-4 select-none shrink-0">
@@ -2366,17 +3255,21 @@ const allFixed = issues.reduce((acc, issue) => {
           <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
             {/* Chat column */}
             <div className="flex-1 flex flex-col h-full bg-black/60 rounded-2xl border border-[#FF5F00]/15 overflow-hidden shadow-2xl relative">
-              
               {/* Chat Feed */}
               <div className="flex-1 p-6 overflow-y-auto space-y-4">
                 {bossMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-xs md:text-sm leading-relaxed shadow-lg ${
-                      msg.role === 'user' 
-                        ? 'bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] text-black font-extrabold' 
-                        : 'bg-[#141416] text-white border border-[#FF5F00]/25'
-                    }`}>
-                      {msg.role === 'agent' && (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-xs md:text-sm leading-relaxed shadow-lg ${
+                        msg.role === "user"
+                          ? "bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] text-black font-extrabold"
+                          : "bg-[#141416] text-white border border-[#FF5F00]/25"
+                      }`}
+                    >
+                      {msg.role === "agent" && (
                         <div className="text-[10px] text-[#FF5F00] font-black uppercase tracking-wider mb-1 flex items-center gap-1.5 select-none">
                           <Bot className="w-3.5 h-3.5" />
                           Volt AI Boss
@@ -2397,7 +3290,7 @@ const allFixed = issues.reduce((acc, issue) => {
               </div>
 
               {/* Chat Input form */}
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   sendBossMessage(bossInput);
@@ -2411,7 +3304,7 @@ const allFixed = issues.reduce((acc, issue) => {
                   placeholder="Ask the Agent Head to delegate tasks, refine code, or recommend a model..."
                   className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5F00] text-white"
                 />
-                <button 
+                <button
                   type="submit"
                   disabled={isBossLoading}
                   className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] hover:opacity-95 text-black font-black text-xs flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(255,95,0,0.3)] disabled:opacity-50"
@@ -2424,7 +3317,6 @@ const allFixed = issues.reduce((acc, issue) => {
 
             {/* Models recommendation index column */}
             <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 overflow-y-auto">
-              
               {/* Mission Statement */}
               <div className="machined-plate p-5 border border-[#FF5F00]/20 bg-black/45 space-y-3 shadow-xl">
                 <div className="text-[10px] text-[#FF5F00] uppercase font-black tracking-widest flex items-center gap-1.5">
@@ -2432,7 +3324,10 @@ const allFixed = issues.reduce((acc, issue) => {
                   Volt AI Mission
                 </div>
                 <p className="text-xs text-white/70 leading-relaxed font-mono">
-                  Volt AI is a state-of-the-art Agentic AI Coding Editor, Code Fixer, Code Refiner, and Bug Diagnosing WebApp. Engineered as a complete Code Mechanic, it automates parallel testing, AST compliance checks, and cross-language runtime boundaries.
+                  Volt AI is a state-of-the-art Agentic AI Coding Editor, Code
+                  Fixer, Code Refiner, and Bug Diagnosing WebApp. Engineered as
+                  a complete Code Mechanic, it automates parallel testing, AST
+                  compliance checks, and cross-language runtime boundaries.
                 </p>
               </div>
 
@@ -2441,17 +3336,40 @@ const allFixed = issues.reduce((acc, issue) => {
                 <div className="text-[10px] text-white/50 uppercase font-black tracking-widest">
                   Model Recommendation Matrix
                 </div>
-                
+
                 <div className="space-y-3">
                   {[
-                    { name: 'DeepSeek-R1', task: 'Logical derivation, math, structural diagnostics', color: 'border-l-4 border-blue-500' },
-                    { name: 'Qwen-2.5-Coder', task: 'Multi-file code generation, auto-completion', color: 'border-l-4 border-green-500' },
-                    { name: 'Llama-3.3-70B', task: 'General-purpose reviews, auditing, summaries', color: 'border-l-4 border-purple-500' },
-                    { name: 'NVIDIA Nemotron', task: 'Strict instruction adherence, system guardrails', color: 'border-l-4 border-orange-500' }
-                  ].map(m => (
-                    <div key={m.name} className={`p-3 bg-black/40 rounded-xl space-y-1.5 ${m.color}`}>
-                      <div className="text-xs font-extrabold text-white">{m.name}</div>
-                      <div className="text-[10px] text-white/50 leading-relaxed font-mono">{m.task}</div>
+                    {
+                      name: "DeepSeek-R1",
+                      task: "Logical derivation, math, structural diagnostics",
+                      color: "border-l-4 border-blue-500",
+                    },
+                    {
+                      name: "Qwen-2.5-Coder",
+                      task: "Multi-file code generation, auto-completion",
+                      color: "border-l-4 border-green-500",
+                    },
+                    {
+                      name: "Llama-3.3-70B",
+                      task: "General-purpose reviews, auditing, summaries",
+                      color: "border-l-4 border-purple-500",
+                    },
+                    {
+                      name: "NVIDIA Nemotron",
+                      task: "Strict instruction adherence, system guardrails",
+                      color: "border-l-4 border-orange-500",
+                    },
+                  ].map((m) => (
+                    <div
+                      key={m.name}
+                      className={`p-3 bg-black/40 rounded-xl space-y-1.5 ${m.color}`}
+                    >
+                      <div className="text-xs font-extrabold text-white">
+                        {m.name}
+                      </div>
+                      <div className="text-[10px] text-white/50 leading-relaxed font-mono">
+                        {m.task}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2463,32 +3381,35 @@ const allFixed = issues.reduce((acc, issue) => {
     }
 
     // Meeting Panel View
-    if (currentView === 'meeting') {
+    if (currentView === "meeting") {
       return (
         <div className="w-full h-full">
-          <MeetingPanel onClose={() => setCurrentView('editor')} />
+          <MeetingPanel onClose={() => setCurrentView("editor")} />
         </div>
       );
     }
 
     // PR Review Dashboard View
-    if (currentView === 'pr-review') {
+    if (currentView === "pr-review") {
       // Sample PRs for demonstration
       const samplePRs: PullRequest[] = [
         {
-          id: '1',
+          id: "1",
           prNumber: 123,
-          gitHubUrl: 'https://github.com/motherskitchenblr2/VOLT-CODE-AI-v5.0/pull/123',
-          title: 'Security: Fix API credential leakage',
-          description: 'Removed hardcoded API keys from environment and implemented secure key management system',
-          branch: 'agent/security/fix-credentials-2024-07-23',
-          createdBy: 'agent-security',
+          gitHubUrl:
+            "https://github.com/motherskitchenblr2/VOLT-CODE-AI-v5.0/pull/123",
+          title: "Security: Fix API credential leakage",
+          description:
+            "Removed hardcoded API keys from environment and implemented secure key management system",
+          branch: "agent/security/fix-credentials-2024-07-23",
+          createdBy: "agent-security",
           createdAt: new Date(),
-          status: 'open',
-          meetingId: 'meeting-001',
-          taskId: 'task-001',
-          agentDiscussions: 'Security Agent identified hardcoded credentials and proposed a secure vault implementation'
-        }
+          status: "open",
+          meetingId: "meeting-001",
+          taskId: "task-001",
+          agentDiscussions:
+            "Security Agent identified hardcoded credentials and proposed a secure vault implementation",
+        },
       ];
 
       return (
@@ -2497,15 +3418,15 @@ const allFixed = issues.reduce((acc, issue) => {
             pullRequests={samplePRs}
             onMerge={async (prId, prNumber) => {
               console.log(`Merged PR #${prNumber}`);
-              addLog(`User merged PR #${prNumber}`, 'success');
+              addLog(`User merged PR #${prNumber}`, "success");
             }}
             onSquash={async (prId, prNumber) => {
               console.log(`Squashed PR #${prNumber}`);
-              addLog(`User squashed PR #${prNumber}`, 'success');
+              addLog(`User squashed PR #${prNumber}`, "success");
             }}
             onIgnore={async (prId, prNumber) => {
               console.log(`Ignored PR #${prNumber}`);
-              addLog(`User ignored PR #${prNumber}`, 'info');
+              addLog(`User ignored PR #${prNumber}`, "info");
             }}
             language="en"
           />
@@ -2516,13 +3437,14 @@ const allFixed = issues.reduce((acc, issue) => {
     // Default Editor View
     return (
       <div className="flex flex-col h-full overflow-hidden">
-        
         {/* Editor Toolbar Header */}
         <div className="border-b border-[#FF5F00]/20 p-6 shrink-0 bg-[#0F0F0F]">
           <div className="mb-1 flex justify-between items-start">
             <div>
               <div className="text-2xl font-bold">MULTI-LANGUAGE EDITOR</div>
-              <div className="text-xs text-[#FF5F00]/70 font-semibold tracking-wide">AI Bug Finder, Agent Runner & Telemetrist</div>
+              <div className="text-xs text-[#FF5F00]/70 font-semibold tracking-wide">
+                AI Bug Finder, Agent Runner & Telemetrist
+              </div>
             </div>
             <button
               onClick={() => setShowShortcutsCheatSheet(true)}
@@ -2534,17 +3456,34 @@ const allFixed = issues.reduce((acc, issue) => {
 
           <div className="flex flex-wrap items-center gap-3 mt-4">
             {renderModelSelect()}
-            {renderSelect('Plugin', selectedPlugin, setSelectedPlugin, pluginOptions)}
-            {renderSelect('Skill', selectedSkill, setSelectedSkill, skillOptions)}
-            {renderSelect('Mode', agentMode, (v) => setAgentMode(v as AgentMode), modeOptions)}
-            
+            {renderSelect(
+              "Plugin",
+              selectedPlugin,
+              setSelectedPlugin,
+              pluginOptions,
+            )}
+            {renderSelect(
+              "Skill",
+              selectedSkill,
+              setSelectedSkill,
+              skillOptions,
+            )}
+            {renderSelect(
+              "Mode",
+              agentMode,
+              (v) => setAgentMode(v as AgentMode),
+              modeOptions,
+            )}
+
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="bg-black border border-[#FF5F00]/60 px-4 py-2 text-sm rounded focus:outline-none focus:border-[#FF5F00] cursor-pointer text-white font-semibold"
             >
               {languages.map((l) => (
-                <option key={l.value} value={l.value}>{l.label}</option>
+                <option key={l.value} value={l.value}>
+                  {l.label}
+                </option>
               ))}
             </select>
 
@@ -2557,8 +3496,12 @@ const allFixed = issues.reduce((acc, issue) => {
             <div className="px-4 py-2.5 rounded-xl border border-[#FF5F00] bg-black/60 inline-flex items-center gap-3 select-none">
               <Zap className="w-4 h-4 text-[#FF5F00] animate-pulse" />
               <div className="flex flex-col">
-                <div className="text-[#FF5F00] text-[9px] tracking-widest font-bold uppercase">Active Engine</div>
-                <div className="font-extrabold text-sm text-white">{selectedModel.name}</div>
+                <div className="text-[#FF5F00] text-[9px] tracking-widest font-bold uppercase">
+                  Active Engine
+                </div>
+                <div className="font-extrabold text-sm text-white">
+                  {selectedModel.name}
+                </div>
               </div>
               <div className="h-6 w-px bg-white/20"></div>
               <div className="text-[10px] text-white/60 uppercase font-semibold">
@@ -2567,30 +3510,35 @@ const allFixed = issues.reduce((acc, issue) => {
             </div>
 
             <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-1.5 bg-black/60 select-none">
-              <div className="text-[9px] text-[#FF5F00] tracking-wider uppercase font-bold">Operation Mode</div>
+              <div className="text-[9px] text-[#FF5F00] tracking-wider uppercase font-bold">
+                Operation Mode
+              </div>
               <div className="flex items-center gap-1.5 bg-black/40 rounded-lg p-0.5 border border-white/5">
                 <button
                   onClick={() => {
-                    setAgentMode('manual');
-                    addLog('Switched operation mode to MANUAL', 'info');
+                    setAgentMode("manual");
+                    addLog("Switched operation mode to MANUAL", "info");
                   }}
                   className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    agentMode === 'manual'
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10'
-                      : 'text-white/40 hover:text-white/80'
+                    agentMode === "manual"
+                      ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
+                      : "text-white/40 hover:text-white/80"
                   }`}
                 >
                   Manual Mode
                 </button>
                 <button
                   onClick={() => {
-                    setAgentMode('assist');
-                    addLog('Switched operation mode to AUTONOMOUS (ASSIST)', 'info');
+                    setAgentMode("assist");
+                    addLog(
+                      "Switched operation mode to AUTONOMOUS (ASSIST)",
+                      "info",
+                    );
                   }}
                   className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    agentMode !== 'manual'
-                      ? 'bg-[#FF5F00]/20 text-[#FF5F00] border border-[#FF5F00]/40 shadow-sm shadow-[#FF5F00]/10'
-                      : 'text-white/40 hover:text-white/80'
+                    agentMode !== "manual"
+                      ? "bg-[#FF5F00]/20 text-[#FF5F00] border border-[#FF5F00]/40 shadow-sm shadow-[#FF5F00]/10"
+                      : "text-white/40 hover:text-white/80"
                   }`}
                 >
                   Autonomous Mode
@@ -2601,8 +3549,15 @@ const allFixed = issues.reduce((acc, issue) => {
             {showTokenUsage && tokensUsed > 0 && (
               <div className="p-3 rounded-xl border border-[#FF5F00]/20 bg-black/40 flex items-center gap-6">
                 <div>
-                  <div className="text-[#FF5F00] text-[10px] tracking-wider font-bold">TOTAL CONSUMPTION</div>
-                  <div className="text-white font-extrabold text-lg">{tokensUsed} <span className="text-xs text-white/50 font-normal">tokens</span></div>
+                  <div className="text-[#FF5F00] text-[10px] tracking-wider font-bold">
+                    TOTAL CONSUMPTION
+                  </div>
+                  <div className="text-white font-extrabold text-lg">
+                    {tokensUsed}{" "}
+                    <span className="text-xs text-white/50 font-normal">
+                      tokens
+                    </span>
+                  </div>
                 </div>
                 <div className="h-8 w-px bg-white/10"></div>
                 <div className="text-xs text-white/50 space-y-0.5 select-none">
@@ -2631,8 +3586,9 @@ const allFixed = issues.reduce((acc, issue) => {
             autoCorrect="off"
             className="w-full flex-1 resize-none bg-transparent p-8 font-mono text-[14px] leading-[1.65] outline-none text-[#EDEDED] caret-[#FF5F00]"
             style={{
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-              boxShadow: 'inset 0 0 0 1px rgba(255,95,0,0.05)'
+              fontFamily:
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
             }}
           />
 
@@ -2645,11 +3601,11 @@ const allFixed = issues.reduce((acc, issue) => {
                 className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black border border-[#FF5F00] text-[#FF5F00] text-xs font-bold disabled:opacity-60 transition-all cursor-pointer"
               >
                 <Bug className="w-4 h-4" />
-                {isAnalyzing ? 'ANALYZING...' : 'RUN AI'}
+                {isAnalyzing ? "ANALYZING..." : "RUN AI"}
               </button>
-              
+
               <button
-                onClick={() => setCurrentView('boss')}
+                onClick={() => setCurrentView("boss")}
                 className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold transition-all cursor-pointer"
               >
                 <Crown className="w-4 h-4" />
@@ -2679,13 +3635,13 @@ const allFixed = issues.reduce((acc, issue) => {
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-black border-2 border-[#FF5F00] text-[#FF5F00] font-semibold disabled:opacity-60 active:bg-[#FF5F00] active:text-black transition-all cursor-pointer"
             >
               <Bug className="w-5 h-5" />
-              {isAnalyzing ? 'ANALYZING...' : 'RUN AI ANALYSIS'}
+              {isAnalyzing ? "ANALYZING..." : "RUN AI ANALYSIS"}
             </motion.button>
 
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView('boss')}
+              onClick={() => setCurrentView("boss")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] font-semibold hover:bg-black transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
@@ -2695,7 +3651,7 @@ const allFixed = issues.reduce((acc, issue) => {
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView('meeting')}
+              onClick={() => setCurrentView("meeting")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-blue-600/60 text-blue-400 font-semibold hover:bg-black transition-all cursor-pointer"
             >
               <Users className="w-5 h-5" />
@@ -2705,7 +3661,7 @@ const allFixed = issues.reduce((acc, issue) => {
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView('pr-review')}
+              onClick={() => setCurrentView("pr-review")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-orange-600/60 text-orange-400 font-semibold hover:bg-black transition-all cursor-pointer"
             >
               <GitPullRequest className="w-5 h-5" />
@@ -2744,30 +3700,44 @@ const allFixed = issues.reduce((acc, issue) => {
 
   const renderDiagnosticsColumn = () => {
     const roadmap = RepairPlanner.planRepairs(
-      [...issues, ...(enableSentinel ? sentinelIssues : [])].map((iss: any) => ({
-        filePath: loadedFilePath || 'editor_buffer.ts',
-        line: 0,
-        severity: iss.severity as any || 'Medium',
-        description: iss.description
-      }))
+      [...issues, ...(enableSentinel ? sentinelIssues : [])].map(
+        (iss: Issue) => ({
+          filePath: loadedFilePath || "editor_buffer.ts",
+          line: 0,
+          severity:
+            (iss.severity === "Low" ? "Cosmetic" : iss.severity) || "Medium",
+          description: iss.description,
+        }),
+      ),
     );
 
     return (
       <div className="space-y-6 select-none">
-        
         {/* REPO HEALTH SCORE */}
         <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-4 space-y-3">
-          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">Repository Health Metric</div>
+          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+            Repository Health Metric
+          </div>
           <div className="flex items-end justify-between">
-            <div className="text-3xl font-black text-white">{repoHealth.totalScore}<span className="text-xs text-white/30 font-normal">/100</span></div>
-            <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-              repoHealth.totalScore > 85 ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'
-            }`}>
-              {repoHealth.totalScore > 85 ? 'EXCELLENT' : 'DEGRADED'}
+            <div className="text-3xl font-black text-white">
+              {repoHealth.totalScore}
+              <span className="text-xs text-white/30 font-normal">/100</span>
+            </div>
+            <span
+              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
+                repoHealth.totalScore > 85
+                  ? "bg-green-500/10 text-green-400"
+                  : "bg-yellow-500/10 text-yellow-400"
+              }`}
+            >
+              {repoHealth.totalScore > 85 ? "EXCELLENT" : "DEGRADED"}
             </span>
           </div>
           <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#FF5F00] h-full" style={{ width: `${repoHealth.totalScore}%` }} />
+            <div
+              className="bg-[#FF5F00] h-full"
+              style={{ width: `${repoHealth.totalScore}%` }}
+            />
           </div>
           <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] text-white/40">
             <div>Complexity Penalty: -{repoHealth.complexityPenalty}</div>
@@ -2777,22 +3747,38 @@ const allFixed = issues.reduce((acc, issue) => {
 
         {/* QUALITY CONSENSUS GATE */}
         {consensusScore !== null && (
-          <div className={`border rounded-2xl p-4 space-y-3 ${
-            consensusPassed ? 'border-green-500/30 bg-green-950/10' : 'border-red-500/30 bg-red-950/10'
-          }`}>
+          <div
+            className={`border rounded-2xl p-4 space-y-3 ${
+              consensusPassed
+                ? "border-green-500/30 bg-green-950/10"
+                : "border-red-500/30 bg-red-950/10"
+            }`}
+          >
             <div className="flex justify-between items-center">
-              <span className="text-[10px] text-white/50 uppercase font-black tracking-wider">Consensus Gate Check</span>
-              <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                consensusPassed ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-              }`}>
-                {consensusPassed ? 'PASSED' : 'REJECTED'}
+              <span className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+                Consensus Gate Check
+              </span>
+              <span
+                className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                  consensusPassed
+                    ? "bg-green-500/20 text-green-400"
+                    : "bg-red-500/20 text-red-400"
+                }`}
+              >
+                {consensusPassed ? "PASSED" : "REJECTED"}
               </span>
             </div>
-            <div className="text-2xl font-black text-white">{consensusScore}<span className="text-xs text-white/30 font-normal">/100</span></div>
-            
+            <div className="text-2xl font-black text-white">
+              {consensusScore}
+              <span className="text-xs text-white/30 font-normal">/100</span>
+            </div>
+
             <div className="space-y-1 pt-1.5 border-t border-white/5">
               {Object.entries(agentBreakdown).map(([agent, score]) => (
-                <div key={agent} className="flex justify-between text-[10px] text-white/60">
+                <div
+                  key={agent}
+                  className="flex justify-between text-[10px] text-white/60"
+                >
                   <span className="truncate">{agent}</span>
                   <span className="font-mono font-bold">{score}/100</span>
                 </div>
@@ -2814,22 +3800,47 @@ const allFixed = issues.reduce((acc, issue) => {
 
         {/* REPAIR PRIORITY PLANNER ROADMAP */}
         <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-4 space-y-4">
-          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider font-semibold">Repair Priority Roadmap</div>
-          
+          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider font-semibold">
+            Repair Priority Roadmap
+          </div>
+
           <div className="space-y-3">
             {[
-              { label: 'Critical Fixing Items', list: roadmap.critical, color: 'text-red-400' },
-              { label: 'High Fixing Items', list: roadmap.high, color: 'text-orange-400' },
-              { label: 'Medium Fixing Items', list: roadmap.medium, color: 'text-yellow-400' },
-              { label: 'Cosmetic Fixing Items', list: roadmap.cosmetic, color: 'text-blue-400' }
-            ].map(group => {
+              {
+                label: "Critical Fixing Items",
+                list: roadmap.critical,
+                color: "text-red-400",
+              },
+              {
+                label: "High Fixing Items",
+                list: roadmap.high,
+                color: "text-orange-400",
+              },
+              {
+                label: "Medium Fixing Items",
+                list: roadmap.medium,
+                color: "text-yellow-400",
+              },
+              {
+                label: "Cosmetic Fixing Items",
+                list: roadmap.cosmetic,
+                color: "text-blue-400",
+              },
+            ].map((group) => {
               if (group.list.length === 0) return null;
               return (
                 <div key={group.label} className="space-y-1.5">
-                  <div className={`text-[9px] font-black uppercase ${group.color}`}>{group.label} ({group.list.length})</div>
+                  <div
+                    className={`text-[9px] font-black uppercase ${group.color}`}
+                  >
+                    {group.label} ({group.list.length})
+                  </div>
                   <div className="space-y-1">
                     {group.list.map((iss, idx) => (
-                      <div key={idx} className="p-2 bg-black/40 border border-white/5 rounded-lg text-[10px] text-white/70">
+                      <div
+                        key={idx}
+                        className="p-2 bg-black/40 border border-white/5 rounded-lg text-[10px] text-white/70"
+                      >
                         {iss.description}
                       </div>
                     ))}
@@ -2838,40 +3849,44 @@ const allFixed = issues.reduce((acc, issue) => {
               );
             })}
 
-            {issues.length === 0 && (!enableSentinel || sentinelIssues.length === 0) && (
-              <div className="text-center text-white/20 py-8 text-[10px] font-mono">
-                No detected defects. Repository roadmap is clear.
-              </div>
-            )}
+            {issues.length === 0 &&
+              (!enableSentinel || sentinelIssues.length === 0) && (
+                <div className="text-center text-white/20 py-8 text-[10px] font-mono">
+                  No detected defects. Repository roadmap is clear.
+                </div>
+              )}
           </div>
         </div>
 
         {/* ACTIVE WORKFORCE SUB-AGENTS */}
         <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-4 space-y-3">
-          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">AI Junior Workers</div>
+          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+            AI Junior Workers
+          </div>
           <div className="space-y-2">
             {[
-              { name: 'Worker CodeGen', role: 'Patch Generator' },
-              { name: 'Worker Tester', role: 'Test Verification' },
-              { name: 'Worker Linter', role: 'Syntax Cleaner' }
-            ].map(agent => (
-              <div key={agent.name} className="flex justify-between items-center text-[10px] p-2 bg-black/40 border border-white/5 rounded-xl">
+              { name: "Worker CodeGen", role: "Patch Generator" },
+              { name: "Worker Tester", role: "Test Verification" },
+              { name: "Worker Linter", role: "Syntax Cleaner" },
+            ].map((agent) => (
+              <div
+                key={agent.name}
+                className="flex justify-between items-center text-[10px] p-2 bg-black/40 border border-white/5 rounded-xl"
+              >
                 <div>
                   <div className="font-bold text-white/80">{agent.name}</div>
-                  <div className="text-[9px] text-white/40 mt-0.5">{agent.role}</div>
+                  <div className="text-[9px] text-white/40 mt-0.5">
+                    {agent.role}
+                  </div>
                 </div>
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
               </div>
             ))}
           </div>
         </div>
-
-
       </div>
     );
   };
-
-
 
   const renderDiffModal = () => {
     return (
@@ -2890,14 +3905,17 @@ const allFixed = issues.reduce((acc, issue) => {
                   <AlertTriangle className="text-[#FF5F00]" />
                   SELECTIVE HUNK DIFF PREVIEW & QUALITY CONSENSUS
                 </div>
-                <button onClick={() => setShowDiff(false)} className="cursor-pointer">
+                <button
+                  onClick={() => setShowDiff(false)}
+                  className="cursor-pointer"
+                >
                   <X />
                 </button>
               </div>
 
               <div className="p-8">
                 <VisualDiff
-                  issues={issues as any}
+                  issues={issues}
                   acceptedHunkIds={acceptedHunkIds}
                   onToggleHunk={onToggleHunk}
                 />
@@ -2911,7 +3929,7 @@ const allFixed = issues.reduce((acc, issue) => {
                   <Copy className="w-4 h-4" />
                   COPY FIXED CODE
                 </button>
-                
+
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowDiff(false)}
@@ -2952,9 +3970,14 @@ const allFixed = issues.reduce((acc, issue) => {
               <div className="sticky top-0 bg-[#121212] p-8 border-b border-[#FF5F00]/40 flex justify-between select-none">
                 <div>
                   <div className="font-bold text-xl">DETAILED DIAGNOSTICS</div>
-                  <div className="text-[#FF5F00] text-sm font-bold">ALL PATCHES APPLIED TO CODEBASE</div>
+                  <div className="text-[#FF5F00] text-sm font-bold">
+                    ALL PATCHES APPLIED TO CODEBASE
+                  </div>
                 </div>
-                <button onClick={() => setShowReport(false)} className="cursor-pointer">
+                <button
+                  onClick={() => setShowReport(false)}
+                  className="cursor-pointer"
+                >
                   <X />
                 </button>
               </div>
@@ -2966,17 +3989,24 @@ const allFixed = issues.reduce((acc, issue) => {
                       <div className="font-bold text-lg">{issue.type}</div>
                       <div
                         className={`px-3 py-px text-xs font-bold rounded ${
-                          issue.severity === 'Critical' || issue.severity === 'High'
-                            ? 'bg-[#FF5F00] text-black'
-                            : 'bg-white/10 text-[#FF5F00]'
+                          issue.severity === "Critical" ||
+                          issue.severity === "High"
+                            ? "bg-[#FF5F00] text-black"
+                            : "bg-white/10 text-[#FF5F00]"
                         }`}
                       >
                         {issue.severity}
                       </div>
                     </div>
-                    <div className="text-[#FF5F00] mb-3">{issue.description}</div>
-                    <div className="text-sm opacity-75 leading-snug mb-4">{issue.explanation}</div>
-                    <div className="text-[10px] font-mono bg-black p-3 rounded overflow-x-auto">FIX: {issue.fixed}</div>
+                    <div className="text-[#FF5F00] mb-3">
+                      {issue.description}
+                    </div>
+                    <div className="text-sm opacity-75 leading-snug mb-4">
+                      {issue.explanation}
+                    </div>
+                    <div className="text-[10px] font-mono bg-black p-3 rounded overflow-x-auto">
+                      FIX: {issue.fixed}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2990,7 +4020,9 @@ const allFixed = issues.reduce((acc, issue) => {
                   COPY CODE
                 </button>
                 <button
-                  onClick={() => downloadCode(fixedCode, `fixed-${Date.now()}.js`)}
+                  onClick={() =>
+                    downloadCode(fixedCode, `fixed-${Date.now()}.js`)
+                  }
                   className="flex-1 flex justify-center gap-2 items-center py-3 bg-[#FF5F00] text-black font-extrabold rounded-xl cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
@@ -3020,22 +4052,33 @@ const allFixed = issues.reduce((acc, issue) => {
                   <HelpCircle className="text-[#FF5F00]" />
                   Keyboard Shortcuts
                 </h3>
-                <button onClick={() => setShowShortcutsCheatSheet(false)} className="cursor-pointer">
+                <button
+                  onClick={() => setShowShortcutsCheatSheet(false)}
+                  className="cursor-pointer"
+                >
                   <X />
                 </button>
               </div>
               <div className="space-y-3 text-sm">
                 {[
-                  { keys: 'Ctrl + Enter', action: 'Run AI Code Analysis' },
-                  { keys: 'Ctrl + Shift + F', action: 'Apply All Fixed Patches' },
-                  { keys: 'Ctrl + /', action: 'Toggle Sentinel Live Board' },
-                  { keys: 'Ctrl + K', action: 'Focus Model Dropdown' },
-                  { keys: 'Escape', action: 'Close Modals / Panels' },
-                  { keys: '?', action: 'Toggle this Shortcuts Guide' },
+                  { keys: "Ctrl + Enter", action: "Run AI Code Analysis" },
+                  {
+                    keys: "Ctrl + Shift + F",
+                    action: "Apply All Fixed Patches",
+                  },
+                  { keys: "Ctrl + /", action: "Toggle Sentinel Live Board" },
+                  { keys: "Ctrl + K", action: "Focus Model Dropdown" },
+                  { keys: "Escape", action: "Close Modals / Panels" },
+                  { keys: "?", action: "Toggle this Shortcuts Guide" },
                 ].map((s, idx) => (
-                  <div key={idx} className="flex justify-between py-1.5 border-b border-white/5">
+                  <div
+                    key={idx}
+                    className="flex justify-between py-1.5 border-b border-white/5"
+                  >
                     <span className="text-white/60">{s.action}</span>
-                    <kbd className="px-2 py-0.5 bg-[#FF5F00]/10 border border-[#FF5F00]/40 text-[#FF5F00] font-mono text-xs rounded-md">{s.keys}</kbd>
+                    <kbd className="px-2 py-0.5 bg-[#FF5F00]/10 border border-[#FF5F00]/40 text-[#FF5F00] font-mono text-xs rounded-md">
+                      {s.keys}
+                    </kbd>
                   </div>
                 ))}
               </div>
@@ -3062,13 +4105,18 @@ const allFixed = issues.reduce((acc, issue) => {
                   <AlertTriangle />
                   Language not updated in system
                 </h3>
-                <button onClick={() => setShowLangAlert(false)} className="cursor-pointer text-white/60 hover:text-white">
+                <button
+                  onClick={() => setShowLangAlert(false)}
+                  className="cursor-pointer text-white/60 hover:text-white"
+                >
                   <X />
                 </button>
               </div>
               <div className="text-sm text-white/80 leading-relaxed font-mono">
-                The analysis engine could not auto-detect the programming language of the active editor code. 
-                Please explicitly select the language from the dropdown menu (e.g. JavaScript, Python, C++, HTML, YAML, CSS) before running diagnostics.
+                The analysis engine could not auto-detect the programming
+                language of the active editor code. Please explicitly select the
+                language from the dropdown menu (e.g. JavaScript, Python, C++,
+                HTML, YAML, CSS) before running diagnostics.
               </div>
               <div className="flex justify-end gap-3 pt-4 select-none">
                 <button
@@ -3090,23 +4138,88 @@ const allFixed = issues.reduce((acc, issue) => {
       <AnimatePresence>
         {showLoginModal && (
           <div className="fixed inset-0 bg-black/90 z-[90] flex items-center justify-center select-text">
-            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-sm p-9 rounded-3xl">
-              <div className="font-bold text-center text-2xl mb-2 select-none">SIGN IN</div>
-              <div className="text-center text-sm mb-8 text-[#FF5F00]/60 select-none">
-                Save and retrieve all your diagnostics sessions
+            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-xl p-9 rounded-3xl max-h-[90vh] overflow-y-auto">
+              <div className="font-bold text-center text-2xl mb-2 select-none">
+                {loginMode === "register" ? "CREATE ACCOUNT" : "SIGN IN"}
               </div>
+              <div className="text-center text-sm mb-6 text-[#FF5F00]/60 select-none">
+                Secure login — your data and keys stay protected
+              </div>
+
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => {
+                    setLoginMode("login");
+                    setLoginError("");
+                  }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    loginMode === "login"
+                      ? "bg-[#FF5F00] text-black"
+                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                  }`}
+                >
+                  SIGN IN
+                </button>
+                <button
+                  onClick={() => {
+                    setLoginMode("register");
+                    setLoginError("");
+                  }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    loginMode === "register"
+                      ? "bg-[#FF5F00] text-black"
+                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                  }`}
+                >
+                  CREATE ACCOUNT
+                </button>
+              </div>
+
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
                 placeholder="Username"
+                autoComplete="username"
               />
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
+                placeholder="Password (min 8 characters)"
+                autoComplete={loginMode === "register" ? "new-password" : "current-password"}
+              />
+
+              {loginError && (
+                <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-3">
+                  {loginError}
+                </div>
+              )}
+
               <button
                 onClick={handleLogin}
-                className="mt-2 w-full py-3.5 bg-[#FF5F00] font-extrabold text-black rounded-xl cursor-pointer select-none"
+                disabled={loginBusy}
+                className="mt-2 w-full py-3.5 bg-[#FF5F00] font-extrabold text-black rounded-xl cursor-pointer select-none disabled:opacity-60"
               >
-                ENABLE SESSION SAVING
+                {loginBusy
+                  ? "PLEASE WAIT..."
+                  : loginMode === "register"
+                    ? "CREATE ACCOUNT & SIGN IN"
+                    : "SIGN IN"}
               </button>
+
+              {isLoggedIn && (
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <div className="text-center text-xs font-bold text-white/50 mb-4 select-none uppercase tracking-wider">
+                    Connect Cloud Accounts
+                  </div>
+                  <div className="max-h-72 overflow-y-auto pr-1">
+                    <CloudAuth />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -3115,8 +4228,10 @@ const allFixed = issues.reduce((acc, issue) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white flex select-none" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      
+    <div
+      className="min-h-screen bg-[#0A0A0A] text-white flex select-none"
+      style={{ fontFamily: "Inter, system-ui, sans-serif" }}
+    >
       <ResponsiveContainer
         sidebar={renderSidebar()}
         content={renderContent()}
@@ -3137,4 +4252,3 @@ const allFixed = issues.reduce((acc, issue) => {
 };
 
 export default App;
-

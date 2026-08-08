@@ -1,15 +1,41 @@
-import { decrypt, encrypt } from './utils/crypto';
-import { connectToDatabase } from './utils/db';
-import { UserSettingsModel, AuditLogModel } from '../src/models/Schemas';
+import { encrypt } from '../shared/crypto.js';
+import { connectToDatabase } from '../shared/db.js';
+import { UserSettingsModel, AuditLogModel } from '../src/models/Schemas.js';
+import { applySecurityHeaders, isPreflight, requireAuth } from '../shared/security.js';
 
-export default async function handler(req: any, res: any) {
+type ApiRequest = {
+  method?: string;
+  body?: {
+    username?: string;
+    provider?: string;
+    keyRaw?: string;
+  };
+  headers?: Record<string, string | string[] | undefined>;
+  locals?: { username: string };
+};
+
+type ApiResponse = {
+  status: (code: number) => ApiResponse;
+  json: (payload: unknown) => ApiResponse;
+  setHeader: (name: string, value: string) => ApiResponse;
+};
+
+export default async function handler(req: ApiRequest, res: ApiResponse) {
+  applySecurityHeaders(res, String(req.headers?.origin || ''));
+  if (isPreflight(req)) {
+    return res.status(204).json({});
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { username, provider, keyRaw } = req.body;
-  if (!username || !provider || !keyRaw) {
-    return res.status(400).json({ error: 'Missing parameters: username, provider, and keyRaw are required.' });
+  if (!(await requireAuth(req, res))) return res;
+  const username = req.locals!.username;
+
+  const { provider, keyRaw } = req.body ?? {};
+  if (!provider || !keyRaw) {
+    return res.status(400).json({ error: 'Missing parameters: provider, and keyRaw are required.' });
   }
 
   try {
@@ -80,7 +106,7 @@ export default async function handler(req: any, res: any) {
 
     return res.status(200).json({ success: true, message: `Validated and encrypted ${provider} credentials successfully.` });
 
-  } catch (err: any) {
-    return res.status(500).json({ success: false, error: err.message });
+  } catch (err: unknown) {
+    return res.status(500).json({ success: false, error: (err as Error)?.message });
   }
 }

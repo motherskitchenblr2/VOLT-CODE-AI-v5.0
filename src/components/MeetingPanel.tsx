@@ -1,83 +1,97 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AgentCommunicationService,
   defaultAgents,
   bossAgent,
   Meeting,
-  Message,
-  MeetingTask,
   Agent,
-  translate
-} from '../services/AgentCommunication';
-import { getAudioEngine } from '../services/AudioEngine';
-import { AgentGroupChat } from './AgentGroupChat';
-import { AudioInterface } from './AudioInterface';
-import { ExecutionPanel } from './ExecutionPanel';
-import { Users, LogOut, Plus, Settings } from 'lucide-react';
+  translate,
+} from "../services/AgentCommunication";
+import { AgentGroupChat } from "./AgentGroupChat";
+import { AudioInterface } from "./AudioInterface";
+import { ExecutionPanel } from "./ExecutionPanel";
+import { Users, LogOut, Plus, Settings } from "lucide-react";
 
 interface MeetingPanelProps {
   onClose?: () => void;
 }
 
 export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
-  const [language, setLanguage] = useState<'en' | 'hi'>('en');
-  const [communicationService] = useState(() => new AgentCommunicationService());
-  const [agentsMap] = useState(() => new Map([bossAgent, ...defaultAgents].map(a => [a.id, a])));
-  const firstMeeting = communicationService.createMeeting([bossAgent, ...defaultAgents], true);
-  const welcomeMessage = communicationService.addMessage(
-    firstMeeting.id,
-    'system',
-    'System',
-    translate('meeting_started', language),
-    language,
-    'system'
+  const [language, setLanguage] = useState<"en" | "hi">("en");
+  const [communicationService] = useState(
+    () => new AgentCommunicationService(),
   );
-  const bossMessage = communicationService.addMessage(
-    firstMeeting.id,
-    bossAgent.id,
-    bossAgent.name,
-    language === 'en'
-      ? "Good day, team. Let's collaborate on today's challenges."
-      : 'नमस्ते, टीम। आइए आज की चुनौतियों पर सहयोग करें।',
-    language,
-    'text'
-  );
-  const [meeting, setMeeting] = useState<Meeting>(firstMeeting);
-  const [messages, setMessages] = useState<Message[]>([welcomeMessage, bossMessage]);
-  const [tasks, setTasks] = useState<MeetingTask[]>(firstMeeting.tasks);
+  const initialized = useRef(false);
+
+  const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<string>(bossAgent.id);
   const [showSettings, setShowSettings] = useState(false);
   const [isBossPresent, setIsBossPresent] = useState(true);
 
-  // Subscribe to real-time updates
+  const messages = meeting?.messages ?? [];
+  const tasks = meeting?.tasks ?? [];
+  const agentsMap = useMemo(() => {
+    if (!meeting) return new Map<string, Agent>();
+    return new Map(meeting.agents.map((a) => [a.id, a]));
+  }, [meeting]);
+
+  const syncMeeting = useCallback(
+    (id: string) => {
+      const synced = communicationService.getMeeting(id);
+      if (synced) setMeeting(synced);
+    },
+    [communicationService],
+  );
+
+  // Initialize meeting
   useEffect(() => {
-    const unsubscribeMsg = communicationService.onMessageAdded((msg) => {
-      setMessages(prev => [...prev, msg]);
-    });
+    if (initialized.current) return;
+    initialized.current = true;
+    const agents = [bossAgent, ...defaultAgents];
+    const newMeeting = communicationService.createMeeting(agents, true);
 
-    const unsubscribeTask = communicationService.onTaskUpdated(() => {
-      if (meeting) {
-        setTasks([...meeting.tasks]);
-      }
-    });
+    communicationService.addMessage(
+      newMeeting.id,
+      "system",
+      "System",
+      translate("meeting_started", language),
+      language,
+      "system",
+    );
 
-    return () => {
-      unsubscribeMsg();
-      unsubscribeTask();
-    };
-  }, [communicationService, meeting]);
+    communicationService.addMessage(
+      newMeeting.id,
+      bossAgent.id,
+      bossAgent.name,
+      language === "en"
+        ? "Good day, team. Let's collaborate on today's challenges."
+        : "नमस्ते, टीम। आइए आज की चुनौतियों पर सहयोग करें।",
+      language,
+      "text",
+    );
+
+    const synced = communicationService.getMeeting(newMeeting.id);
+    if (synced) setMeeting(synced);
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     if (!meeting || !selectedAgent) return;
 
-    const message = communicationService.addMessage(
+    communicationService.addMessage(
       meeting.id,
       selectedAgent,
-      agentsMap.get(selectedAgent)?.name || 'Unknown',
+      meeting.agents.find((a) => a.id === selectedAgent)?.name || "Unknown",
       content,
       language,
-      'text'
+      "text",
     );
   };
 
@@ -88,98 +102,106 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
     const audioUrl = URL.createObjectURL(audioBlob);
 
     // Add message with audio
-    const message = communicationService.addMessage(
+    communicationService.addMessage(
       meeting.id,
       selectedAgent,
-      agentsMap.get(selectedAgent)?.name || 'Unknown',
-      transcript || (language === 'en' ? '[Audio Message]' : '[ऑडियो संदेश]'),
+      meeting.agents.find((a) => a.id === selectedAgent)?.name || "Unknown",
+      transcript || (language === "en" ? "[Audio Message]" : "[ऑडियो संदेश]"),
       language,
-      'audio',
+      "audio",
       audioUrl,
-      transcript
+      transcript,
     );
   };
 
   const handleCreateTask = () => {
     if (!meeting) return;
 
-    const taskTitle = language === 'en' ? 'New Task' : 'नया कार्य';
-    const taskDesc = language === 'en'
-      ? 'A new task has been created for the team'
-      : 'टीम के लिए एक नया कार्य बनाया गया है';
+    const taskTitle = language === "en" ? "New Task" : "नया कार्य";
+    const taskDesc =
+      language === "en"
+        ? "A new task has been created for the team"
+        : "टीम के लिए एक नया कार्य बनाया गया है";
 
-    const task = communicationService.addTask(
+    communicationService.addTask(
       meeting.id,
       taskTitle,
-      'fix',
-      'high',
+      "fix",
+      "high",
       taskDesc,
-      [selectedAgent || defaultAgents[0].id]
+      [selectedAgent || defaultAgents[0].id],
     );
 
-    setTasks([...meeting.tasks]);
+    syncMeeting(meeting.id);
   };
 
   const handleBossApproveTask = (taskId: string) => {
     if (!meeting) return;
 
     const updatedTask = communicationService.approveTask(meeting.id, taskId);
-    setTasks([...meeting.tasks]);
+    syncMeeting(meeting.id);
 
     // Add system message
     communicationService.addMessage(
       meeting.id,
-      'system',
-      'System',
-      `${translate('task_approved', language)}: ${updatedTask.title}`,
+      "system",
+      "System",
+      `${translate("task_approved", language)}: ${updatedTask.title}`,
       language,
-      'system'
+      "system",
     );
   };
 
   const handleExecuteTask = (taskId: string) => {
     if (!meeting) return;
 
-    const task = meeting.tasks.find(t => t.id === taskId);
+    const task = meeting.tasks.find((t) => t.id === taskId);
     if (!task || !task.bossApproved) {
-      alert(language === 'en'
-        ? 'Task must be approved by Boss first'
-        : 'कार्य को पहले बॉस द्वारा मंजूरी दी जानी चाहिए');
+      alert(
+        language === "en"
+          ? "Task must be approved by Boss first"
+          : "कार्य को पहले बॉस द्वारा मंजूरी दी जानी चाहिए",
+      );
       return;
     }
 
     const updatedTask = communicationService.updateTaskStatus(
       meeting.id,
       taskId,
-      'in-progress'
+      "in-progress",
     );
 
-    setTasks([...meeting.tasks]);
+    syncMeeting(meeting.id);
 
     communicationService.addMessage(
       meeting.id,
-      'system',
-      'System',
-      `${translate('task_executing', language)}: ${updatedTask.title}`,
+      "system",
+      "System",
+      `${translate("task_executing", language)}: ${updatedTask.title}`,
       language,
-      'system'
+      "system",
     );
   };
 
   const toggleBossPresence = () => {
     if (meeting) {
-      const updated = communicationService.bossPresentToggle(meeting.id, !isBossPresent);
+      const updated = communicationService.bossPresentToggle(
+        meeting.id,
+        !isBossPresent,
+      );
       setIsBossPresent(updated.bossPresent);
 
       communicationService.addMessage(
         meeting.id,
-        'system',
-        'System',
+        "system",
+        "System",
         isBossPresent
-          ? translate('boss_joined', language)
-          : (language === 'en' ? 'Boss has left the meeting' : 'बॉस बैठक छोड़ गए हैं'),
+          ? translate("boss_joined", language)
+          : language === "en"
+            ? "Boss has left the meeting"
+            : "बॉस बैठक छोड़ गए हैं",
         language,
-        'system'
+        "system",
       );
     }
   };
@@ -198,7 +220,11 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           <div className="animate-spin mb-4">
             <div className="w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full" />
           </div>
-          <p className="text-white">{language === 'en' ? 'Initializing meeting...' : 'बैठक प्रारंभ कर रहे हैं...'}</p>
+          <p className="text-white">
+            {language === "en"
+              ? "Initializing meeting..."
+              : "बैठक प्रारंभ कर रहे हैं..."}
+          </p>
         </div>
       </div>
     );
@@ -214,10 +240,10 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">
-              {language === 'en' ? 'Meeting Panel' : 'बैठक पैनल'}
+              {language === "en" ? "Meeting Panel" : "बैठक पैनल"}
             </h1>
             <p className="text-sm text-white/60">
-              {language === 'en'
+              {language === "en"
                 ? `${messages.length} messages • ${tasks.length} tasks`
                 : `${messages.length} संदेश • ${tasks.length} कार्य`}
             </p>
@@ -228,21 +254,21 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           {/* Language Toggle */}
           <div className="flex gap-2 bg-white/10 rounded-lg p-1">
             <button
-              onClick={() => setLanguage('en')}
+              onClick={() => setLanguage("en")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
-                language === 'en'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-white/60 hover:text-white'
+                language === "en"
+                  ? "bg-blue-600 text-white"
+                  : "text-white/60 hover:text-white"
               }`}
             >
               EN
             </button>
             <button
-              onClick={() => setLanguage('hi')}
+              onClick={() => setLanguage("hi")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
-                language === 'hi'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-white/60 hover:text-white'
+                language === "hi"
+                  ? "bg-blue-600 text-white"
+                  : "text-white/60 hover:text-white"
               }`}
             >
               HI
@@ -253,7 +279,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            title={language === 'en' ? 'Settings' : 'सेटिंग्स'}
+            title={language === "en" ? "Settings" : "सेटिंग्स"}
           >
             <Settings className="w-5 h-5 text-white/60 hover:text-white" />
           </button>
@@ -263,18 +289,18 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             onClick={toggleBossPresence}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
               isBossPresent
-                ? 'bg-yellow-600 text-white'
-                : 'bg-white/10 text-white/60 hover:text-white'
+                ? "bg-yellow-600 text-white"
+                : "bg-white/10 text-white/60 hover:text-white"
             }`}
           >
-            {isBossPresent ? '👑' : '🚪'} {language === 'en' ? 'Boss' : 'बॉस'}
+            {isBossPresent ? "👑" : "🚪"} {language === "en" ? "Boss" : "बॉस"}
           </button>
 
           {/* Close Button */}
           <button
             onClick={handleEndMeeting}
             className="p-2 rounded-lg hover:bg-red-600/20 transition-colors"
-            title={language === 'en' ? 'End Meeting' : 'बैठक समाप्त करें'}
+            title={language === "en" ? "End Meeting" : "बैठक समाप्त करें"}
           >
             <LogOut className="w-5 h-5 text-red-400" />
           </button>
@@ -293,14 +319,14 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold text-white/70 block mb-2">
-                  {language === 'en' ? 'Select Agent:' : 'एजेंट चुनें:'}
+                  {language === "en" ? "Select Agent:" : "एजेंट चुनें:"}
                 </label>
                 <select
-                  value={selectedAgent || ''}
+                  value={selectedAgent || ""}
                   onChange={(e) => setSelectedAgent(e.target.value)}
                   className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
                 >
-                  {Array.from(agentsMap.values()).map(agent => (
+                  {Array.from(agentsMap.values()).map((agent) => (
                     <option key={agent.id} value={agent.id}>
                       {agent.name} ({agent.role})
                     </option>
@@ -310,14 +336,14 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
 
               <div>
                 <label className="text-xs font-semibold text-white/70 block mb-2">
-                  {language === 'en' ? 'Tasks:' : 'कार्य:'}
+                  {language === "en" ? "Tasks:" : "कार्य:"}
                 </label>
                 <button
                   onClick={handleCreateTask}
                   className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold text-sm hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  {language === 'en' ? 'New Task' : 'नया कार्य'}
+                  {language === "en" ? "New Task" : "नया कार्य"}
                 </button>
               </div>
             </div>
@@ -364,34 +390,34 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
         <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10">
           <div className="flex items-center justify-between text-xs">
             <span className="text-white/70 font-semibold">
-              {language === 'en' ? 'Quick Actions:' : 'त्वरित क्रिया:'}
+              {language === "en" ? "Quick Actions:" : "त्वरित क्रिया:"}
             </span>
             <div className="flex gap-2">
               {tasks
-                .filter(t => t.status === 'planned' && !t.bossApproved)
+                .filter((t) => t.status === "planned" && !t.bossApproved)
                 .slice(0, 3)
-                .map(task => (
+                .map((task) => (
                   <button
                     key={task.id}
                     onClick={() => handleBossApproveTask(task.id)}
                     className="px-3 py-1 rounded bg-yellow-600/70 text-yellow-100 hover:bg-yellow-600 transition-colors font-semibold"
                     disabled={!isBossPresent}
-                    title={isBossPresent ? '' : 'Boss must be present'}
+                    title={isBossPresent ? "" : "Boss must be present"}
                   >
-                    {language === 'en' ? 'Approve' : 'मंजूर करें'}
+                    {language === "en" ? "Approve" : "मंजूर करें"}
                   </button>
                 ))}
 
               {tasks
-                .filter(t => t.status === 'planned' && t.bossApproved)
+                .filter((t) => t.status === "planned" && t.bossApproved)
                 .slice(0, 3)
-                .map(task => (
+                .map((task) => (
                   <button
                     key={task.id}
                     onClick={() => handleExecuteTask(task.id)}
                     className="px-3 py-1 rounded bg-green-600/70 text-green-100 hover:bg-green-600 transition-colors font-semibold"
                   >
-                    {language === 'en' ? 'Execute' : 'निष्पादित करें'}
+                    {language === "en" ? "Execute" : "निष्पादित करें"}
                   </button>
                 ))}
             </div>

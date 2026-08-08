@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import handler from '../../../api/openrouter';
 
+vi.mock('../../../shared/security.js', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../shared/security.js')>();
+  return {
+    ...actual,
+    requireAuth: vi.fn(async (req: { locals?: { username: string } }) => {
+      req.locals = { username: 'testuser' };
+      return true;
+    }),
+  };
+});
+
 // ---------------------------------------------------------------------------
 // Helpers to create lightweight mock req/res objects
 // ---------------------------------------------------------------------------
@@ -50,6 +61,18 @@ const VALID_API_RESPONSE = {
   usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
 };
 
+type ApiJsonBody = {
+  error?: string;
+  details?: string;
+  issues?: unknown[];
+  fixedCode?: string;
+  summary?: string;
+  tokensUsed?: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  modelUsed?: string;
+};
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -72,7 +95,7 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(405);
-      expect((res._json as any).error).toBe('Method not allowed');
+      expect((res._json as ApiJsonBody).error).toBe('Method not allowed');
     });
 
     it('returns 405 for DELETE requests', async () => {
@@ -117,14 +140,14 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(400);
-      expect((res._json as any).error).toMatch(/Invalid plugin parameter/);
+      expect((res._json as ApiJsonBody).error).toMatch(/Invalid plugin parameter/);
     });
 
     it('includes all allowed plugin names in the error message', async () => {
       const req = makeReq({ body: { code: 'const x = 1;', plugin: '__bad__' } });
       const res = makeRes();
       await handler(req, res);
-      const error = (res._json as any).error as string;
+      const error = (res._json as ApiJsonBody).error as string;
       expect(error).toContain('Test Runner');
       expect(error).toContain('Dependency Audit');
     });
@@ -171,7 +194,7 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(400);
-      expect((res._json as any).error).toMatch(/500 characters/);
+      expect((res._json as ApiJsonBody).error).toMatch(/500 characters/);
     });
 
     it('accepts customPrompt exactly at the 500-character limit', async () => {
@@ -339,7 +362,7 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(400);
-      expect((res._json as any).error).toBe('Missing code');
+      expect((res._json as ApiJsonBody).error).toBe('Missing code');
     });
 
     it('returns 400 when code is an empty string', async () => {
@@ -347,7 +370,7 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(400);
-      expect((res._json as any).error).toBe('Missing code');
+      expect((res._json as ApiJsonBody).error).toBe('Missing code');
     });
   });
 
@@ -469,7 +492,7 @@ describe('api/openrouter handler', () => {
       await handler(req, res);
 
       expect(res._status).toBe(200);
-      const json = res._json as any;
+      const json = res._json as ApiJsonBody;
       expect(Array.isArray(json.issues)).toBe(true);
       expect(json.fixedCode).toBeDefined();
       expect(json.tokensUsed).toBe(30);
@@ -497,7 +520,7 @@ describe('api/openrouter handler', () => {
       await handler(req, res);
 
       expect(res._status).toBe(429);
-      expect((res._json as any).error).toBe('OpenRouter error');
+      expect((res._json as ApiJsonBody).error).toBe('OpenRouter error');
     });
 
     it('returns 500 when model response is empty', async () => {
@@ -515,7 +538,7 @@ describe('api/openrouter handler', () => {
       await handler(req, res);
 
       expect(res._status).toBe(500);
-      expect((res._json as any).error).toBe('Empty model response');
+      expect((res._json as ApiJsonBody).error).toBe('Empty model response');
     });
 
     it('returns 500 when model returns non-JSON text', async () => {
@@ -536,7 +559,7 @@ describe('api/openrouter handler', () => {
       await handler(req, res);
 
       expect(res._status).toBe(500);
-      expect((res._json as any).error).toBe('Model did not return valid JSON');
+      expect((res._json as ApiJsonBody).error).toBe('Model did not return valid JSON');
     });
 
     it('extracts JSON wrapped in markdown code fences', async () => {
@@ -562,7 +585,7 @@ describe('api/openrouter handler', () => {
       await handler(req, res);
 
       expect(res._status).toBe(200);
-      expect((res._json as any).summary).toBe('No issues.');
+      expect((res._json as ApiJsonBody).summary).toBe('No issues.');
     });
 
     it('returns 500 when fetch itself throws (network error)', async () => {
@@ -576,8 +599,8 @@ describe('api/openrouter handler', () => {
       await handler(req, res);
 
       expect(res._status).toBe(500);
-      expect((res._json as any).error).toBe('Server error');
-      expect((res._json as any).details).toBe('network failure');
+      expect((res._json as ApiJsonBody).error).toBe('Server error');
+      expect((res._json as ApiJsonBody).details).toBe('network failure');
     });
   });
 
@@ -595,7 +618,7 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(400);
-      expect((res._json as any).error).toMatch(/Invalid plugin parameter/);
+      expect((res._json as ApiJsonBody).error).toMatch(/Invalid plugin parameter/);
     });
 
     it('rejects an oversized customPrompt even with a valid plugin', async () => {
@@ -609,7 +632,7 @@ describe('api/openrouter handler', () => {
       const res = makeRes();
       await handler(req, res);
       expect(res._status).toBe(400);
-      expect((res._json as any).error).toMatch(/500 characters/);
+      expect((res._json as ApiJsonBody).error).toMatch(/500 characters/);
     });
 
     it('includes both plugin and sanitized customPrompt in the outgoing request', async () => {
