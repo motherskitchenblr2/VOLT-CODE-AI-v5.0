@@ -1,4 +1,4 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
+import type { IncomingMessage, ServerResponse } from "node:http";
 
 type HandlerResult = unknown;
 
@@ -16,21 +16,24 @@ type Handler = (req: any, res: any) => HandlerResult | Promise<HandlerResult>;
 
 function isExpressLikeRes(res: unknown): res is ExpressLikeRes {
   return (
-    typeof res === 'object' &&
+    typeof res === "object" &&
     res !== null &&
-    typeof (res as ExpressLikeRes).status === 'function' &&
-    typeof (res as ExpressLikeRes).json === 'function'
+    typeof (res as ExpressLikeRes).status === "function" &&
+    typeof (res as ExpressLikeRes).json === "function"
   );
 }
 
-function parseQuery(req: IncomingMessage): Record<string, string | string[] | undefined> {
-  const raw = (req as IncomingMessage & { query?: Record<string, unknown> }).query;
-  if (raw && typeof raw === 'object') {
+function parseQuery(
+  req: IncomingMessage,
+): Record<string, string | string[] | undefined> {
+  const raw = (req as IncomingMessage & { query?: Record<string, unknown> })
+    .query;
+  if (raw && typeof raw === "object") {
     return raw as Record<string, string | string[] | undefined>;
   }
-  const url = req.url || '';
-  const qIndex = url.indexOf('?');
-  const search = qIndex >= 0 ? url.slice(qIndex + 1) : '';
+  const url = req.url || "";
+  const qIndex = url.indexOf("?");
+  const search = qIndex >= 0 ? url.slice(qIndex + 1) : "";
   const out: Record<string, string | string[] | undefined> = {};
   for (const [key, value] of new URLSearchParams(search).entries()) {
     const existing = out[key];
@@ -47,15 +50,15 @@ function parseQuery(req: IncomingMessage): Record<string, string | string[] | un
 
 function readBody(req: IncomingMessage): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    let raw = '';
-    req.on('data', (chunk: Buffer) => {
-      raw += chunk.toString('utf8');
+    let raw = "";
+    req.on("data", (chunk: Buffer) => {
+      raw += chunk.toString("utf8");
       if (raw.length > 1_000_000) {
-        reject(new Error('Request body exceeds 1MB limit'));
+        reject(new Error("Request body exceeds 1MB limit"));
         req.destroy();
       }
     });
-    req.on('end', () => {
+    req.on("end", () => {
       if (!raw) return resolve({});
       try {
         resolve(JSON.parse(raw));
@@ -63,13 +66,13 @@ function readBody(req: IncomingMessage): Promise<unknown> {
         resolve({});
       }
     });
-    req.on('error', reject);
+    req.on("error", reject);
   });
 }
 
 function jsonResponse(res: ServerResponse, payload: unknown) {
   if (res.writableEnded) return;
-  res.setHeader('Content-Type', 'application/json');
+  res.setHeader("Content-Type", "application/json");
   res.end(JSON.stringify(payload));
 }
 
@@ -97,7 +100,7 @@ export function vercelHandler(handler: Handler) {
       },
       setHeader(name: string, value: string | string[]) {
         rawRes.setHeader(name, value as string);
-      }
+      },
     };
 
     let body: unknown = (rawReq as IncomingMessage & { body?: unknown }).body;
@@ -105,15 +108,18 @@ export function vercelHandler(handler: Handler) {
       body = await readBody(rawReq).catch(() => ({}));
     }
 
-    const expressReq = Object.assign(rawReq, { body, query: parseQuery(rawReq) }) as IncomingMessage & { body?: unknown; query?: Record<string, unknown> };
+    const expressReq = Object.assign(rawReq, {
+      body,
+      query: parseQuery(rawReq),
+    }) as IncomingMessage & { body?: unknown; query?: Record<string, unknown> };
 
     try {
       await handler(expressReq, expressRes);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      const message = err instanceof Error ? err.message : "Unknown error";
       if (!rawRes.headersSent && !rawRes.writableEnded) {
         rawRes.statusCode = 500;
-        jsonResponse(rawRes, { error: 'Server error', details: message });
+        jsonResponse(rawRes, { error: "Server error", details: message });
       }
     }
 
