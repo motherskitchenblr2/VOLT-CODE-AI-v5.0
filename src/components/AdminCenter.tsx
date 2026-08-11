@@ -89,12 +89,13 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     "status" | "providers" | "performance" | "audit" | "secret" | "deployment"
   >("status");
 
-  // Security Credentials Access Lock
-  const [isUnlocked, setIsUnlocked] = useState(() => {
-    return sessionStorage.getItem("volt_admin_session_unlocked") === "true";
-  });
+  // Security Credentials Access Lock — the passcode is verified on the
+  // server (ADMIN_PASSCODE env var); the UI lock is just a UX layer and the
+  // real gate is enforced by /api/deploy.
+  const [isUnlocked, setIsUnlocked] = useState(false);
   const [enteredKey, setEnteredKey] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [adminPasscode, setAdminPasscode] = useState("");
   const [newSecretKey, setNewSecretKey] = useState("");
 
   // Local Admin Config States (persisted to localStorage)
@@ -133,7 +134,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   const fetchDeployments = async () => {
     try {
       const res = await fetch(
-        `/api/database?action=getDeployments&username=${encodeURIComponent(username)}`,
+        `/api/database?action=getDeployments`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -151,6 +152,12 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   }, [activeAdminTab, username]);
 
   const handleDeploy = async () => {
+    if (!adminPasscode) {
+      setDeployLogs(
+        (prev) => prev + "[ERROR] Enter the admin passcode and unlock first.\n",
+      );
+      return;
+    }
     setIsDeploying(true);
     setDeployLogs("Initializing deployment request...\n");
     try {
@@ -158,8 +165,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username,
           target: selectedTarget,
+          adminPasscode,
         }),
       });
       if (res.ok) {
@@ -207,22 +214,33 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     return () => clearInterval(interval);
   }, [autoRefreshRate, providers, onRefreshProviderHealth]);
 
-  const [runtimeSecretKey, setRuntimeSecretKey] = useState("admin123");
-
   // Auth operations
-  const handleUnlock = () => {
-    const correctKey = runtimeSecretKey;
-    if (!correctKey) {
-      setErrorMsg("NO ADMIN PASSCODE SET FOR THIS SESSION");
+  const handleUnlock = async () => {
+    if (!enteredKey.trim()) {
+      setErrorMsg("ENTER ADMIN PASSCODE");
       setTimeout(() => setErrorMsg(""), 3000);
       return;
     }
-
-    if (enteredKey === correctKey) {
-      setIsUnlocked(true);
-      sessionStorage.setItem("volt_admin_session_unlocked", "true");
-      setErrorMsg("");
-    } else {
+    try {
+      const res = await fetch("/api/auth?action=admin-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode: enteredKey }),
+      });
+      if (res.ok) {
+        setIsUnlocked(true);
+        setAdminPasscode(enteredKey);
+        setErrorMsg("");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(
+          data.error === "Admin not configured"
+            ? "ADMIN PASSCODE NOT SET ON SERVER"
+            : "ACCESS CREDENTIALS REJECTED",
+        );
+        setTimeout(() => setErrorMsg(""), 3000);
+      }
+    } catch {
       setErrorMsg("ACCESS CREDENTIALS REJECTED");
       setTimeout(() => setErrorMsg(""), 3000);
     }
@@ -231,9 +249,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   const handleChangeSecretKey = () => {
     const trimmedKey = newSecretKey.trim();
     if (!trimmedKey) return;
-    setRuntimeSecretKey(trimmedKey);
+    setAdminPasscode(trimmedKey);
     setNewSecretKey("");
-    alert("Administrator passcode updated successfully for this session!");
+    alert(
+      "Administrator passcode recorded for this session. The server will validate it on your next deployment request.",
+    );
   };
 
   // Provider Ping trigger

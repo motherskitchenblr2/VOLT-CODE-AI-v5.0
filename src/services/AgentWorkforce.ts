@@ -462,7 +462,7 @@ export class MultiAgentOrchestrator {
   ) {
     try {
       await fetch(
-        `/api/database?action=saveWorkflowTask&username=${encodeURIComponent(username)}`,
+        `/api/database?action=saveWorkflowTask`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

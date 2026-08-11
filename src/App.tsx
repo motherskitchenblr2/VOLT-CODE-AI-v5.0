@@ -469,9 +469,7 @@ const App: React.FC = () => {
 
   const fetchVaultStatus = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getSecretStatus&username=${encodeURIComponent(username)}`,
-      );
+      const res = await fetch(`/api/database?action=getSecretStatus`);
       if (res.ok) {
         const data = await res.json();
         setVaultStored(Boolean(data.stored));
@@ -479,7 +477,7 @@ const App: React.FC = () => {
     } catch {
       setVaultStored(false);
     }
-  }, [username]);
+  }, []);
 
   useEffect(() => {
     fetchVaultStatus();
@@ -492,9 +490,7 @@ const App: React.FC = () => {
     setVaultSyncState("saving");
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/database?action=saveSecrets&username=${encodeURIComponent(username)}`,
-          {
+        const res = await fetch(`/api/database?action=saveSecrets`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -646,9 +642,7 @@ const App: React.FC = () => {
 
   const fetchAuditLogs = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getAuditLogs&username=${encodeURIComponent(username)}`,
-      );
+      const res = await fetch(`/api/database?action=getAuditLogs`);
       if (res.ok) {
         const data = await res.json();
         setAuditLogs(data || []);
@@ -670,12 +664,12 @@ const App: React.FC = () => {
         },
       ]);
     }
-  }, [username]);
+  }, []);
 
   const loadCheckpoints = useCallback(async () => {
     try {
       const res = await fetch(
-        `/api/database?action=getCheckpoints&username=${encodeURIComponent(username)}`,
+        `/api/database?action=getCheckpoints`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -703,7 +697,7 @@ const App: React.FC = () => {
     } catch {
       // Fail silently
     }
-  }, [username]);
+  }, []);
 
   const createCheckpoint = useCallback(
     async (filePath: string, codeBackup: string): Promise<string> => {
@@ -730,9 +724,7 @@ const App: React.FC = () => {
       );
 
       try {
-        await fetch(
-          `/api/database?action=saveCheckpoint&username=${encodeURIComponent(username)}`,
-          {
+        await fetch(`/api/database?action=saveCheckpoint`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -752,7 +744,7 @@ const App: React.FC = () => {
       loadCheckpoints();
       return checkpointId;
     },
-    [username, addLog, loadCheckpoints],
+    [addLog, loadCheckpoints],
   );
 
   const onRestoreCheckpoint = useCallback(

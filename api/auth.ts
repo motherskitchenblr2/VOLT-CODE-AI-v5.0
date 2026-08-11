@@ -31,6 +31,7 @@ import {
   sessionCookieHeader,
   setPassword,
   userExists,
+  verifyAdminPasscode,
   verifyPassword,
 } from '../shared/security.js';
 
@@ -93,10 +94,11 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (action === 'callback') return handleCallback(req, res);
   if (action === 'status') return handleStatus(req, res);
   if (action === 'logoutoauth') return handleLogoutOAuth(req, res);
+  if (action === 'admin-verify') return handleAdminVerify(req, res);
 
   return res.status(400).json({
     error: 'Invalid or missing action',
-    details: 'Use ?action=register|login|logout|me|start|callback|status|logoutoauth',
+    details: 'Use ?action=register|login|logout|me|start|callback|status|logoutoauth|admin-verify',
   });
 }
 
@@ -204,6 +206,22 @@ async function handleMe(req: ApiRequest, res: ApiResponse) {
     return res.status(200).json({ authenticated: false });
   }
   return res.status(200).json({ authenticated: true, username });
+}
+
+async function handleAdminVerify(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+  // Verify the passcode on the server, fail-closed against ADMIN_PASSCODE.
+  const passcode = getBodyString(req, 'passcode');
+  if (!verifyAdminPasscode(passcode)) {
+    const configured = Boolean(process.env.ADMIN_PASSCODE);
+    if (!configured) {
+      return res.status(503).json({ error: 'Admin not configured' });
+    }
+    return res.status(403).json({ error: 'Invalid admin passcode' });
+  }
+  return res.status(200).json({ ok: true });
 }
 
 async function handleStart(req: ApiRequest, res: ApiResponse) {

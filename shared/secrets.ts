@@ -21,6 +21,8 @@ const FIELD_TO_PROP: Record<string, keyof StoredSecrets> = {
 /**
  * Persist plaintext provider keys for a user, encrypted at rest with
  * ENCRYPTION_KEY (AES-256-GCM). Never stores plaintext secrets in MongoDB.
+ * Only the fields explicitly supplied in `plaintext` are updated — keys that
+ * are absent from the payload are left untouched (no accidental wipe).
  */
 export async function saveUserSecrets(
   username: string,
@@ -28,29 +30,22 @@ export async function saveUserSecrets(
 ): Promise<void> {
   if (!username || !username.trim()) return;
 
-  const encryptedKeys: Record<string, string> = {};
+  const $set: Record<string, string | Date> = {};
   for (const [field, prop] of Object.entries(FIELD_TO_PROP)) {
     const value = plaintext[prop];
     if (typeof value === 'string' && value.trim().length > 0) {
-      encryptedKeys[field] = encrypt(value.trim());
+      $set[`keys.${field}`] = encrypt(value.trim());
     }
   }
 
-  if (Object.keys(encryptedKeys).length === 0) return;
+  if (Object.keys($set).length === 0) return;
+
+  $set.updatedAt = new Date();
 
   await connectToDatabase();
   await UserSettingsModel.findOneAndUpdate(
     { username },
-    {
-      $set: {
-        'keys.groqKeyEncrypted': encryptedKeys.groqKeyEncrypted || '',
-        'keys.openrouterKeyEncrypted': encryptedKeys.openrouterKeyEncrypted || '',
-        'keys.nvidiaKeyEncrypted': encryptedKeys.nvidiaKeyEncrypted || '',
-        'keys.huggingfaceKeyEncrypted': encryptedKeys.huggingfaceKeyEncrypted || '',
-        'keys.githubTokenEncrypted': encryptedKeys.githubTokenEncrypted || '',
-        updatedAt: new Date(),
-      },
-    },
+    { $set },
     { new: true, upsert: true },
   );
 }

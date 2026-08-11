@@ -128,6 +128,21 @@ export async function requireAuth(req: Req & { locals?: { username: string } }, 
   return true;
 }
 
+/**
+ * Server-side admin gate. Compares the provided passcode against the
+ * ADMIN_PASSCODE environment variable using a timing-safe comparison.
+ * Returns false when the variable is unset or the passcode is wrong, so
+ * admin actions are fail-closed.
+ */
+export function verifyAdminPasscode(passcode: string): boolean {
+  const expected = process.env.ADMIN_PASSCODE || '';
+  if (!expected || !passcode) return false;
+  const a = Buffer.from(String(passcode));
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 // ---------------------------------------------------------------------------
 // Rate limiting (best-effort in-memory sliding window; note: serverless
 // instances are short-lived, so this throttles per warm instance)

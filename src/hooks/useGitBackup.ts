@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-export const useGitBackup = (username: string) => {
+export const useGitBackup = () => {
   const [backingUp, setBackingUp] = useState(false);
 
   const createCheckpoint = useCallback(
@@ -21,7 +21,7 @@ export const useGitBackup = (username: string) => {
       try {
         // Sync to MongoDB backup vault
         const res = await fetch(
-          `/api/database?action=saveCheckpoint&username=${encodeURIComponent(username)}`,
+          `/api/database?action=saveCheckpoint`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -45,7 +45,7 @@ export const useGitBackup = (username: string) => {
 
       return checkpointId;
     },
-    [username],
+    [],
   );
 
   const restoreCheckpoint = useCallback(
@@ -64,7 +64,7 @@ export const useGitBackup = (username: string) => {
       // Fallback to MongoDB retrieval
       try {
         const res = await fetch(
-          `/api/database?action=getCheckpoints&username=${encodeURIComponent(username)}`,
+          `/api/database?action=getCheckpoints`,
         );
         if (res.ok) {
           const checkpoints = (await res.json()) as Array<{
@@ -86,7 +86,7 @@ export const useGitBackup = (username: string) => {
         `Checkpoint registry file ${checkpointId} could not be extracted.`,
       );
     },
-    [username],
+    [],
   );
 
   return { createCheckpoint, restoreCheckpoint, backingUp };

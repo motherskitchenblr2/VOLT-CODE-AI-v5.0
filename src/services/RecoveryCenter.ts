@@ -24,7 +24,7 @@ export class RecoveryCenter {
     if (!rawData) {
       // Fetch fallback from MongoDB Vault
       const dbResponse = await fetch(
-        `/api/database?action=getCheckpoints&username=${encodeURIComponent(this.username)}`,
+        `/api/database?action=getCheckpoints`,
       );
       if (dbResponse.ok) {
         const checkpoints = (await dbResponse.json()) as Array<{
