@@ -2501,7 +2501,7 @@ const App: React.FC = () => {
             }`}
           >
             <Crown className="w-5 h-5" />
-            BOSS COCKPIT
+            VOLT HUB
           </div>
 
           <div
@@ -3601,7 +3601,7 @@ const App: React.FC = () => {
                 className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold transition-all cursor-pointer"
               >
                 <Crown className="w-4 h-4" />
-                BOSS COCKPIT
+                VOLT HUB
               </button>
             </div>
 
@@ -3637,7 +3637,7 @@ const App: React.FC = () => {
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] font-semibold hover:bg-black transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
-              BOSS COCKPIT
+              VOLT HUB
             </motion.button>
 
             <motion.button
