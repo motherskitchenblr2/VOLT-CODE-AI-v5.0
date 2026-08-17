@@ -461,20 +461,17 @@ export class MultiAgentOrchestrator {
     targetFile: string,
   ) {
     try {
-      await fetch(
-        `/api/database?action=saveWorkflowTask`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            taskId,
-            agentSpecialty: "Orchestrator",
-            status,
-            logs,
-            targetFile,
-          }),
-        },
-      );
+      await fetch(`/api/database?action=saveWorkflowTask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskId,
+          agentSpecialty: "Orchestrator",
+          status,
+          logs,
+          targetFile,
+        }),
+      });
     } catch (e) {
       console.error("Failed to log workflow task to DB:", e);
     }

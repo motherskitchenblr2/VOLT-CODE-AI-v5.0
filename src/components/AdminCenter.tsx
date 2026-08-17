@@ -133,9 +133,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
   const fetchDeployments = async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getDeployments`,
-      );
+      const res = await fetch(`/api/database?action=getDeployments`);
       if (res.ok) {
         const data = await res.json();
         setDeployments(data);
