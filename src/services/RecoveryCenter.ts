@@ -23,9 +23,7 @@ export class RecoveryCenter {
     const rawData = localStorage.getItem(`backup_${checkpointId}`);
     if (!rawData) {
       // Fetch fallback from MongoDB Vault
-      const dbResponse = await fetch(
-        `/api/database?action=getCheckpoints`,
-      );
+      const dbResponse = await fetch(`/api/database?action=getCheckpoints`);
       if (dbResponse.ok) {
         const checkpoints = (await dbResponse.json()) as Array<{
           checkpointId: string;

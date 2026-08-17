@@ -465,7 +465,9 @@ const App: React.FC = () => {
 
   // Secure vault: which secrets are stored encrypted in MongoDB
   const [vaultStored, setVaultStored] = useState(false);
-  const [vaultSyncState, setVaultSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [vaultSyncState, setVaultSyncState] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
 
   const fetchVaultStatus = useCallback(async () => {
     try {
@@ -491,18 +493,17 @@ const App: React.FC = () => {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/database?action=saveSecrets`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              keys: {
-                groq: groqKey,
-                openrouter: openrouterKey,
-                nvidia: nvidiaKey,
-                huggingface: huggingfaceKey,
-              },
-            }),
-          },
-        );
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            keys: {
+              groq: groqKey,
+              openrouter: openrouterKey,
+              nvidia: nvidiaKey,
+              huggingface: huggingfaceKey,
+            },
+          }),
+        });
         setVaultSyncState(res.ok ? "saved" : "error");
         if (res.ok) fetchVaultStatus();
       } catch {
@@ -510,7 +511,14 @@ const App: React.FC = () => {
       }
     }, 800);
     return () => clearTimeout(timer);
-  }, [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, fetchVaultStatus]);
+  }, [
+    groqKey,
+    openrouterKey,
+    nvidiaKey,
+    huggingfaceKey,
+    username,
+    fetchVaultStatus,
+  ]);
 
   // Auto-Language Deduction Warning Modal
   const [showLangAlert, setShowLangAlert] = useState(false);
@@ -668,9 +676,7 @@ const App: React.FC = () => {
 
   const loadCheckpoints = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getCheckpoints`,
-      );
+      const res = await fetch(`/api/database?action=getCheckpoints`);
       if (res.ok) {
         const data = await res.json();
         setCheckpoints(data || []);
@@ -725,11 +731,10 @@ const App: React.FC = () => {
 
       try {
         await fetch(`/api/database?action=saveCheckpoint`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          },
-        );
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
         addLog(
           `[RECOVERY] Checkpoint ${checkpointId} created and registered inside database registers.`,
           "success",
@@ -1644,9 +1649,17 @@ const App: React.FC = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ username: username.trim(), password: loginPassword }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password: loginPassword,
+        }),
       });
-      const data = (await res.json()) as { ok?: boolean; username?: string; error?: string; details?: string };
+      const data = (await res.json()) as {
+        ok?: boolean;
+        username?: string;
+        error?: string;
+        details?: string;
+      };
       if (!res.ok || !data.ok) {
         setLoginError(data.details || data.error || "Sign-in failed.");
         return;
@@ -1663,7 +1676,10 @@ const App: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth?action=logout", { method: "POST", credentials: "include" });
+      await fetch("/api/auth?action=logout", {
+        method: "POST",
+        credentials: "include",
+      });
     } catch {
       // Best-effort: still clear local session.
     }
@@ -1675,8 +1691,13 @@ const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/auth?action=me", { credentials: "include" });
-        const data = (await res.json()) as { authenticated?: boolean; username?: string };
+        const res = await fetch("/api/auth?action=me", {
+          credentials: "include",
+        });
+        const data = (await res.json()) as {
+          authenticated?: boolean;
+          username?: string;
+        };
         if (data.authenticated && data.username) {
           setIsLoggedIn(true);
           setUsername(data.username);
@@ -4181,7 +4202,9 @@ const App: React.FC = () => {
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
                 placeholder="Password (min 8 characters)"
-                autoComplete={loginMode === "register" ? "new-password" : "current-password"}
+                autoComplete={
+                  loginMode === "register" ? "new-password" : "current-password"
+                }
               />
 
               {loginError && (
