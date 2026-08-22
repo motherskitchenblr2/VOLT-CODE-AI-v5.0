@@ -56,7 +56,7 @@ def run_gh_api(token, endpoint, params=None):
 def scan_github_conflicts(token, account_label):
     """Scan all repos for a given GitHub token for PR conflicts."""
     # Step 1: Get all repos for the authenticated user/orgs
-    repos_data = run_gh_api(token, "/user/repos?per_page=100&affiliation=owner&type=all")
+    repos_data = run_gh_api(token, "/user/repos?per_page=100&type=owner&sort=full_name")
     if "error" in repos_data:
         # Try orgs? We'll just return error.
         return {"account": account_label, "error": f"Failed to list repos: {repos_data['error']}"}
@@ -134,7 +134,7 @@ def scan_github_conflicts(token, account_label):
 
 def check_github_security(token, account_label):
     """Check if security features are enabled for each repo; return list of repos missing key features."""
-    repos_data = run_gh_api(token, "/user/repos?per_page=100&affiliation=owner&type=all")
+    repos_data = run_gh_api(token, "/user/repos?per_page=100&type=owner&sort=full_name")
     if "error" in repos_data:
         return {"account": account_label, "error": f"Failed to list repos: {repos_data['error']}"}
     repos = repos_data if isinstance(repos_data, list) else []
