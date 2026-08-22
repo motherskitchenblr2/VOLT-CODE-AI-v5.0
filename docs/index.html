@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volt Code AI Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .status-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: #fafafa; }
+        .status-card h3 { margin-top: 0; color: #3498db; }
+        .metric { display: flex; justify-content: space-between; margin: 10px 0; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .metric:last-child { border-bottom: none; }
+        .value { font-weight: bold; }
+        .value.high { color: #e74c3c; }
+        .value.medium { color: #f39c12; }
+        .value.low { color: #27ae60; }
+        .table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .table th { background-color: #f2f2f2; }
+        .table tr:nth-child(even) { background-color: #f9f9f9; }
+        .pr-link { color: #3498db; text-decoration: none; }
+        .pr-link:hover { text-decoration: underline; }
+        .timestamp { color: #7f8c8d; font-size: 0.9em; margin-top: 20px; }
+        .loading, .error { text-align: center; padding: 20px; color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Volt Code AI Dashboard</h1>
+        <div class="timestamp" id="timestamp">Loading...</div>
+        <div id="loading" class="loading">Loading dashboard data...</div>
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="content" style="display:none;">
+            <div class="status-grid">
+                <div class="status-card">
+                    <h3>GitHub Accounts</h3>
+                    <div id="github-summary"></div>
+                </div>
+                <div class="status-card">
+                    <h3>Platform Health</h3>
+                    <div id="platform-summary"></div>
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>Active Conflicts</h3>
+                <div id="conflicts-list"></div>
+            </div>
+            <div class="status-card">
+                <h3>Unstable PRs (CI Failures)</h3>
+                <div id="unstable-list"></div>
+            </div>
+            <div class="status-card">
+                <h3>Missing Security Features</h3>
+                <div id="security-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch the status JSON from the same origin (assuming hosted on GitHub Pages)
+        // We'll fetch volt_status.json from the docs folder or root
+        async function loadStatus() {
+            try {
+                const response = fetch('volt_status.json')
+                    .then(r => r.json())
+                    .catch(() => fetch('docs/volt_status.json').then(r => r.json()));
+                const data = await response;
+                displayStatus(data);
+            } catch (err) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Failed to load status: ' + err.message;
+            }
+        }
+
+        function displayStatus(data) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('timestamp').textContent = 'Last updated: ' + new Date(data.timestamp).toLocaleString();
+            document.getElementById('content').style.display = 'block';
+
+            // Summary metrics
+            const summary = data.summary;
+            const githubAccounts = data.github_accounts || [];
+
+            // GitHub summary
+            let githubHTML = `<p><strong>Accounts scanned:</strong> ${githubAccounts.length}</p>`;
+            githubAccounts.forEach(acc => {
+                if (acc.error) {
+                    githubHTML += `<p style="color:red;">${acc.account}: ${acc.error}</p>`;
+                } else {
+                    const conflictsScan = acc.conflicts_scan || {};
+                    const securityCheck = acc.security_check || {};
+                    githubHTML += `<p><strong>${acc.account}</strong>: `;
+                    githubHTML += `${conflictsScan.scanned_repos || 0} repos, `;
+                    githubHTML += `${conflictsScan.total_open_prs || 0} open PRs`;
+                    githubHTML += `</p>`;
+                }
+            });
+            document.getElementById('github-summary').innerHTML = githubHTML;
+
+            // Platform health
+            let platformHTML = '';
+            const platforms = [
+                {name: 'Vercel', data: data.vercel},
+                {name: 'Supabase', data: data.supabase},
+                {name: 'Netlify', data: data.netlify}
+            ];
+            platforms.forEach(p => {
+                if (p.data.error) {
+                    platformHTML += `<p style="color:red;">${p.name}: ${p.data.error}</p>`;
+                } else {
+                    platformHTML += `<p><strong>${p.name}</strong>: OK`;
+                    if (p.data.user) platformHTML += ` (user: ${p.data.user})`;
+                    if (p.data.projects !== undefined) platformHTML += ` (projects: ${p.data.projects})`;
+                    if (p.data.sites !== undefined) platformHTML += ` (sites: ${p.data.sites})`;
+                    platformHTML += `</p>`;
+                }
+            });
+            document.getElementById('platform-summary').innerHTML = platformHTML;
+
+            // Conflicts list
+            const allConflicts = githubAccounts.flatMap(acc => 
+                (acc.conflicts_scan || {}).conflicts || []
+            );
+            if (allConflicts.length === 0) {
+                document.getElementById('conflicts-list').innerHTML = '<p>No conflicts detected.</p>';
+            } else {
+                const conflictsTable = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Repo</th>
+                                <th>PR #</th>
+                                <th>Title</th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allConflicts.map(c => `
+                                <tr>
+                                    <td>${c.account || 'unknown'}</td>
+                                    <td>${c.repo}</td>
+                                    <td><a href="${c.url}" target="_blank" class="pr-link">#${c.pr}</a></td>
+                                    <td>${c.title}</td>
+                                    <td><span class="value high">${c.state}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('conflicts-list').innerHTML = conflictsTable;
+            }
+
+            // Unstable list
+            const allUnstable = githubAccounts.flatMap(acc => 
+                (acc.conflicts_scan || {}).unstable || []
+            );
+            if (allUnstable.length === 0) {
+                document.getElementById('unstable-list').innerHTML = '<p>No unstable PRs.</p>';
+            } else {
+                const unstableTable = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Repo</th>
+                                <th>PR #</th>
+                                <th>Title</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allUnstable.map(u => `
+                                <tr>
+                                    <td>${u.account || 'unknown'}</td>
+                                    <td>${u.repo}</td>
+                                    <td><a href="${u.url}" target="_blank" class="pr-link">#${u.pr}</a></td>
+                                    <td>${u.title}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('unstable-list').innerHTML = unstableTable;
+            }
+
+            // Security list
+            const allMissing = githubAccounts.flatMap(acc => 
+                (acc.security_check || {}).missing_security || []
+            );
+            if (allMissing.length === 0) {
+                document.getElementById('security-list').innerHTML = '<p>All security features enabled.</p>';
+            } else {
+                const securityTable = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Repo</th>
+                                <th>Missing Features</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allMissing.map(m => `
+                                <tr>
+                                    <td>${m.account || 'unknown'}</td>
+                                    <td>${m.repo}</td>
+                                    <td>${m.missing.join(', ')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                document.getElementById('security-list').innerHTML = securityTable;
+            }
+        }
+
+        // Load on page load
+        window.addEventListener('load', loadStatus);
+    </script>
+</body>
+</html>
