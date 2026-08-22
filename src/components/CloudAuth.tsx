@@ -37,7 +37,9 @@ interface CloudItem {
 }
 
 export const CloudAuth: React.FC = () => {
-  const [status, setStatus] = useState<Record<string, ProviderStatus> | null>(null);
+  const [status, setStatus] = useState<Record<string, ProviderStatus> | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<string>("google");
@@ -46,29 +48,33 @@ export const CloudAuth: React.FC = () => {
   const [itemsLoading, setItemsLoading] = useState(false);
   const [itemsError, setItemsError] = useState("");
 
-  const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(
-    () => {
-      const params = new URLSearchParams(window.location.search);
-      if (!params.get("oauth")) return null;
-      const ok = params.get("oauth") === "success";
-      const provider = params.get("provider") || "";
-      const reason = params.get("reason") || "";
-      return ok
-        ? { type: "success" as const, text: `Connected ${provider} successfully.` }
-        : {
-            type: "error" as const,
-            text: `Connection failed${reason ? `: ${decodeURIComponent(reason)}` : ""}.`,
-          };
-    },
-  );
+  const [notice, setNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get("oauth")) return null;
+    const ok = params.get("oauth") === "success";
+    const provider = params.get("provider") || "";
+    const reason = params.get("reason") || "";
+    return ok
+      ? {
+          type: "success" as const,
+          text: `Connected ${provider} successfully.`,
+        }
+      : {
+          type: "error" as const,
+          text: `Connection failed${reason ? `: ${decodeURIComponent(reason)}` : ""}.`,
+        };
+  });
 
   const loadStatus = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/auth?action=status`,
-      );
-      const data = (await res.json()) as { providers?: Record<string, ProviderStatus> };
+      const res = await fetch(`/api/auth?action=status`);
+      const data = (await res.json()) as {
+        providers?: Record<string, ProviderStatus>;
+      };
       setStatus(data.providers || null);
     } catch {
       setStatus(null);
@@ -119,7 +125,11 @@ export const CloudAuth: React.FC = () => {
       const res = await fetch(
         `/api/cloud?provider=${provider}&service=${service}&max=10`,
       );
-      const data = (await res.json()) as { items?: CloudItem[]; error?: string; details?: string };
+      const data = (await res.json()) as {
+        items?: CloudItem[];
+        error?: string;
+        details?: string;
+      };
       if (!res.ok) {
         setItemsError(data.details || data.error || "Failed to load items.");
       } else {
@@ -165,7 +175,9 @@ export const CloudAuth: React.FC = () => {
       >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${meta.color}`}>
+            <div
+              className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${meta.color}`}
+            >
               {meta.icon}
             </div>
             <div>
@@ -186,7 +198,11 @@ export const CloudAuth: React.FC = () => {
                 disabled={isBusy}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-black bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-all cursor-pointer"
               >
-                {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <LogOut className="w-3 h-3" />}
+                {isBusy ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <LogOut className="w-3 h-3" />
+                )}
                 DISCONNECT
               </button>
             </div>
@@ -204,15 +220,23 @@ export const CloudAuth: React.FC = () => {
         {st?.connected && (
           <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2">
             {st.picture ? (
-              <img src={st.picture} alt="" className="w-8 h-8 rounded-full object-cover" />
+              <img
+                src={st.picture}
+                alt=""
+                className="w-8 h-8 rounded-full object-cover"
+              />
             ) : (
               <div className="w-8 h-8 rounded-full bg-[#FF5F00]/20 text-[#FF5F00] flex items-center justify-center font-black text-sm">
                 {(st.name || st.email || "?").charAt(0).toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
-              <div className="text-xs font-bold truncate">{st.name || st.email}</div>
-              <div className="text-[10px] text-white/50 truncate">{st.email}</div>
+              <div className="text-xs font-bold truncate">
+                {st.name || st.email}
+              </div>
+              <div className="text-[10px] text-white/50 truncate">
+                {st.email}
+              </div>
             </div>
             {st.services.length > 0 && (
               <div className="ml-auto text-[9px] text-white/40 uppercase tracking-wider">
@@ -236,24 +260,26 @@ export const CloudAuth: React.FC = () => {
             {providerMeta[activeProvider].label} Cloud Access
           </h3>
           <div className="flex gap-2">
-            {Object.keys(providerMeta).filter((p) => status?.[p]?.connected).map((p) => (
-              <button
-                key={p}
-                onClick={() => {
-                  setActiveProvider(p);
-                  const svc = (status?.[p]?.services || [])[0] || "drive";
-                  setActiveService(svc);
-                  loadItems(p, svc);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                  activeProvider === p
-                    ? "bg-[#FF5F00] text-black"
-                    : "bg-white/5 text-white/60 hover:bg-white/10"
-                }`}
-              >
-                {providerMeta[p].label}
-              </button>
-            ))}
+            {Object.keys(providerMeta)
+              .filter((p) => status?.[p]?.connected)
+              .map((p) => (
+                <button
+                  key={p}
+                  onClick={() => {
+                    setActiveProvider(p);
+                    const svc = (status?.[p]?.services || [])[0] || "drive";
+                    setActiveService(svc);
+                    loadItems(p, svc);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    activeProvider === p
+                      ? "bg-[#FF5F00] text-black"
+                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                  }`}
+                >
+                  {providerMeta[p].label}
+                </button>
+              ))}
             {st.services.map((svc) => (
               <button
                 key={svc}
@@ -272,14 +298,17 @@ export const CloudAuth: React.FC = () => {
               className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 text-white/60 hover:bg-white/10 transition-all cursor-pointer"
               title="Refresh"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${itemsLoading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${itemsLoading ? "animate-spin" : ""}`}
+              />
             </button>
           </div>
         </div>
 
         {itemsLoading && (
           <div className="flex items-center justify-center py-10 text-white/40 text-xs gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading {activeService}...
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading {activeService}
+            ...
           </div>
         )}
 
@@ -304,7 +333,7 @@ export const CloudAuth: React.FC = () => {
                 className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3"
               >
                 <div className="text-[#FF5F00]/70 shrink-0">
-                  {(activeService === "gmail" || activeService === "mail") ? (
+                  {activeService === "gmail" || activeService === "mail" ? (
                     <Mail className="w-4 h-4" />
                   ) : item.isFolder ? (
                     <Folder className="w-4 h-4" />
@@ -327,9 +356,12 @@ export const CloudAuth: React.FC = () => {
                           : ""}
                     </div>
                   )}
-                  {(activeService === "gmail" || activeService === "mail") && item.snippet && (
-                    <div className="text-[10px] text-white/40 truncate">{item.snippet}</div>
-                  )}
+                  {(activeService === "gmail" || activeService === "mail") &&
+                    item.snippet && (
+                      <div className="text-[10px] text-white/40 truncate">
+                        {item.snippet}
+                      </div>
+                    )}
                 </div>
                 <div className="text-[10px] text-white/40 shrink-0">
                   {activeService === "gmail" || activeService === "mail"
