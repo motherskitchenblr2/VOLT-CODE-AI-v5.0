@@ -145,12 +145,10 @@ export async function requireAuth(
 ): Promise<boolean> {
   const username = await getSessionUsername(req);
   if (!username) {
-    res
-      .status(401)
-      .json({
-        error: "Unauthorized",
-        details: "A valid session is required. Please sign in.",
-      });
+    res.status(401).json({
+      error: "Unauthorized",
+      details: "A valid session is required. Please sign in.",
+    });
     return false;
   }
   req.locals = { username };
