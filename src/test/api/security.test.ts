@@ -97,6 +97,7 @@ import {
   userExists,
   setPassword,
   getPasswordHash,
+  verifyAdminPasscode,
 } from '../../../shared/security';
 
 const makeRes = () => {
@@ -349,6 +350,41 @@ describe('api/utils/security', () => {
 
     it('getPasswordHash returns empty string for an unknown user', async () => {
       expect(await getPasswordHash('ghost')).toBe('');
+    });
+  });
+
+  describe('verifyAdminPasscode', () => {
+    it('accepts the matching ADMIN_PASSCODE', () => {
+      const original = process.env.ADMIN_PASSCODE;
+      process.env.ADMIN_PASSCODE = 's3cret-admin';
+      try {
+        expect(verifyAdminPasscode('s3cret-admin')).toBe(true);
+      } finally {
+        if (original === undefined) delete process.env.ADMIN_PASSCODE;
+        else process.env.ADMIN_PASSCODE = original;
+      }
+    });
+
+    it('rejects a wrong passcode', () => {
+      const original = process.env.ADMIN_PASSCODE;
+      process.env.ADMIN_PASSCODE = 's3cret-admin';
+      try {
+        expect(verifyAdminPasscode('nope')).toBe(false);
+        expect(verifyAdminPasscode('')).toBe(false);
+      } finally {
+        if (original === undefined) delete process.env.ADMIN_PASSCODE;
+        else process.env.ADMIN_PASSCODE = original;
+      }
+    });
+
+    it('fails closed when ADMIN_PASSCODE is unset', () => {
+      const original = process.env.ADMIN_PASSCODE;
+      delete process.env.ADMIN_PASSCODE;
+      try {
+        expect(verifyAdminPasscode('anything')).toBe(false);
+      } finally {
+        if (original !== undefined) process.env.ADMIN_PASSCODE = original;
+      }
     });
   });
 });

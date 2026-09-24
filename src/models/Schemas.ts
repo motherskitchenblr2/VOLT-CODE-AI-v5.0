@@ -216,6 +216,7 @@ export interface IDeployment extends Document {
   buildLogs: string;
   latency: number;
   creator: string;
+  simulated: boolean;
   createdAt: Date;
 }
 
@@ -231,6 +232,7 @@ const DeploymentSchema: Schema = new Schema({
   buildLogs: { type: String, default: "" },
   latency: { type: Number, default: 0 },
   creator: { type: String, default: "SYSTEM" },
+  simulated: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
 });
 
