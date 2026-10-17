@@ -1,6 +1,6 @@
 export interface GraphNode {
   id: string; // File path or dependency name
-  type: 'component' | 'hook' | 'service' | 'api' | 'database' | 'dependency';
+  type: "component" | "hook" | "service" | "api" | "database" | "dependency";
   dependencies: string[];
 }
 
@@ -16,32 +16,39 @@ export class RepoIntelligence {
   private graph: Map<string, GraphNode> = new Map();
 
   // Multi-layered Knowledge Graph Registry (Gap 9)
-  public buildKnowledgeGraph(files: { path: string; content: string }[], dependenciesList: string[]) {
+  public buildKnowledgeGraph(
+    files: { path: string; content: string }[],
+    dependenciesList: string[],
+  ) {
     this.graph.clear();
 
     // 1. Registry dependencies first
     for (const dep of dependenciesList) {
-      this.graph.set(`dep:${dep}`, { id: dep, type: 'dependency', dependencies: [] });
+      this.graph.set(`dep:${dep}`, {
+        id: dep,
+        type: "dependency",
+        dependencies: [],
+      });
     }
 
     for (const file of files) {
       const id = file.path;
-      let type: GraphNode['type'] = 'component';
-      
-      if (id.includes('/hooks/')) type = 'hook';
-      else if (id.includes('/services/')) type = 'service';
-      else if (id.includes('/api/')) type = 'api';
-      else if (id.includes('/models/')) type = 'database';
+      let type: GraphNode["type"] = "component";
+
+      if (id.includes("/hooks/")) type = "hook";
+      else if (id.includes("/services/")) type = "service";
+      else if (id.includes("/api/")) type = "api";
+      else if (id.includes("/models/")) type = "database";
 
       const foundDeps: string[] = [];
-      const lines = file.content.split('\n');
+      const lines = file.content.split("\n");
 
       for (const line of lines) {
         // Detect component/hook imports
         const match = line.match(/import\s+.*\s+from\s+['"](.*)['"]/);
         if (match) {
           const path = match[1];
-          if (path.startsWith('.')) {
+          if (path.startsWith(".")) {
             foundDeps.push(path);
           } else {
             foundDeps.push(`dep:${path}`);
@@ -58,7 +65,7 @@ export class RepoIntelligence {
     filesCount: number,
     lintWarnings: number,
     testPassRate: number, // 0 to 100
-    circularCyclesCount: number
+    circularCyclesCount: number,
   ): HealthScoreDetails {
     let totalScore = 100;
 
@@ -67,14 +74,17 @@ export class RepoIntelligence {
     const circularPenalty = Math.min(circularCyclesCount * 5, 25); // Max 25 penalty points
     const testPenalty = (100 - testPassRate) * 0.5; // Max 50 penalty points
 
-    totalScore = Math.max(0, totalScore - lintPenalty - circularPenalty - testPenalty);
+    totalScore = Math.max(
+      0,
+      totalScore - lintPenalty - circularPenalty - testPenalty,
+    );
 
     return {
       totalScore: Math.round(totalScore),
       lintWarnings,
       complexityPenalty: Math.round(lintPenalty),
       circularCyclesCount,
-      testPassRate
+      testPassRate,
     };
   }
 
@@ -137,20 +147,20 @@ export class RepoIntelligence {
   }
 
   private resolvePath(currentFile: string, importPath: string): string | null {
-    if (!importPath.startsWith('.')) return null; // Ignore node_modules
-    const parts = currentFile.split('/');
+    if (!importPath.startsWith(".")) return null; // Ignore node_modules
+    const parts = currentFile.split("/");
     parts.pop(); // Remove file name
-    const impParts = importPath.split('/');
-    
+    const impParts = importPath.split("/");
+
     for (const part of impParts) {
-      if (part === '.') continue;
-      if (part === '..') parts.pop();
+      if (part === ".") continue;
+      if (part === "..") parts.pop();
       else parts.push(part);
     }
 
-    let finalPath = parts.join('/');
-    if (!finalPath.endsWith('.ts') && !finalPath.endsWith('.tsx')) {
-      finalPath += '.tsx'; // Default fallback extension
+    let finalPath = parts.join("/");
+    if (!finalPath.endsWith(".ts") && !finalPath.endsWith(".tsx")) {
+      finalPath += ".tsx"; // Default fallback extension
     }
     return finalPath;
   }

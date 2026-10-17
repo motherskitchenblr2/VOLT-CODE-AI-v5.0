@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { AudioEngine, RecordingState, getAudioEngine } from '../services/AudioEngine';
-import { Mic, Square, Play, Pause, Download, Volume2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  AudioEngine,
+  RecordingState,
+  getAudioEngine,
+} from "../services/AudioEngine";
+import { Mic, Square, Play, Pause, Download, Volume2 } from "lucide-react";
 
 interface AudioInterfaceProps {
-  language: 'en' | 'hi';
+  language: "en" | "hi";
   onRecordingComplete?: (audioBlob: Blob, transcript?: string) => void;
   onPlaybackStart?: () => void;
   onPlaybackEnd?: () => void;
@@ -13,7 +17,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   language,
   onRecordingComplete,
   onPlaybackStart,
-  onPlaybackEnd
+  onPlaybackEnd,
 }) => {
   const [audioEngine] = useState<AudioEngine | null>(() => {
     try {
@@ -26,12 +30,12 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   const [recordingState, setRecordingState] = useState<RecordingState>({
     isRecording: false,
     isPaused: false,
-    duration: 0
+    duration: 0,
   });
 
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [transcript, setTranscript] = useState<string>('');
+  const [transcript, setTranscript] = useState<string>("");
 
   const isSupported = audioEngine ? AudioEngine.isSupported() : false;
 
@@ -45,11 +49,15 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   const startRecording = async () => {
     try {
       if (!audioEngine) return;
-      setTranscript('');
+      setTranscript("");
       await audioEngine.startRecording();
     } catch (error) {
-      console.error('[AudioInterface] Failed to start recording:', error);
-      alert(language === 'en' ? 'Failed to access microphone' : 'माइक्रोफ़ोन एक्सेस विफल रहा');
+      console.error("[AudioInterface] Failed to start recording:", error);
+      alert(
+        language === "en"
+          ? "Failed to access microphone"
+          : "माइक्रोफ़ोन एक्सेस विफल रहा",
+      );
     }
   };
 
@@ -76,11 +84,17 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
 
       // Try to transcribe
       try {
-        const detectedLanguage = language === 'en' ? 'en-US' : 'hi-IN';
-        const transcribedText = await audioEngine.speechToText(audioBlob, detectedLanguage as any);
+        const detectedLanguage = language === "en" ? "en-US" : "hi-IN";
+        const transcribedText = await audioEngine.speechToText(
+          audioBlob,
+          detectedLanguage,
+        );
         setTranscript(transcribedText);
       } catch (error) {
-        console.warn('[AudioInterface] Transcription failed, continuing without it:', error);
+        console.warn(
+          "[AudioInterface] Transcription failed, continuing without it:",
+          error,
+        );
       }
 
       setIsProcessing(false);
@@ -88,7 +102,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
       // Notify parent
       onRecordingComplete?.(audioBlob, transcript);
     } catch (error) {
-      console.error('[AudioInterface] Failed to stop recording:', error);
+      console.error("[AudioInterface] Failed to stop recording:", error);
       setIsProcessing(false);
     }
   };
@@ -101,7 +115,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
       await audioEngine.playAudio(recordedAudioUrl);
       onPlaybackEnd?.();
     } catch (error) {
-      console.error('[AudioInterface] Failed to play audio:', error);
+      console.error("[AudioInterface] Failed to play audio:", error);
       onPlaybackEnd?.();
     }
   };
@@ -109,7 +123,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   const downloadRecording = () => {
     if (!recordedAudioUrl) return;
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = recordedAudioUrl;
     link.download = `recording-${Date.now()}.webm`;
     link.click();
@@ -117,7 +131,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
 
   const clearRecording = () => {
     setRecordedAudioUrl(null);
-    setTranscript('');
+    setTranscript("");
   };
 
   if (!isSupported) {
@@ -126,9 +140,9 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
         <div className="text-center">
           <div className="text-3xl mb-3">🔊</div>
           <p className="text-red-400 font-medium">
-            {language === 'en'
-              ? 'Audio not supported in your browser'
-              : 'आपके ब्राउज़र में ऑडियो समर्थित नहीं है'}
+            {language === "en"
+              ? "Audio not supported in your browser"
+              : "आपके ब्राउज़र में ऑडियो समर्थित नहीं है"}
           </p>
         </div>
       </div>
@@ -144,7 +158,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
             <Mic className="w-4 h-4 text-white" />
           </div>
           <h3 className="font-bold text-white text-sm">
-            {language === 'en' ? 'Audio' : 'ऑडियो'}
+            {language === "en" ? "Audio" : "ऑडियो"}
           </h3>
         </div>
       </div>
@@ -160,7 +174,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               className="px-6 py-3 rounded-full bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold hover:from-red-700 hover:to-orange-700 disabled:opacity-50 transition-all flex items-center gap-2"
             >
               <Mic className="w-5 h-5" />
-              {language === 'en' ? 'Start Recording' : 'रिकॉर्डिंग शुरू करें'}
+              {language === "en" ? "Start Recording" : "रिकॉर्डिंग शुरू करें"}
             </button>
           </>
         )}
@@ -188,7 +202,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
                   className="px-4 py-2 rounded-lg bg-yellow-600 text-white text-sm font-semibold hover:bg-yellow-700 transition-colors flex items-center gap-2"
                 >
                   <Pause className="w-4 h-4" />
-                  {language === 'en' ? 'Pause' : 'रोकें'}
+                  {language === "en" ? "Pause" : "रोकें"}
                 </button>
               ) : (
                 <button
@@ -196,7 +210,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
                   className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                   <Play className="w-4 h-4" />
-                  {language === 'en' ? 'Resume' : 'फिर से शुरू करें'}
+                  {language === "en" ? "Resume" : "फिर से शुरू करें"}
                 </button>
               )}
 
@@ -206,7 +220,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
                 className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-2"
               >
                 <Square className="w-4 h-4" />
-                {language === 'en' ? 'Stop' : 'रोकें'}
+                {language === "en" ? "Stop" : "रोकें"}
               </button>
             </div>
           </div>
@@ -216,13 +230,13 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
           <div className="w-full space-y-3">
             <div className="p-3 rounded-lg bg-green-900/20 border border-green-500/50">
               <p className="text-xs text-green-300 font-semibold mb-2">
-                {language === 'en' ? 'Recording Saved' : 'रिकॉर्डिंग सहेजी गई'}
+                {language === "en" ? "Recording Saved" : "रिकॉर्डिंग सहेजी गई"}
               </p>
 
               {transcript && (
                 <div className="text-xs text-white/80 bg-black/30 p-2 rounded mb-2 max-h-16 overflow-y-auto">
                   <p className="font-semibold mb-1">
-                    {language === 'en' ? 'Transcript:' : 'ट्रांस्क्रिप्ट:'}
+                    {language === "en" ? "Transcript:" : "ट्रांस्क्रिप्ट:"}
                   </p>
                   <p>{transcript}</p>
                 </div>
@@ -234,7 +248,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
                   className="flex-1 px-3 py-1.5 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
                 >
                   <Volume2 className="w-3 h-3" />
-                  {language === 'en' ? 'Play' : 'चलाएं'}
+                  {language === "en" ? "Play" : "चलाएं"}
                 </button>
 
                 <button
@@ -248,7 +262,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
                   onClick={clearRecording}
                   className="px-3 py-1.5 rounded bg-red-600/50 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
                 >
-                  {language === 'en' ? 'Clear' : 'साफ़'}
+                  {language === "en" ? "Clear" : "साफ़"}
                 </button>
               </div>
             </div>
@@ -261,7 +275,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               <div className="w-8 h-8 border-4 border-white/20 border-t-blue-500 rounded-full" />
             </div>
             <p className="text-xs text-white/60 mt-2">
-              {language === 'en' ? 'Processing...' : 'प्रक्रिया जारी है...'}
+              {language === "en" ? "Processing..." : "प्रक्रिया जारी है..."}
             </p>
           </div>
         )}

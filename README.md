@@ -26,6 +26,7 @@
 </p>
 
 ### 🎨 Core Color Variable Manifest
+
 <table width="100%">
   <thead>
     <tr style="background-color: #1e1e1e;">
@@ -99,6 +100,7 @@ Replaces conventional green/red code comparison layouts with the custom DesignAr
 ## 💻 Technical Orchestration & Setup
 
 ### Environment Provisioning
+
 ```bash
 # Verify system engine dependencies before setup
 node --version # Requires Node.js LTS v18+
@@ -155,7 +157,9 @@ npm run dev
 /* Core parameters extracted from app.css for workspace consistency */
 .editor-container:focus-within {
   border-color: var(--neon-orange);
-  box-shadow: var(--orange-glow), 0 4px 20px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    var(--orange-glow),
+    0 4px 20px rgba(0, 0, 0, 0.7);
 }
 
 .monaco-editor .cursor {
@@ -163,7 +167,6 @@ npm run dev
   border-left: 3px solid var(--neon-orange) !important;
   box-shadow: var(--orange-glow);
 }
-
 ```
 
 <hr style="border: 0.5px solid rgba(255, 95, 31, 0.2);" />

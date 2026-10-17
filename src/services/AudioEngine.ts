@@ -14,6 +14,50 @@ export interface RecordingState {
   audioBlob?: Blob;
 }
 
+interface WindowWithWebkitAudioContext {
+  webkitAudioContext?: typeof AudioContext;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence?: number;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionResultList {
+  readonly length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionEventLike {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEventLike {
+  readonly error: string;
+}
+
+interface SpeechRecognitionLike {
+  language: string;
+  continuous: boolean;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface WindowWithSpeechRecognition {
+  SpeechRecognition?: new () => SpeechRecognitionLike;
+  webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+}
+
 export class AudioEngine {
   private mediaRecorder: MediaRecorder | null = null;
   private audioContext: AudioContext | null = null;
@@ -21,23 +65,28 @@ export class AudioEngine {
   private recordingState: RecordingState = {
     isRecording: false,
     isPaused: false,
-    duration: 0
+    duration: 0,
   };
   private recordedChunks: Blob[] = [];
   private startTime: number = 0;
   private timerInterval: number | null = null;
   private recordingListeners: ((state: RecordingState) => void)[] = [];
 
-  constructor(private config: AudioConfig = {
-    sampleRate: 16000,
-    channels: 1,
-    bitsPerSample: 16
-  }) {}
+  constructor(
+    private config: AudioConfig = {
+      sampleRate: 16000,
+      channels: 1,
+      bitsPerSample: 16,
+    },
+  ) {}
 
   // Initialize audio context
   async initialize(): Promise<void> {
     if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextCtor = (window.AudioContext ||
+        (window as WindowWithWebkitAudioContext)
+          .webkitAudioContext) as typeof AudioContext;
+      this.audioContext = new AudioContextCtor();
     }
   }
 
@@ -52,12 +101,12 @@ export class AudioEngine {
           sampleRate: this.config.sampleRate,
           channelCount: this.config.channels,
           echoCancellation: true,
-          noiseSuppression: true
-        }
+          noiseSuppression: true,
+        },
       });
 
       this.mediaRecorder = new MediaRecorder(this.stream, {
-        mimeType: 'audio/webm;codecs=opus'
+        mimeType: "audio/webm;codecs=opus",
       });
 
       this.recordedChunks = [];
@@ -73,7 +122,7 @@ export class AudioEngine {
       // Handle stop
       this.mediaRecorder.onstop = () => {
         this.recordingState.audioBlob = new Blob(this.recordedChunks, {
-          type: 'audio/webm'
+          type: "audio/webm",
         });
       };
 
@@ -85,20 +134,26 @@ export class AudioEngine {
 
       // Update duration timer
       this.timerInterval = window.setInterval(() => {
-        this.recordingState.duration = Math.floor((Date.now() - this.startTime) / 1000);
+        this.recordingState.duration = Math.floor(
+          (Date.now() - this.startTime) / 1000,
+        );
         this.notifyRecordingStateChange();
       }, 100);
 
       this.notifyRecordingStateChange();
     } catch (error) {
-      console.error('[AudioEngine] Failed to start recording:', error);
+      console.error("[AudioEngine] Failed to start recording:", error);
       throw error;
     }
   }
 
   // Pause recording
   pauseRecording(): void {
-    if (this.mediaRecorder && this.recordingState.isRecording && !this.recordingState.isPaused) {
+    if (
+      this.mediaRecorder &&
+      this.recordingState.isRecording &&
+      !this.recordingState.isPaused
+    ) {
       this.mediaRecorder.pause();
       this.recordingState.isPaused = true;
 
@@ -112,12 +167,18 @@ export class AudioEngine {
 
   // Resume recording
   resumeRecording(): void {
-    if (this.mediaRecorder && this.recordingState.isRecording && this.recordingState.isPaused) {
+    if (
+      this.mediaRecorder &&
+      this.recordingState.isRecording &&
+      this.recordingState.isPaused
+    ) {
       this.mediaRecorder.resume();
       this.recordingState.isPaused = false;
 
       this.timerInterval = window.setInterval(() => {
-        this.recordingState.duration = Math.floor((Date.now() - this.startTime) / 1000);
+        this.recordingState.duration = Math.floor(
+          (Date.now() - this.startTime) / 1000,
+        );
         this.notifyRecordingStateChange();
       }, 100);
 
@@ -129,7 +190,7 @@ export class AudioEngine {
   stopRecording(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder || !this.recordingState.isRecording) {
-        reject(new Error('No active recording'));
+        reject(new Error("No active recording"));
         return;
       }
 
@@ -144,11 +205,11 @@ export class AudioEngine {
 
         // Stop all tracks
         if (this.stream) {
-          this.stream.getTracks().forEach(track => track.stop());
+          this.stream.getTracks().forEach((track) => track.stop());
           this.stream = null;
         }
 
-        const audioBlob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(this.recordedChunks, { type: "audio/webm" });
         this.recordingState.audioBlob = audioBlob;
         this.notifyRecordingStateChange();
 
@@ -175,7 +236,7 @@ export class AudioEngine {
       };
 
       audio.onerror = () => {
-        reject(new Error('Failed to play audio'));
+        reject(new Error("Failed to play audio"));
       };
 
       audio.play().catch(reject);
@@ -183,12 +244,19 @@ export class AudioEngine {
   }
 
   // Speech to text (using Web Speech API)
-  async speechToText(audioBlob: Blob, language: 'en-US' | 'hi-IN' = 'en-US'): Promise<string> {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  async speechToText(
+    audioBlob: Blob,
+    language: "en-US" | "hi-IN" = "en-US",
+  ): Promise<string> {
+    const win = window as WindowWithSpeechRecognition;
+    const SpeechRecognition =
+      win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      console.warn('[AudioEngine] Speech Recognition not supported, returning empty text');
-      return '';
+      console.warn(
+        "[AudioEngine] Speech Recognition not supported, returning empty text",
+      );
+      return "";
     }
 
     return new Promise((resolve, reject) => {
@@ -198,15 +266,15 @@ export class AudioEngine {
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
-      recognition.onresult = (event: any) => {
-        let transcript = '';
+      recognition.onresult = (event: SpeechRecognitionEventLike) => {
+        let transcript = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
         }
         resolve(transcript);
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
         reject(new Error(`Speech recognition error: ${event.error}`));
       };
 
@@ -227,17 +295,20 @@ export class AudioEngine {
   }
 
   // Text to speech (using Web Speech API)
-  async textToSpeech(text: string, language: 'en' | 'hi' = 'en'): Promise<void> {
+  async textToSpeech(
+    text: string,
+    language: "en" | "hi" = "en",
+  ): Promise<void> {
     const utterance = new SpeechSynthesisUtterance(text);
 
-    utterance.lang = language === 'en' ? 'en-US' : 'hi-IN';
+    utterance.lang = language === "en" ? "en-US" : "hi-IN";
     utterance.rate = 0.9;
     utterance.pitch = 1;
     utterance.volume = 1;
 
     return new Promise((resolve, reject) => {
       utterance.onend = () => resolve();
-      utterance.onerror = () => reject(new Error('Text-to-speech failed'));
+      utterance.onerror = () => reject(new Error("Text-to-speech failed"));
 
       window.speechSynthesis.cancel(); // Cancel any previous utterance
       window.speechSynthesis.speak(utterance);
@@ -250,16 +321,22 @@ export class AudioEngine {
   }
 
   // Subscribe to recording state changes
-  onRecordingStateChange(listener: (state: RecordingState) => void): () => void {
+  onRecordingStateChange(
+    listener: (state: RecordingState) => void,
+  ): () => void {
     this.recordingListeners.push(listener);
     return () => {
-      this.recordingListeners = this.recordingListeners.filter(l => l !== listener);
+      this.recordingListeners = this.recordingListeners.filter(
+        (l) => l !== listener,
+      );
     };
   }
 
   // Notify listeners
   private notifyRecordingStateChange(): void {
-    this.recordingListeners.forEach(listener => listener({ ...this.recordingState }));
+    this.recordingListeners.forEach((listener) =>
+      listener({ ...this.recordingState }),
+    );
   }
 
   // Clean up
@@ -269,7 +346,7 @@ export class AudioEngine {
     }
 
     if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
+      this.stream.getTracks().forEach((track) => track.stop());
     }
 
     if (this.audioContext) {
@@ -284,15 +361,16 @@ export class AudioEngine {
   static formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   }
 
   // Check browser support
   static isSupported(): boolean {
     return !!(
-      (window.AudioContext || (window as any).webkitAudioContext) &&
-      typeof SpeechSynthesisUtterance !== 'undefined' &&
-      typeof navigator.mediaDevices?.getUserMedia === 'function'
+      (window.AudioContext ||
+        (window as WindowWithWebkitAudioContext).webkitAudioContext) &&
+      typeof SpeechSynthesisUtterance !== "undefined" &&
+      typeof navigator.mediaDevices?.getUserMedia === "function"
     );
   }
 }

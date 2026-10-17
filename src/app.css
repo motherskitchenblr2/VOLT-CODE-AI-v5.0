@@ -5,20 +5,23 @@
   --charcoal: #121212;
   --charcoal-light: #1e1e1e;
   --charcoal-muted: #2a2a2a;
-  --neon-orange: #FF5F1F;
+  --neon-orange: #ff5f1f;
   --neon-orange-dim: rgba(255, 95, 31, 0.3);
   --orange-glow: 0 0 15px rgba(255, 95, 31, 0.5);
   --orange-glow-intense: 0 0 25px rgba(255, 95, 31, 0.85);
   --text-main: #e0e0e0;
   --text-muted: #888888;
-  --font-mono: 'Fira Code', 'Courier New', Courier, monospace;
+  --font-mono: "Fira Code", "Courier New", Courier, monospace;
 }
 
 /* Base resets for the editor app */
 body {
   background-color: var(--charcoal);
   color: var(--text-main);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
@@ -61,7 +64,7 @@ body {
   cursor: pointer;
 }
 
-.sidebar-icon:hover, 
+.sidebar-icon:hover,
 .sidebar-icon.active {
   color: var(--neon-orange);
   background: rgba(255, 95, 31, 0.1);
@@ -93,7 +96,9 @@ body {
 
 .editor-container:focus-within {
   border-color: var(--neon-orange);
-  box-shadow: var(--orange-glow), 0 4px 20px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    var(--orange-glow),
+    0 4px 20px rgba(0, 0, 0, 0.7);
 }
 
 /* Custom Neon Thick Cursor Configuration */
@@ -117,7 +122,9 @@ body {
   border-radius: 6px;
   box-shadow: var(--orange-glow);
   cursor: pointer;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s ease;
 }
 
 .fix-all-btn:hover {
@@ -180,10 +187,20 @@ body {
 
 /* The Scanning Laser Line Loader */
 @keyframes scan {
-  0% { top: 0%; opacity: 0; }
-  5% { opacity: 1; }
-  95% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
 }
 
 .scanner-line {
@@ -191,7 +208,12 @@ body {
   left: 0;
   height: 3px;
   width: 100%;
-  background: linear-gradient(90deg, transparent, var(--neon-orange), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--neon-orange),
+    transparent
+  );
   box-shadow: var(--orange-glow-intense);
   animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   pointer-events: none;
@@ -200,8 +222,12 @@ body {
 
 /* Glowing animation for critical warnings */
 @keyframes pulse-border {
-  0% { box-shadow: 0 0 5px rgba(255, 95, 31, 0.4); }
-  100% { box-shadow: 0 0 15px rgba(255, 95, 31, 0.8); }
+  0% {
+    box-shadow: 0 0 5px rgba(255, 95, 31, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(255, 95, 31, 0.8);
+  }
 }
 
 /* Global custom scrollbar for that sleek terminal look */

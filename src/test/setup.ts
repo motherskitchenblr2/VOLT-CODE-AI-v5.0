@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
-if (typeof globalThis !== 'undefined') {
+if (typeof globalThis !== "undefined") {
   class InMemoryStorage {
     private store: Record<string, string> = {};
     getItem(key: string) {
@@ -23,12 +23,12 @@ if (typeof globalThis !== 'undefined') {
     }
   }
 
-  Object.defineProperty(globalThis, 'localStorage', {
+  Object.defineProperty(globalThis, "localStorage", {
     value: new InMemoryStorage(),
     writable: true,
     configurable: true,
   });
-  Object.defineProperty(globalThis, 'sessionStorage', {
+  Object.defineProperty(globalThis, "sessionStorage", {
     value: new InMemoryStorage(),
     writable: true,
     configurable: true,

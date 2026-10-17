@@ -133,10 +133,14 @@ jobs:
               head: context.payload.pull_request.head.sha,
             });
 
+            const filesChanged = comparison?.files?.length ?? 0;
+            const additions = comparison?.stats?.additions ?? 0;
+            const deletions = comparison?.stats?.deletions ?? 0;
+
             let stats = `## 📊 PR Statistics\n\n`;
-            stats += `- **Files Changed**: ${comparison.files.length}\n`;
-            stats += `- **Additions**: +${comparison.stats.additions}\n`;
-            stats += `- **Deletions**: -${comparison.stats.deletions}\n`;
+            stats += `- **Files Changed**: ${filesChanged}\n`;
+            stats += `- **Additions**: +${additions}\n`;
+            stats += `- **Deletions**: -${deletions}\n`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
