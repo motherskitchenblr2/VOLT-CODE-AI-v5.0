@@ -26,3 +26,17 @@ dist-ssr
 coverage/
 lint-report.json
 
+# Local agent/tool configs (not part of the app)
+.blackbox/
+.continue/
+.gatekeeper/
+.qwen/
+Git Pull Errors.pdf
+
+# Vercel local state
+.vercel/
+
+# WIP http adapter (not yet wired into any endpoint)
+api/utils/http.ts
+src/test/api/http-adapter.test.ts
+

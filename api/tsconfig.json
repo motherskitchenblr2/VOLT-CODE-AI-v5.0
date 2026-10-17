@@ -3,12 +3,13 @@
     "composite": true,
     "tsBuildInfoFile": "../node_modules/.tmp/tsconfig.api.tsbuildinfo",
     "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "types": ["node"],
     "skipLibCheck": true,
+    "rootDir": "..",
     "outDir": "../node_modules/.tmp/api",
     "strict": true
   },
-  "include": ["openrouter.ts", "utils/**/*.ts"]
+  "include": ["openrouter.ts", "models.ts", "database.ts", "deploy.ts", "provider-validate.ts", "auth.ts", "cloud.ts", "../shared/**/*.ts", "../src/models/**/*.ts"]
 }

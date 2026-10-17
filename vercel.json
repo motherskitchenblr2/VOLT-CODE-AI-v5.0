@@ -1,0 +1,43 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "outputDirectory": "dist",
+  "env": {},
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "functions": {
+    "api/auth.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/cloud.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/database.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/deploy.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/models.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/openrouter.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/provider-validate.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  }
+}

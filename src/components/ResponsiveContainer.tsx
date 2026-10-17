@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
-import { 
-  Shield, 
-  ShieldAlert, 
-  AlertTriangle, 
-  TrendingUp, 
-  Activity, 
-  Sparkles, 
-  Zap, 
-  Users, 
-  Play, 
-  History, 
-  Settings, 
-  Wrench, 
-  HelpCircle, 
-  RefreshCw 
-} from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Shield,
+  AlertTriangle,
+  TrendingUp,
+  Activity,
+  Zap,
+  Users,
+  RefreshCw,
+} from "lucide-react";
 
 interface ResponsiveContainerProps {
   sidebar: React.ReactNode;
@@ -22,7 +15,19 @@ interface ResponsiveContainerProps {
   terminal: React.ReactNode;
   diagnostics: React.ReactNode;
   currentView: string;
-  setCurrentView: (view: 'editor' | 'history' | 'settings' | 'sentinel' | 'about' | 'github' | 'admin' | 'diagnostics' | 'terminal' | 'boss') => void;
+  setCurrentView: (
+    view:
+      | "editor"
+      | "history"
+      | "settings"
+      | "sentinel"
+      | "about"
+      | "github"
+      | "admin"
+      | "diagnostics"
+      | "terminal"
+      | "boss",
+  ) => void;
 }
 
 interface GearWatermarkProps {
@@ -30,13 +35,13 @@ interface GearWatermarkProps {
 }
 
 const GearWatermark: React.FC<GearWatermarkProps> = ({ animateClass }) => (
-  <svg 
-    className={`absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 pointer-events-none z-0 ${animateClass}`} 
-    viewBox="0 0 100 100" 
+  <svg
+    className={`absolute right-[-10px] top-[-10px] opacity-10 text-white/30 w-28 h-28 pointer-events-none z-0 ${animateClass}`}
+    viewBox="0 0 100 100"
     fill="currentColor"
   >
-    <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z"/>
-    <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z"/>
+    <path d="M50 35c-8.3 0-15 6.7-15 15s6.7 15 15 15 15-6.7 15-15-6.7-15-15-15zm0 24c-5 0-9-4-9-9s4-9 9-9 9 4 9 9-4 9-9 9z" />
+    <path d="M92 46.5l-6.8-1.1c-.6-2.1-1.6-4.1-2.9-5.9l4-5.6c.7-.9.6-2.3-.3-3.1L81 25.8c-.9-.9-2.3-.9-3.1-.3l-5.6 4c-1.8-1.3-3.8-2.3-5.9-2.9L65.3 20c-.2-1.1-1.2-2-2.4-2H57.1c-1.2 0-2.2.9-2.4 2l-1.1 6.8c-2.1.6-4.1 1.6-5.9 2.9l-5.6-4c-.9-.7-2.3-.6-3.1.3L34.2 31c-.9.9-.9 2.3-.3 3.1l4 5.6c-1.3 1.8-2.3 3.8-2.9 5.9L28.2 46.7c-1.1.2-2 1.2-2 2.4v5.8c0 1.2.9 2.2 2 2.4l6.8 1.1c.6 2.1 1.6 4.1 2.9 5.9l-4 5.6c-.7.9-.6 2.3.3 3.1l5 5.9c.9.9 2.3.9 3.1.3l5.6-4c1.8 1.3 3.8 2.3-5.9 2.9l1.1 6.8c.2 1.1 1.2 2 2.4 2h5.8c1.2 0 2.2-.9 2.4-2l1.1-6.8c2.1-.6 4.1-1.6 5.9-2.9l5.6 4c.9.7 2.3.6 3.1-.3l5-5c.9-.9.9-2.3.3-3.1l-4-5.6c1.3-1.8 2.3-3.8 2.9-5.9l6.8-1.1c1.1-.2 2-1.2 2-2.4v-5.8c-.1-1.2-1-2.2-2.1-2.4z" />
   </svg>
 );
 
@@ -46,18 +51,22 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   terminal,
   diagnostics,
   currentView,
-  setCurrentView
+  setCurrentView,
 }) => {
-  const [activeTab, setActiveTab] = useState<'security' | 'performance' | 'activity'>('activity');
+  const [activeTab, setActiveTab] = useState<
+    "security" | "performance" | "activity"
+  >("activity");
 
   const renderSkeuoCards = () => {
     return (
       <div className="space-y-4">
         {/* Card 1: Active Threats (Shown for security, activity) */}
-        {(activeTab === 'security' || activeTab === 'activity') && (
+        {(activeTab === "security" || activeTab === "activity") && (
           <div className="relative overflow-hidden machined-plate border-l-4 border-[#FF3B30] p-5 flex items-center justify-between red-neon-glow">
             <div className="space-y-1 z-10">
-              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Active Threats</span>
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">
+                Active Threats
+              </span>
               <div className="text-3xl font-black text-[#FF3B30]">3</div>
               <div className="flex items-center gap-1.5 text-xs text-[#FF3B30]/80 font-bold">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF3B30] animate-ping"></span>
@@ -73,10 +82,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         )}
 
         {/* Card 2: Blocked Attacks (Shown for security, activity) */}
-        {(activeTab === 'security' || activeTab === 'activity') && (
+        {(activeTab === "security" || activeTab === "activity") && (
           <div className="relative overflow-hidden machined-plate border-l-4 border-[#3B82F6] p-5 flex items-center justify-between blue-neon-glow">
             <div className="space-y-1 z-10">
-              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Blocked Attacks</span>
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">
+                Blocked Attacks
+              </span>
               <div className="text-3xl font-black text-[#3B82F6]">67</div>
               <div className="flex items-center gap-1.5 text-xs text-[#3B82F6]/80 font-bold">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#3B82F6]"></span>
@@ -92,10 +103,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         )}
 
         {/* Card 3: Today's Threats (Shown for performance, activity) */}
-        {(activeTab === 'performance' || activeTab === 'activity') && (
+        {(activeTab === "performance" || activeTab === "activity") && (
           <div className="relative overflow-hidden machined-plate border-l-4 border-[#FF9F0A] p-5 flex items-center justify-between orange-neon-glow">
             <div className="space-y-1 z-10">
-              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Today's Threats</span>
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">
+                Today's Threats
+              </span>
               <div className="text-3xl font-black text-[#FF9F0A]">1</div>
               <div className="flex items-center gap-1.5 text-xs text-[#FF9F0A]/80 font-bold">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF9F0A]"></span>
@@ -111,10 +124,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         )}
 
         {/* Card 4: Detection Rate (Shown for performance, activity) */}
-        {(activeTab === 'performance' || activeTab === 'activity') && (
+        {(activeTab === "performance" || activeTab === "activity") && (
           <div className="relative overflow-hidden machined-plate border-l-4 border-[#10B981] p-5 flex items-center justify-between green-neon-glow">
             <div className="space-y-1 z-10">
-              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">Detection Rate</span>
+              <span className="text-[10px] uppercase font-black tracking-widest text-white/50">
+                Detection Rate
+              </span>
               <div className="text-3xl font-black text-[#10B981]">104%</div>
               <div className="flex items-center gap-1.5 text-xs text-[#10B981]/80 font-bold">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#10B981]"></span>
@@ -134,36 +149,34 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   const renderMobileContent = () => {
     switch (currentView) {
-      case 'sentinel':
-        return (
-          <div className="space-y-4">
-            {renderSkeuoCards()}
-          </div>
-        );
-      case 'editor':
+      case "sentinel":
+        return <div className="space-y-4">{renderSkeuoCards()}</div>;
+      case "editor":
         return (
           <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/60 min-h-[400px]">
             {content}
           </div>
         );
-      case 'diagnostics':
+      case "diagnostics":
         return (
           <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70 min-h-[400px]">
-            <h4 className="text-xs text-[#FF5F00] font-bold uppercase tracking-wider mb-3">Live Telemetry Diagnostics</h4>
+            <h4 className="text-xs text-[#FF5F00] font-bold uppercase tracking-wider mb-3">
+              Live Telemetry Diagnostics
+            </h4>
             {diagnostics}
           </div>
         );
-      case 'terminal':
+      case "terminal":
         return (
           <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/85 min-h-[350px]">
             {terminal}
           </div>
         );
-      case 'history':
-      case 'settings':
-      case 'github':
-      case 'admin':
-      case 'boss':
+      case "history":
+      case "settings":
+      case "github":
+      case "admin":
+      case "boss":
       default:
         return (
           <div className="machined-plate p-4 shadow-xl border border-white/5 bg-black/70 min-h-[300px]">
@@ -175,9 +188,10 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   return (
     <div className="min-h-screen w-full bg-[#0A0A0B] text-white flex overflow-hidden font-sans select-none relative">
-      
       {/* Dynamic Skeuomorphic Inject Styles */}
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
@@ -259,7 +273,9 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         .footer-btn-row2-inactive {
           color: #6B7280;
         }
-      ` }} />
+      `,
+        }}
+      />
 
       {/* 1. DESKTOP WORKSPACE (16:9 Grid Layout) - Screen lg (1024px) and above */}
       <div className="hidden lg:flex w-full h-screen">
@@ -267,20 +283,20 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         <aside className="w-64 border-r border-[#FF5F00]/20 bg-[#121212] flex flex-col shrink-0">
           {sidebar}
         </aside>
-        
+
         {/* Main Coding Stage */}
         <main className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 flex overflow-hidden">
             <section className="flex-1 overflow-auto border-r border-white/5 bg-[#0D0D0D]">
               {content}
             </section>
-            
+
             {/* Right Diagnostic Telemetry Column */}
             <aside className="w-80 overflow-y-auto bg-[#121212]/30 p-4 border-l border-white/5 shrink-0">
               {diagnostics}
             </aside>
           </div>
-          
+
           {/* Integrated Multi-Tab Terminal Drawer */}
           <footer className="h-56 bg-[#070707] shrink-0 z-10">
             {terminal}
@@ -291,18 +307,20 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
       {/* 2. TABLET WORKSPACE (1:1 Stack Layout) - Screen md to lg */}
       <div className="hidden md:only:flex lg:hidden w-full h-screen flex-col">
         <header className="h-16 border-b border-[#FF5F00]/20 bg-[#121212] flex items-center px-6 justify-between shrink-0">
-          <span className="font-extrabold text-[#FF5F00] tracking-wider">VOLT TABLET ENGINE</span>
+          <span className="font-extrabold text-[#FF5F00] tracking-wider">
+            VOLT TABLET ENGINE
+          </span>
           <div className="flex items-center gap-4">
-            <span className="text-[10px] text-white/50 uppercase font-semibold">Workspace Mode</span>
+            <span className="text-[10px] text-white/50 uppercase font-semibold">
+              Workspace Mode
+            </span>
           </div>
         </header>
-        
+
         <div className="flex-1 flex overflow-hidden">
           {/* Main workspace */}
-          <main className="flex-1 overflow-auto bg-[#0D0D0D]">
-            {content}
-          </main>
-          
+          <main className="flex-1 overflow-auto bg-[#0D0D0D]">{content}</main>
+
           {/* Diagnostics sidebar */}
           <aside className="w-72 overflow-y-auto border-l border-white/5 bg-[#121212]/40 p-4">
             {diagnostics}
@@ -323,8 +341,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               <Shield className="w-5 h-5 text-[#FF3B30] animate-pulse" />
             </div>
             <div>
-              <div className="text-[#FF3B30] text-xl font-black tracking-widest text-shadow-glow">VOLT</div>
-              <div className="text-[#FF5F00] text-[8px] font-black uppercase tracking-[2px] mt-0.5">V5.0 Agentic Hub</div>
+              <div className="text-[#FF3B30] text-xl font-black tracking-widest text-shadow-glow">
+                VOLT
+              </div>
+              <div className="text-[#FF5F00] text-[8px] font-black uppercase tracking-[2px] mt-0.5">
+                V5.0 Agentic Hub
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-black/50 border border-white/5 rounded-lg text-[9px] font-bold text-white/40">
@@ -335,34 +357,34 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
         {/* Segmented Mode Selector Tabs */}
         <div className="grid grid-cols-3 gap-2 shrink-0 h-10 select-none">
-          <button 
-            onClick={() => setActiveTab('security')}
+          <button
+            onClick={() => setActiveTab("security")}
             className={`flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer ${
-              activeTab === 'security'
-                ? 'machined-plate red-neon-glow text-[#FF3B30]' 
-                : 'machined-plate text-white/50 hover:text-white/80'
+              activeTab === "security"
+                ? "machined-plate red-neon-glow text-[#FF3B30]"
+                : "machined-plate text-white/50 hover:text-white/80"
             }`}
           >
             <Shield className="w-3 h-3" />
             Security
           </button>
-          <button 
-            onClick={() => setActiveTab('performance')}
+          <button
+            onClick={() => setActiveTab("performance")}
             className={`flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer ${
-              activeTab === 'performance'
-                ? 'machined-plate red-neon-glow text-[#FF3B30]' 
-                : 'machined-plate text-white/50 hover:text-white/80'
+              activeTab === "performance"
+                ? "machined-plate red-neon-glow text-[#FF3B30]"
+                : "machined-plate text-white/50 hover:text-white/80"
             }`}
           >
             <Zap className="w-3 h-3" />
             Performance
           </button>
-          <button 
-            onClick={() => setActiveTab('activity')}
+          <button
+            onClick={() => setActiveTab("activity")}
             className={`flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase rounded-xl transition-all cursor-pointer ${
-              activeTab === 'activity'
-                ? 'machined-plate red-neon-glow text-[#FF3B30]' 
-                : 'machined-plate text-white/50 hover:text-white/80'
+              activeTab === "activity"
+                ? "machined-plate red-neon-glow text-[#FF3B30]"
+                : "machined-plate text-white/50 hover:text-white/80"
             }`}
           >
             <Users className="w-3 h-3" />
@@ -380,56 +402,72 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           <div className="max-w-md mx-auto grid grid-cols-1 gap-2">
             {/* Row 1 footer controls */}
             <div className="grid grid-cols-3 gap-2">
-              <button 
-                onClick={() => setCurrentView('editor')}
+              <button
+                onClick={() => setCurrentView("editor")}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'editor' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row1-inactive'
+                  currentView === "editor"
+                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                    : "footer-btn-row1-inactive"
                 }`}
               >
                 Editor
               </button>
-              <button 
-                onClick={() => setCurrentView('sentinel')}
+              <button
+                onClick={() => setCurrentView("sentinel")}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1 skeuo-button cursor-pointer ${
-                  currentView === 'sentinel' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row1-inactive'
+                  currentView === "sentinel"
+                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                    : "footer-btn-row1-inactive"
                 }`}
               >
-                <RefreshCw className={`w-2.5 h-2.5 ${currentView === 'sentinel' ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-2.5 h-2.5 ${currentView === "sentinel" ? "animate-spin" : ""}`}
+                />
                 Sentinel
-                <RefreshCw className={`w-2.5 h-2.5 ${currentView === 'sentinel' ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-2.5 h-2.5 ${currentView === "sentinel" ? "animate-spin" : ""}`}
+                />
               </button>
-              <button 
-                onClick={() => setCurrentView('diagnostics')}
+              <button
+                onClick={() => setCurrentView("diagnostics")}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'diagnostics' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row1-inactive'
+                  currentView === "diagnostics"
+                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                    : "footer-btn-row1-inactive"
                 }`}
               >
                 Diagnostics
               </button>
             </div>
-            
+
             {/* Row 2 footer controls */}
             <div className="grid grid-cols-3 gap-2">
-              <button 
-                onClick={() => setCurrentView('terminal')}
+              <button
+                onClick={() => setCurrentView("terminal")}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'terminal' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
+                  currentView === "terminal"
+                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                    : "footer-btn-row2-inactive"
                 }`}
               >
                 Terminal
               </button>
-              <button 
-                onClick={() => setCurrentView('history')}
+              <button
+                onClick={() => setCurrentView("history")}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'history' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
+                  currentView === "history"
+                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                    : "footer-btn-row2-inactive"
                 }`}
               >
                 History
               </button>
-              <button 
-                onClick={() => setCurrentView('boss')}
+              <button
+                onClick={() => setCurrentView("boss")}
                 className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === 'boss' ? 'orange-neon-glow text-[#FF5F00] font-black bg-black' : 'footer-btn-row2-inactive'
+                  currentView === "boss"
+                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                    : "footer-btn-row2-inactive"
                 }`}
               >
                 Boss
@@ -437,9 +475,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
   );
 };
