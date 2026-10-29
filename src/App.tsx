@@ -708,7 +708,9 @@ const App: React.FC = () => {
         addLog(`[BACKUP] Restored ${count} entries. Reloading...`, "success");
         setTimeout(() => window.location.reload(), 800);
       })
-      .catch(() => addLog("[BACKUP] Corrupt or unreadable backup file.", "error"));
+      .catch(() =>
+        addLog("[BACKUP] Corrupt or unreadable backup file.", "error"),
+      );
   };
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
@@ -4504,10 +4506,30 @@ const App: React.FC = () => {
             <div className="space-y-2 mb-6">
               {(
                 [
-                  ["editor", Sparkles, "IDE CANVAS", "Code with live agent suggestions"],
-                  ["boss", Bot, "VOLT HUB", "Chat with the AI core orchestrator"],
-                  ["meeting", Users, "MEETING PANEL", "Agent group chat + audio + execution"],
-                  ["github", GitBranch, "GITHUB WORKSPACE", "Work directly on your repos"],
+                  [
+                    "editor",
+                    Sparkles,
+                    "IDE CANVAS",
+                    "Code with live agent suggestions",
+                  ],
+                  [
+                    "boss",
+                    Bot,
+                    "VOLT HUB",
+                    "Chat with the AI core orchestrator",
+                  ],
+                  [
+                    "meeting",
+                    Users,
+                    "MEETING PANEL",
+                    "Agent group chat + audio + execution",
+                  ],
+                  [
+                    "github",
+                    GitBranch,
+                    "GITHUB WORKSPACE",
+                    "Work directly on your repos",
+                  ],
                 ] as const
               ).map(([view, Icon, title, desc]) => (
                 <button
