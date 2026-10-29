@@ -43,6 +43,7 @@ import { CloudAuth } from "./components/CloudAuth";
 // v0 dormant restore: IDE canvas + agent TODO widget
 import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas";
 import { TODOListWidget, type TodoItem } from "./components/TODOListWidget";
+import { SwarmPanel } from "./components/SwarmPanel";
 
 import {
   PerformanceOptimizer,
@@ -61,6 +62,7 @@ import {
   MultiAgentOrchestrator,
 } from "./services/AgentWorkforce";
 import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
+import { useToast } from "./components/Toast";
 
 interface Session {
   id: string;
@@ -124,7 +126,8 @@ type View =
   | "terminal"
   | "boss"
   | "meeting"
-  | "pr-review";
+  | "pr-review"
+  | "swarm";
 
 type AgentMode =
   "manual" | "assist" | "auto-syntax" | "auto-debug" | "team-review";
@@ -578,23 +581,15 @@ const App: React.FC = () => {
     [],
   );
 
+const pushToast = useToast();
   const showToast = useCallback(
     (message: string, type: "success" | "error" | "info" | "warn" = "info") => {
-      const toast = document.createElement("div");
-      toast.className = `fixed bottom-4 right-4 px-5 py-3 rounded-xl font-semibold z-[120] border ${
-        type === "error"
-          ? "bg-red-950/80 text-red-400 border-red-500"
-          : type === "success"
-            ? "bg-black/90 text-[#FF5F00] border-[#FF5F00]"
-            : type === "warn"
-              ? "bg-amber-950/80 text-amber-400 border-amber-500"
-              : "bg-[#121212]/90 text-white border-white/20"
-      } shadow-lg backdrop-blur-md`;
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 5000);
+      pushToast(
+        type === "warn" ? "info" : type,
+        message,
+      );
     },
-    [],
+    [pushToast],
   );
 
   // Instantiating hooks/refs
@@ -2569,6 +2564,18 @@ const App: React.FC = () => {
           </div>
 
           <div
+            onClick={() => setCurrentView("swarm")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
+              currentView === "swarm"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
+            }`}
+          >
+            <Bot className="w-5 h-5" />
+            AGENT SWARM
+          </div>
+
+          <div
             onClick={() => setCurrentView("history")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "history"
@@ -3499,6 +3506,20 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      );
+    }
+
+    // Agent Swarm View
+    if (currentView === "swarm") {
+      return (
+        <div className="w-full h-full overflow-y-auto bg-[#050505] pt-6">
+          <SwarmPanel
+            agentBreakdown={agentBreakdown}
+            consensusScore={consensusScore}
+            consensusPassed={consensusPassed}
+            isAnalyzing={isAnalyzing}
+          />
         </div>
       );
     }
@@ -4565,7 +4586,7 @@ const App: React.FC = () => {
         terminal={renderTerminalPanel()}
         diagnostics={renderDiagnosticsColumn()}
         currentView={currentView}
-        setCurrentView={setCurrentView}
+        setCurrentView={setCurrentView as (v: string) => void}
       />
 
       {renderDiffModal()}

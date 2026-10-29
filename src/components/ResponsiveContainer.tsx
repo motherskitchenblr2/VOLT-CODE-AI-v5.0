@@ -6,7 +6,6 @@ import {
   Activity,
   Zap,
   Users,
-  RefreshCw,
 } from "lucide-react";
 
 interface ResponsiveContainerProps {
@@ -15,19 +14,7 @@ interface ResponsiveContainerProps {
   terminal: React.ReactNode;
   diagnostics: React.ReactNode;
   currentView: string;
-  setCurrentView: (
-    view:
-      | "editor"
-      | "history"
-      | "settings"
-      | "sentinel"
-      | "about"
-      | "github"
-      | "admin"
-      | "diagnostics"
-      | "terminal"
-      | "boss",
-  ) => void;
+  setCurrentView: (view: string) => void;
 }
 
 interface GearWatermarkProps {
@@ -399,83 +386,39 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
         {/* Cyberpunk Footer Switch Console */}
         <div className="absolute bottom-0 left-0 right-0 bg-[#0F0F10] border-t border-white/5 px-4 py-2 shrink-0 z-30 select-none">
-          <div className="max-w-md mx-auto grid grid-cols-1 gap-2">
-            {/* Row 1 footer controls */}
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => setCurrentView("editor")}
-                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === "editor"
-                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
-                    : "footer-btn-row1-inactive"
-                }`}
-              >
-                Editor
-              </button>
-              <button
-                onClick={() => setCurrentView("sentinel")}
-                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1 skeuo-button cursor-pointer ${
-                  currentView === "sentinel"
-                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
-                    : "footer-btn-row1-inactive"
-                }`}
-              >
-                <RefreshCw
-                  className={`w-2.5 h-2.5 ${currentView === "sentinel" ? "animate-spin" : ""}`}
-                />
-                Sentinel
-                <RefreshCw
-                  className={`w-2.5 h-2.5 ${currentView === "sentinel" ? "animate-spin" : ""}`}
-                />
-              </button>
-              <button
-                onClick={() => setCurrentView("diagnostics")}
-                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === "diagnostics"
-                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
-                    : "footer-btn-row1-inactive"
-                }`}
-              >
-                Diagnostics
-              </button>
-            </div>
-
-            {/* Row 2 footer controls */}
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => setCurrentView("terminal")}
-                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === "terminal"
-                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
-                    : "footer-btn-row2-inactive"
-                }`}
-              >
-                Terminal
-              </button>
-              <button
-                onClick={() => setCurrentView("history")}
-                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === "history"
-                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
-                    : "footer-btn-row2-inactive"
-                }`}
-              >
-                History
-              </button>
-              <button
-                onClick={() => setCurrentView("boss")}
-                className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
-                  currentView === "boss"
-                    ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
-                    : "footer-btn-row2-inactive"
-                }`}
-              >
-                Boss
-              </button>
-            </div>
+          <div className="max-w-md mx-auto">
+        {/* Mobile nav — 9 destinations in one 3-row grid (last row 1 wide).
+            ponytail: no overflow "More" sheet; fits ≥360px screens. */}
+        <div className="grid grid-cols-4 gap-2">
+          {(
+            [
+              ["editor", "Editor"],
+              ["ide", "IDE"],
+              ["swarm", "Swarm"],
+              ["sentinel", "Sentinel"],
+              ["meeting", "Agents"],
+              ["boss", "Volt Hub"],
+              ["history", "History"],
+              ["pr-review", "PRs"],
+              ["settings", "Settings"],
+            ] as const
+          ).map(([view, label]) => (
+            <button
+              key={view}
+              onClick={() => setCurrentView(view)}
+              className={`py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all skeuo-button cursor-pointer ${
+                currentView === view
+                  ? "orange-neon-glow text-[#FF5F00] font-black bg-black"
+                  : "footer-btn-row1-inactive"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
