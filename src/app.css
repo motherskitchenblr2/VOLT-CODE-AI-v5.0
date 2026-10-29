@@ -62,6 +62,27 @@ body {
   }
 }
 
+/* Accessibility gate (design-system checklist): visible keyboard focus,
+   pointer on all clickables, motion opt-out. CSS-only, no JS. */
+button,
+[role="button"],
+a {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--accent, #ff5f00);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .app-layout {
   display: flex;
   height: 100vh;
