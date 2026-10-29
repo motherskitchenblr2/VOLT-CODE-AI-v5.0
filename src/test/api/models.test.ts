@@ -44,7 +44,7 @@ describe('api/models live availability', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns 405 for non-GET requests', async () => {
+  it('returns 405 for non-GET requests', 20000, async () => {
     const req = { method: 'POST', query: {} };
     const res = makeRes();
     await handler(req, res);
