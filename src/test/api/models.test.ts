@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import handler from '../../../api/models';
 
+function getHostname(rawUrl: string): string {
+  try {
+    return new URL(rawUrl).hostname;
+  } catch {
+    return '';
+  }
+}
+
 function makeReq(query: Record<string, string | string[] | undefined> = {}) {
   return { method: 'GET', query };
 }
@@ -46,7 +54,7 @@ describe('api/models live availability', () => {
 
   it('classifies OpenRouter free vs paid models using real provider pricing', async () => {
     stubFetch((url) => {
-      if (url.includes('openrouter.ai')) {
+      if (getHostname(url) === 'openrouter.ai') {
         return {
           ok: true,
           json: async () => ({
@@ -85,7 +93,7 @@ describe('api/models live availability', () => {
 
   it('marks all Groq models as FREE (Groq serves a free tier)', async () => {
     stubFetch((url) => {
-      if (url.includes('groq.com')) {
+      if (getHostname(url) === 'groq.com') {
         return {
           ok: true,
           json: async () => ({
