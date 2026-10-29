@@ -44,13 +44,13 @@ describe('api/models live availability', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns 405 for non-GET requests', 20000, async () => {
+  it('returns 405 for non-GET requests', async () => {
     const req = { method: 'POST', query: {} };
     const res = makeRes();
     await handler(req, res);
     expect(res._status).toBe(405);
     expect((res._json as { error: string }).error).toBe('Method not allowed');
-  });
+  }, 20000);
 
   it('classifies OpenRouter free vs paid models using real provider pricing', async () => {
     stubFetch((url) => {
