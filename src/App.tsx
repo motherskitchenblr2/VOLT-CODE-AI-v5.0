@@ -40,6 +40,9 @@ import { GitHubWorkspace } from "./components/GitHubWorkspace";
 import { MeetingPanel } from "./components/MeetingPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
 import { CloudAuth } from "./components/CloudAuth";
+// v0 dormant restore: IDE canvas + agent TODO widget
+import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas";
+import { TODOListWidget, type TodoItem } from "./components/TODOListWidget";
 
 import {
   PerformanceOptimizer,
@@ -110,6 +113,7 @@ interface GitHubIssue {
 
 type View =
   | "editor"
+  | "ide"
   | "history"
   | "settings"
   | "sentinel"
@@ -645,6 +649,10 @@ const App: React.FC = () => {
   ]);
   const [bossInput, setBossInput] = useState("");
   const [isBossLoading, setIsBossLoading] = useState(false);
+  const [showAgentChat, setShowAgentChat] = useState(false);
+  // v0 dormant restore: IDE canvas + agent TODOs
+  const [enableAgentSuggestions, setEnableAgentSuggestions] = useState(true);
+  const [todos, setTodos] = useState<TodoItem[]>([]);
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -2490,6 +2498,18 @@ const App: React.FC = () => {
           </div>
 
           <div
+            onClick={() => setCurrentView("ide")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
+              currentView === "ide"
+                ? "bg-[#FF5F00] text-black font-bold"
+                : "hover:bg-white/5 text-[#FF5F00]"
+            }`}
+          >
+            <Sparkles className="w-5 h-5" />
+            IDE CANVAS
+          </div>
+
+          <div
             onClick={() => setCurrentView("history")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "history"
@@ -3393,6 +3413,54 @@ const App: React.FC = () => {
       );
     }
 
+    // IDE Canvas View (v0 dormant restore)
+    if (currentView === "ide") {
+      return (
+        <div className="w-full h-full flex flex-col md:flex-row overflow-hidden bg-[#050505]">
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-[#FF5F00]/20 shrink-0">
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-[#FF5F00]">
+                <Sparkles className="w-4 h-4" />
+                IDE CANVAS · {language.toUpperCase()}
+              </div>
+              <button
+                onClick={() => setCurrentView("editor")}
+                className="text-[10px] font-bold text-white/60 hover:text-white px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10"
+              >
+                BACK TO EDITOR
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <ProfessionalEditorCanvas
+                code={code}
+                onCodeChange={handleCodeChange}
+                language={language}
+                enableAgentSuggestions={enableAgentSuggestions}
+                onToggleSuggestions={setEnableAgentSuggestions}
+                issues={issues}
+                isAnalyzing={isAnalyzing}
+              />
+            </div>
+          </div>
+
+          <div className="w-full md:w-80 shrink-0 border-l border-[#FF5F00]/20 bg-black/40 overflow-y-auto">
+            <TODOListWidget
+              todos={todos}
+              onAddTodo={(t) => setTodos((prev) => [...prev, t])}
+              onUpdateTodo={(id, updates) =>
+                setTodos((prev) =>
+                  prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+                )
+              }
+              onDeleteTodo={(id) =>
+                setTodos((prev) => prev.filter((t) => t.id !== id))
+              }
+            />
+          </div>
+        </div>
+      );
+    }
+
     // Meeting Panel View
     if (currentView === "meeting") {
       return (
@@ -3639,6 +3707,73 @@ const App: React.FC = () => {
           </div>
 
           {/* Action Overlay buttons */}
+          {/* Agent Chat HUD (v0 restore — shares VOLT HUB chat pipeline) */}
+          <div className="hidden md:block absolute left-6 bottom-6 z-50 select-none">
+            {showAgentChat ? (
+              <div className="w-96 flex flex-col rounded-xl bg-black/90 border border-[#FF5F00]/50 shadow-[0_0_25px_rgba(255,95,0,0.25)] overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-[#FF5F00]/30">
+                  <span className="text-[10px] font-bold tracking-widest text-[#FF5F00] flex items-center gap-2">
+                    <Bot className="w-3.5 h-3.5" />
+                    VOLT AGENTS · {isBossLoading ? "THINKING..." : "ONLINE"}
+                  </span>
+                  <button
+                    onClick={() => setShowAgentChat(false)}
+                    className="text-white/50 hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="max-h-56 overflow-y-auto p-3 space-y-2">
+                  {bossMessages.slice(-8).map((m, i) => (
+                    <div
+                      key={i}
+                      className={`text-[11px] leading-snug rounded-lg px-2.5 py-2 ${
+                        m.role === "user"
+                          ? "bg-[#FF5F00]/15 text-[#FF9E70]"
+                          : "bg-white/5 text-white/85"
+                      }`}
+                    >
+                      <span className="block text-[9px] font-bold tracking-wider opacity-60 mb-1">
+                        {m.role === "user" ? "YOU" : "VOLT CORE"}
+                      </span>
+                      {m.content}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 p-2 border-t border-[#FF5F00]/30">
+                  <input
+                    value={bossInput}
+                    onChange={(e) => setBossInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") sendBossMessage(bossInput);
+                    }}
+                    disabled={isBossLoading}
+                    placeholder={
+                      isBossLoading
+                        ? "Agents processing..."
+                        : "Message the agent swarm..."
+                    }
+                    className="flex-1 bg-white/5 rounded-lg px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/40 disabled:opacity-50"
+                  />
+                  <button
+                    onClick={() => sendBossMessage(bossInput)}
+                    disabled={isBossLoading}
+                    className="px-3 rounded-lg bg-[#FF5F00] text-black disabled:opacity-50 cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAgentChat(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/90 border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold hover:bg-black cursor-pointer"
+              >
+                <Bot className="w-4 h-4" />
+                AGENT CHAT
+              </button>
+            )}
+          </div>
           <div className="hidden md:flex absolute bottom-6 right-6 gap-3 flex-wrap justify-end select-none">
             <motion.button
               whileHover={{ scale: 1.015 }}

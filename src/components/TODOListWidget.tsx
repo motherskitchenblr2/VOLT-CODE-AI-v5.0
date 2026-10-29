@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface TodoItem {
+export interface TodoItem {
   id: string;
   title: string;
   description?: string;
