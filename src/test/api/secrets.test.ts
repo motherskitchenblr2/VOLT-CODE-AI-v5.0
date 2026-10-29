@@ -25,13 +25,13 @@ vi.mock('../../../src/models/Schemas', () => ({
         update: { $set: Record<string, string> },
         _opts: unknown,
       ) => {
-        const nested: Record<string, string> = {};
+        const merged = { ...(vaultState.store[username]?.keys || {}) };
         for (const [path, value] of Object.entries(update.$set)) {
           if (path.startsWith('keys.')) {
-            nested[path.slice(5)] = value;
+            merged[path.slice(5)] = value;
           }
         }
-        vaultState.store[username] = { keys: nested };
+        vaultState.store[username] = { keys: merged };
         return vaultState.store[username];
       },
     ),
@@ -85,5 +85,24 @@ describe('api/utils/secrets (MongoDB secret vault)', () => {
     vi.mocked(db.connectToDatabase).mockRejectedValueOnce(new Error('no db'));
     expect(await loadUserSecrets('carol')).toEqual({});
     expect(await hasStoredSecrets('carol')).toBe(false);
+  });
+
+  it('partial updates do not wipe previously stored keys', async () => {
+    await saveUserSecrets('dave', {
+      groq: 'gsk_dave_groq',
+      openrouter: 'sk-or-v1-dave',
+      nvidia: 'nvkey_dave',
+      huggingface: 'hf_dave',
+    });
+
+    // Update only one provider; the others must survive.
+    await saveUserSecrets('dave', { groq: 'gsk_dave_groq_2' });
+
+    const result = await loadUserSecrets('dave');
+    expect(result.groq).toBe('gsk_dave_groq_2');
+    expect(result.openrouter).toBe('sk-or-v1-dave');
+    expect(result.nvidia).toBe('nvkey_dave');
+    expect(result.huggingface).toBe('hf_dave');
+    expect(result.githubToken).toBeUndefined();
   });
 });

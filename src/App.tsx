@@ -471,9 +471,7 @@ const App: React.FC = () => {
 
   const fetchVaultStatus = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getSecretStatus&username=${encodeURIComponent(username)}`,
-      );
+      const res = await fetch(`/api/database?action=getSecretStatus`);
       if (res.ok) {
         const data = await res.json();
         setVaultStored(Boolean(data.stored));
@@ -481,7 +479,7 @@ const App: React.FC = () => {
     } catch {
       setVaultStored(false);
     }
-  }, [username]);
+  }, []);
 
   useEffect(() => {
     fetchVaultStatus();
@@ -494,21 +492,18 @@ const App: React.FC = () => {
     setVaultSyncState("saving");
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/database?action=saveSecrets&username=${encodeURIComponent(username)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              keys: {
-                groq: groqKey,
-                openrouter: openrouterKey,
-                nvidia: nvidiaKey,
-                huggingface: huggingfaceKey,
-              },
-            }),
-          },
-        );
+        const res = await fetch(`/api/database?action=saveSecrets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            keys: {
+              groq: groqKey,
+              openrouter: openrouterKey,
+              nvidia: nvidiaKey,
+              huggingface: huggingfaceKey,
+            },
+          }),
+        });
         setVaultSyncState(res.ok ? "saved" : "error");
         if (res.ok) fetchVaultStatus();
       } catch {
@@ -655,9 +650,7 @@ const App: React.FC = () => {
 
   const fetchAuditLogs = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getAuditLogs&username=${encodeURIComponent(username)}`,
-      );
+      const res = await fetch(`/api/database?action=getAuditLogs`);
       if (res.ok) {
         const data = await res.json();
         setAuditLogs(data || []);
@@ -679,13 +672,11 @@ const App: React.FC = () => {
         },
       ]);
     }
-  }, [username]);
+  }, []);
 
   const loadCheckpoints = useCallback(async () => {
     try {
-      const res = await fetch(
-        `/api/database?action=getCheckpoints&username=${encodeURIComponent(username)}`,
-      );
+      const res = await fetch(`/api/database?action=getCheckpoints`);
       if (res.ok) {
         const data = await res.json();
         setCheckpoints(data || []);
@@ -712,7 +703,7 @@ const App: React.FC = () => {
     } catch {
       // Fail silently
     }
-  }, [username]);
+  }, []);
 
   const createCheckpoint = useCallback(
     async (filePath: string, codeBackup: string): Promise<string> => {
@@ -739,14 +730,11 @@ const App: React.FC = () => {
       );
 
       try {
-        await fetch(
-          `/api/database?action=saveCheckpoint&username=${encodeURIComponent(username)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          },
-        );
+        await fetch(`/api/database?action=saveCheckpoint`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
         addLog(
           `[RECOVERY] Checkpoint ${checkpointId} created and registered inside database registers.`,
           "success",
@@ -761,7 +749,7 @@ const App: React.FC = () => {
       loadCheckpoints();
       return checkpointId;
     },
-    [username, addLog, loadCheckpoints],
+    [addLog, loadCheckpoints],
   );
 
   const onRestoreCheckpoint = useCallback(
@@ -2534,7 +2522,7 @@ const App: React.FC = () => {
             }`}
           >
             <Crown className="w-5 h-5" />
-            BOSS COCKPIT
+            VOLT HUB
           </div>
 
           <div
@@ -3634,7 +3622,7 @@ const App: React.FC = () => {
                 className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold transition-all cursor-pointer"
               >
                 <Crown className="w-4 h-4" />
-                BOSS COCKPIT
+                VOLT HUB
               </button>
             </div>
 
@@ -3670,7 +3658,7 @@ const App: React.FC = () => {
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] font-semibold hover:bg-black transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
-              BOSS COCKPIT
+              VOLT HUB
             </motion.button>
 
             <motion.button
