@@ -16,7 +16,6 @@ import {
   Activity,
   Menu,
   X,
-  Zap,
 } from "lucide-react";
 
 interface ResponsiveContainerProps {
