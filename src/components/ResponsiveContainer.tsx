@@ -17,6 +17,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface ResponsiveContainerProps {
   sidebar: React.ReactNode;
@@ -69,8 +70,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
       onClick={() => setCurrentView(view)}
       className={`group flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
         currentView === view
-          ? "bg-[#FF5F00] text-black"
-          : "text-[#FF5F00]/80 hover:bg-white/5"
+          ? "vol-acc-bg text-black"
+          : "vol-accent-soft hover:vol-wash"
       }`}
     >
       {icon}
@@ -81,31 +82,32 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   );
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col md:flex-row overflow-hidden bg-[#0A0A0B] text-white">
+    <div className="flex h-[100dvh] w-full flex-col md:flex-row overflow-hidden vol-surface vol-t1">
       {/* ── TABLET RAIL (icon-only, 1024–1279) ── */}
-      <aside className="hidden md:flex xl:hidden md:w-20 flex-col shrink-0 border-r border-[#FF5F00]/20 bg-[#0a0a0a] py-4 px-2 gap-1 overflow-y-auto">
+      <aside className="hidden md:flex xl:hidden md:w-20 flex-col shrink-0 border-r vol-ring vol-surface py-4 px-2 gap-1 overflow-y-auto">
         {NAV.map(railItem)}
       </aside>
 
       {/* ── LAPTOP RAIL (≥1280): the full sidebar (nav + auth cluster) ── */}
       <div className="hidden xl:flex shrink-0 h-full overflow-y-auto">
-        <div className="w-64 border-r border-[#FF5F00]/20 bg-[#0a0a0a]">{sidebar}</div>
+        <div className="w-64 border-r vol-ring vol-surface">{sidebar}</div>
       </div>
 
       {/* ── MAIN STAGE — all screens ── */}
       <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
         {/* Mobile/tablet header: title + sheet triggers (hidden ≥1280 where panes exist) */}
-        <header className="xl:hidden h-14 shrink-0 border-b border-[#FF5F00]/20 bg-[#0a0a0a] flex items-center justify-between px-4">
+        <header className="xl:hidden h-14 shrink-0 border-b vol-ring vol-surface flex items-center justify-between px-4">
           <div className="flex items-center gap-3 min-w-0">
             <Menu
-              className="w-5 h-5 text-[#FF5F00] mr-0 cursor-pointer"
+              className="w-5 h-5 vol-accent mr-0 cursor-pointer"
               onClick={() => setNavOpen(true)}
             />
-            <span className="font-black tracking-widest text-white text-sm min-w-0 max-w-[120px] sm:max-w-none">
+            <span className="font-black tracking-widest vol-t1 text-sm min-w-0 max-w-[120px] sm:max-w-none">
               {title.toUpperCase()}
             </span>
           </div>
-          <div className="flex items-center gap-3 text-white/60">
+          <div className="flex items-center gap-3 vol-t2">
+            <ThemeToggle compact />
             <button
               onClick={() => setSheet(sheet === "diagnostics" ? "none" : "diagnostics")}
               aria-label="Open diagnostics"
@@ -126,18 +128,18 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         {/* Content + diagnostics (diagnostics ≥1280 inline) */}
         <div className="flex-1 flex overflow-hidden relative">
           <section className="flex-1 overflow-y-auto min-w-0">{content}</section>
-          <aside className="hidden xl:block w-80 shrink-0 overflow-y-auto border-l border-white/5 bg-[#121212]/40 p-4">
+          <aside className="hidden xl:block w-80 shrink-0 overflow-y-auto border-l vol-line vol-elev p-4">
             {diagnostics}
           </aside>
         </div>
 
         {/* Terminal drawer — laptop only; tablet/mobile use sheets */}
-        <footer className="hidden lg:flex xl:flex h-48 shrink-0 border-t border-[#FF5F00]/10 bg-[#070707]">
+        <footer className="hidden xl:flex h-48 shrink-0 border-t vol-ring vol-surface">
           {terminal}
         </footer>
 
         {/* ── MOBILE BOTTOM TAB BAR (5 primary + more sheet) ── */}
-        <nav className="xl:hidden h-16 shrink-0 border-t border-[#FF5F00]/20 bg-[#0a0a0a] px-2 pt-1 md:hidden"
+        <nav className="xl:hidden h-16 shrink-0 border-t vol-ring vol-surface px-2 pt-1 md:hidden"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
           <div className="grid grid-cols-6 h-full gap-0.5">
             {NAV.filter(([v]) => ["editor", "ide", "swarm", "boss", "meeting"].includes(v)).map(
@@ -147,8 +149,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                   onClick={() => setCurrentView(view)}
                   className={`flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer ${
                     currentView === view
-                      ? "text-[#FF5F00] bg-[#FF5F00]/10"
-                      : "text-white/50"
+                      ? "vol-accent vol-acc-wash"
+                      : "vol-t2"
                   }`}
                 >
                   {icon}
@@ -158,7 +160,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             )}
             <button
               onClick={() => setNavOpen(true)}
-              className="flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer text-white/50"
+              className="flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer vol-t2"
             >
               <Menu className="w-5 h-5" />
               <span className="text-[9px] font-bold tracking-wider">MORE</span>
@@ -169,13 +171,13 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         {/* mobile/tablet SHARED bottom-sheet (terminal or diagnostics) */}
         {sheet !== "none" && (
           <div className="lg:hidden fixed inset-0 z-[90] flex flex-col justify-end">
-            <div className="absolute inset-0 bg-black/60" onClick={() => setSheet("none")} />
-            <div className="relative bg-[#070707] border-t border-[#FF5F00]/30 h-[55vh] flex flex-col rounded-t-2xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10">
-                <span className="text-[10px] font-black tracking-widest text-[#FF5F00]">
+            <div className="absolute inset-0 vol-veil" onClick={() => setSheet("none")} />
+            <div className="relative vol-surface border-t vol-ring h-[55vh] flex flex-col rounded-t-2xl overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b vol-line">
+                <span className="text-[10px] font-black tracking-widest vol-accent">
                   {sheet === "terminal" ? "TERMINAL" : "DIAGNOSTICS"}
                 </span>
-                <button onClick={() => setSheet("none")} className="cursor-pointer text-white/50" aria-label="Close sheet">
+                <button onClick={() => setSheet("none")} className="cursor-pointer vol-t2" aria-label="Close sheet">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -189,13 +191,16 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         {/* NAV DRAWER — phones (<768): full nav; tablets: covered by the rail */}
         {navOpen && (
           <div className="md:hidden fixed inset-0 z-[95] flex">
-            <div className="absolute inset-0 bg-black/70" onClick={() => setNavOpen(false)} />
-            <div className="relative w-72 max-w-[80vw] h-full bg-[#0a0a0a] border-r border-[#FF5F00]/30 p-3 flex flex-col gap-1 overflow-y-auto">
+            <div className="absolute inset-0 vol-veil" onClick={() => setNavOpen(false)} />
+            <div className="relative w-72 max-w-[80vw] h-full vol-surface border-r vol-ring p-3 flex flex-col gap-1 overflow-y-auto">
               <div className="flex items-center justify-between px-2 mb-2">
-                <span className="font-black tracking-widest text-[#FF5F00]">VOLT v5</span>
-                <button onClick={() => setNavOpen(false)} className="cursor-pointer text-white/50" aria-label="Close navigation">
-                  <X className="w-5 h-5" />
-                </button>
+                <span className="font-black tracking-widest vol-accent">VOLT v5</span>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle compact />
+                  <button onClick={() => setNavOpen(false)} className="cursor-pointer vol-t2" aria-label="Close navigation">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               {NAV.map(([view, label, icon]) => (
                 <button
@@ -206,8 +211,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                   }}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left cursor-pointer ${
                     currentView === view
-                      ? "bg-[#FF5F00] text-black font-bold"
-                      : "text-[#FF5F00]/80 hover:bg-white/5"
+                      ? "vol-acc-bg text-black font-bold"
+                      : "vol-accent-soft hover:vol-wash"
                   }`}
                 >
                   {icon}
@@ -217,6 +222,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             </div>
           </div>
         )}
+
+        {/* Desktop theme chip — laptop rail is the legacy sidebar node */}
+        <div className="hidden xl:block fixed bottom-4 right-4 z-[80]">
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   );

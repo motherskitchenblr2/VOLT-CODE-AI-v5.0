@@ -80,13 +80,13 @@ export const ProfessionalEditorCanvas: React.FC<
   const lineNumbers = code.split("\n").map((_, i) => i + 1);
 
   return (
-    <div className="flex h-full gap-0 bg-[#000000]">
+    <div className="flex h-full gap-0 vol-surface">
       {/* Line Numbers */}
-      <div className="flex flex-col bg-[#0a0a0a] border-r border-[#1a1a1a] py-4 px-2 select-none overflow-hidden">
+      <div className="flex flex-col vol-surface border-r vol-line py-4 px-2 select-none overflow-hidden">
         {lineNumbers.map((num) => (
           <div
             key={num}
-            className="h-6 text-right pr-3 text-[#444444] text-xs font-mono leading-6"
+            className="h-6 text-right pr-3 vol-t2 text-xs font-mono leading-6"
           >
             {num}
           </div>
@@ -94,7 +94,7 @@ export const ProfessionalEditorCanvas: React.FC<
       </div>
 
       {/* Editor with Column Lines */}
-      <div className="flex-1 flex flex-col bg-[#000000] relative">
+      <div className="flex-1 flex flex-col vol-surface relative">
         {/* Column Guidelines */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -111,8 +111,8 @@ export const ProfessionalEditorCanvas: React.FC<
         />
 
         {/* Editor Header with Toggle */}
-        <div className="flex items-center justify-between px-4 py-2 bg-[#0a0a0a] border-b border-[#1a1a1a] z-10">
-          <div className="text-xs text-[#888888] font-mono">
+        <div className="flex items-center justify-between px-4 py-2 vol-surface border-b vol-line z-10">
+          <div className="text-xs vol-t2 font-mono">
             {language.toUpperCase()} • {code.split("\n").length} lines
           </div>
 
@@ -120,8 +120,8 @@ export const ProfessionalEditorCanvas: React.FC<
             onClick={() => onToggleSuggestions(!enableAgentSuggestions)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               enableAgentSuggestions
-                ? "bg-blue-600 text-white"
-                : "bg-[#1a1a1a] text-[#888888] hover:bg-[#2a2a2a]"
+                ? "bg-blue-600 vol-t1"
+                : "vol-elev vol-t2 hover:vol-elev"
             }`}
           >
             <Lightbulb className="w-4 h-4" />
@@ -134,7 +134,7 @@ export const ProfessionalEditorCanvas: React.FC<
           ref={textareaRef}
           value={code}
           onChange={(e) => onCodeChange(e.target.value)}
-          className="flex-1 bg-[#000000] text-[#e0e0e0] font-mono text-sm resize-none outline-none px-4 py-4 relative z-20 overflow-hidden"
+          className="flex-1 vol-surface vol-t1 font-mono text-sm resize-none outline-none px-4 py-4 relative z-20 overflow-hidden"
           style={{
             backgroundAttachment: "local",
             backgroundImage: `linear-gradient(
@@ -153,14 +153,14 @@ export const ProfessionalEditorCanvas: React.FC<
 
       {/* Agent Suggestions Panel - AMOLED Black */}
       {enableAgentSuggestions && (
-        <div className="w-96 bg-[#000000] border-l border-[#1a1a1a] flex flex-col overflow-hidden">
+        <div className="w-96 vol-surface border-l vol-line flex flex-col overflow-hidden">
           {/* Suggestions Header */}
-          <div className="px-4 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a]">
-            <h3 className="text-sm font-semibold text-[#e0e0e0] flex items-center gap-2">
+          <div className="px-4 py-3 border-b vol-line vol-surface">
+            <h3 className="text-sm font-semibold vol-t1 flex items-center gap-2">
               <Lightbulb className="w-4 h-4 text-blue-500" />
               AI Agent Suggestions
             </h3>
-            <p className="text-xs text-[#666666] mt-1">
+            <p className="text-xs vol-t2 mt-1">
               {agentSuggestions.length} active suggestions
             </p>
           </div>
@@ -172,11 +172,11 @@ export const ProfessionalEditorCanvas: React.FC<
                 {agentSuggestions.map((suggestion, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg hover:border-[#2a2a2a] transition-colors"
+                    className="p-3 vol-surface border vol-line rounded-lg hover:vol-line transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <p className="text-xs font-mono text-[#888888]">
+                        <p className="text-xs font-mono vol-t2">
                           Line {suggestion.line}
                         </p>
                         <span
@@ -197,16 +197,16 @@ export const ProfessionalEditorCanvas: React.FC<
                         onClick={() =>
                           handleCopySuggestion(idx, suggestion.suggestion)
                         }
-                        className="p-1 hover:bg-[#1a1a1a] rounded transition-colors"
+                        className="p-1 hover:vol-elev rounded transition-colors"
                       >
                         {copiedSuggestion === idx ? (
                           <Check className="w-4 h-4 text-green-500" />
                         ) : (
-                          <Copy className="w-4 h-4 text-[#666666]" />
+                          <Copy className="w-4 h-4 vol-t2" />
                         )}
                       </button>
                     </div>
-                    <p className="text-xs text-[#ccc] leading-relaxed">
+                    <p className="text-xs vol-t2 leading-relaxed">
                       {suggestion.suggestion}
                     </p>
                   </div>
@@ -214,7 +214,7 @@ export const ProfessionalEditorCanvas: React.FC<
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-center px-4">
-                <p className="text-xs text-[#666666]">
+                <p className="text-xs vol-t2">
                   {isAnalyzing ? "Analyzing code..." : "No suggestions yet"}
                 </p>
               </div>

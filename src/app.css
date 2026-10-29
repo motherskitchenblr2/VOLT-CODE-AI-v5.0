@@ -48,18 +48,28 @@ body {
   overflow-x: hidden;
 }
 
-/* Touch-first rules for 9:16 phones — 44px hit targets, no iOS input zoom.
-   ponytail: global min-height flattens micro-chips; fine on touch, visual-only. */
+/* Touch-first rules for 9:16 phones — no iOS input zoom.
+   ponytail: blanket button min-height caused panels to blow out; sizing is
+   per-component now (bottom bar/enforcement happens in the shell). */
 @media (pointer: coarse) and (max-width: 1023px) {
-  button,
-  [role="button"] {
-    min-height: 44px;
-  }
   input,
   select,
   textarea {
     font-size: 16px; /* prevents iOS Safari zoom-on-focus */
   }
+  section [class*="grid-cols-"] {
+    grid-template-columns: minmax(0, 1fr) !important; /* stat panels stack instead of pushing */
+  }
+}
+#root {
+  overflow-x: hidden;
+}
+section img,
+section svg {
+  max-width: 100%;
+}
+section pre {
+  overflow-x: auto;
 }
 
 /* Accessibility gate (design-system checklist): visible keyboard focus,
@@ -297,4 +307,137 @@ a {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--neon-orange-dim);
+}
+
+/* ==========================================================================
+   THEME ENGINE — Day (Neumorphism, default) / Dark
+   ponytail: ~500 hardcoded dark utility colors now route through these
+   semantic classes. Preview both via ThemeToggle on <html data-theme>.
+   ========================================================================== */
+:root {
+  /* DAY — neumorphic soft-UI on light grey (per design-system: rounded
+     12–16px, dual soft shadows, monochromatic, light source top-left) */
+  --bg: #e6ebf2;
+  --s-elev: #edf1f7;
+  --s-well: #e0e6ee;
+  --veil: rgba(15, 23, 42, 0.35);
+  --wash: rgba(15, 23, 42, 0.05);
+  --acc: #ff5f00;
+  --acc-wash: rgba(255, 85, 0, 0.12);
+  --acc-text: #a43e00;
+  --acc-soft: #a43e00;
+  --ring: rgba(164, 62, 0, 0.28);
+  --ring-hi: rgba(164, 62, 0, 0.6);
+  --line: rgba(15, 23, 42, 0.1);
+  --t1: #1f2937;
+  --t2: #505c6e;
+  --neo-out: 8px 8px 18px rgba(174, 181, 196, 0.7), -8px -8px 18px #ffffff;
+  --neo-in: inset 5px 5px 11px rgba(174, 181, 196, 0.6), inset -5px -5px 11px #ffffff;
+}
+html[data-theme="dark"] {
+  /* DARK — the original OLED workbench look */
+  --bg: #0a0a0b;
+  --s-elev: #161616;
+  --s-well: #070707;
+  --veil: rgba(0, 0, 0, 0.55);
+  --wash: rgba(255, 255, 255, 0.06);
+  --acc: #ff5f00;
+  --acc-wash: rgba(255, 95, 0, 0.12);
+  --acc-text: #ff5f00;
+  --acc-soft: rgba(255, 95, 0, 0.85);
+  --ring: rgba(255, 95, 0, 0.2);
+  --ring-hi: rgba(255, 95, 0, 0.5);
+  --line: rgba(255, 255, 255, 0.08);
+  --t1: #ffffff;
+  --t2: #9aa3b1;
+  --neo-out: none;
+  --neo-in: none;
+}
+body {
+  background: var(--bg);
+  color: var(--t1);
+}
+.vol-surface {
+  background: var(--bg);
+}
+.vol-elev {
+  background: var(--s-elev);
+}
+.vol-well {
+  background: var(--s-well);
+  box-shadow: var(--neo-in);
+  border-radius: 12px;
+}
+.vol-veil {
+  background: var(--veil);
+}
+.vol-wash {
+  background: var(--wash);
+}
+.vol-acc-bg {
+  background: var(--acc);
+}
+.vol-acc-bg:active {
+  transform: scale(0.97);
+}
+.vol-acc-wash {
+  background: var(--acc-wash);
+}
+.vol-accent {
+  color: var(--acc-text);
+}
+.vol-accent-soft {
+  color: var(--acc-soft);
+}
+.vol-ring {
+  border-color: var(--ring);
+}
+.vol-ring-strong {
+  border-color: var(--ring-hi);
+}
+.vol-line {
+  border-color: var(--line);
+}
+.vol-t1 {
+  color: var(--t1);
+}
+.vol-t2 {
+  color: var(--t2);
+}
+/* hover/focus semantic pseudo-classes (escaped-class form) */
+.hover\:vol-accbg-hi:hover {
+  background: color-mix(in srgb, var(--acc) 88%, #000);
+}
+.hover\:vol-acc-wash:hover {
+  background: var(--acc-wash);
+}
+.hover\:vol-accent:hover {
+  color: var(--acc-text);
+}
+.hover\:vol-ring-hi:hover {
+  border-color: var(--ring-hi);
+}
+.hover\:vol-elev:hover {
+  background: var(--s-elev);
+}
+.hover\:vol-line:hover {
+  border-color: var(--line);
+}
+.hover\:vol-wash:hover {
+  background: var(--wash);
+}
+.hover\:vol-veil:hover {
+  background: var(--veil);
+}
+.hover\:vol-well:hover {
+  background: var(--s-well);
+}
+.hover\:vol-t1:hover {
+  color: var(--t1);
+}
+.hover\:vol-t2:hover {
+  color: var(--t2);
+}
+.focus\:vol-ring-hi:focus {
+  border-color: var(--ring-hi);
 }

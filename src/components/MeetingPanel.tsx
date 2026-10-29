@@ -215,12 +215,12 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
 
   if (!meeting) {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
+      <div className="flex items-center justify-center h-screen vol-well">
         <div className="text-center">
           <div className="animate-spin mb-4">
-            <div className="w-12 h-12 border-4 border-white/20 border-t-blue-500 rounded-full" />
+            <div className="w-12 h-12 border-4 vol-line border-t-blue-500 rounded-full" />
           </div>
-          <p className="text-white">
+          <p className="vol-t1">
             {language === "en"
               ? "Initializing meeting..."
               : "बैठक प्रारंभ कर रहे हैं..."}
@@ -236,13 +236,13 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600">
-            <Users className="w-6 h-6 text-white" />
+            <Users className="w-6 h-6 vol-t1" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold vol-t1">
               {language === "en" ? "Meeting Panel" : "बैठक पैनल"}
             </h1>
-            <p className="text-sm text-white/60">
+            <p className="text-sm vol-t2">
               {language === "en"
                 ? `${messages.length} messages • ${tasks.length} tasks`
                 : `${messages.length} संदेश • ${tasks.length} कार्य`}
@@ -252,13 +252,13 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
 
         <div className="flex items-center gap-3">
           {/* Language Toggle */}
-          <div className="flex gap-2 bg-white/10 rounded-lg p-1">
+          <div className="flex gap-2 vol-wash rounded-lg p-1">
             <button
               onClick={() => setLanguage("en")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
                 language === "en"
-                  ? "bg-blue-600 text-white"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-blue-600 vol-t1"
+                  : "vol-t2 hover:vol-t1"
               }`}
             >
               EN
@@ -267,8 +267,8 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
               onClick={() => setLanguage("hi")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
                 language === "hi"
-                  ? "bg-blue-600 text-white"
-                  : "text-white/60 hover:text-white"
+                  ? "bg-blue-600 vol-t1"
+                  : "vol-t2 hover:vol-t1"
               }`}
             >
               HI
@@ -278,10 +278,10 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           {/* Settings Button */}
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+            className="p-2 rounded-lg hover:vol-wash transition-colors"
             title={language === "en" ? "Settings" : "सेटिंग्स"}
           >
-            <Settings className="w-5 h-5 text-white/60 hover:text-white" />
+            <Settings className="w-5 h-5 vol-t2 hover:vol-t1" />
           </button>
 
           {/* Boss Presence Toggle */}
@@ -289,8 +289,8 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             onClick={toggleBossPresence}
             className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
               isBossPresent
-                ? "bg-yellow-600 text-white"
-                : "bg-white/10 text-white/60 hover:text-white"
+                ? "bg-yellow-600 vol-t1"
+                : "vol-wash vol-t2 hover:vol-t1"
             }`}
           >
             {isBossPresent ? "👑" : "🚪"} {language === "en" ? "Boss" : "बॉस"}
@@ -314,17 +314,17 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 p-4 rounded-xl bg-white/10 border border-white/20"
+            className="mb-4 p-4 rounded-xl vol-wash border vol-line"
           >
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-2">
+                <label className="text-xs font-semibold vol-t1 block mb-2">
                   {language === "en" ? "Select Agent:" : "एजेंट चुनें:"}
                 </label>
                 <select
                   value={selectedAgent || ""}
                   onChange={(e) => setSelectedAgent(e.target.value)}
-                  className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full vol-veil border vol-line rounded-lg px-3 py-2 vol-t1 text-sm focus:outline-none focus:border-blue-500"
                 >
                   {Array.from(agentsMap.values()).map((agent) => (
                     <option key={agent.id} value={agent.id}>
@@ -335,12 +335,12 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-white/70 block mb-2">
+                <label className="text-xs font-semibold vol-t1 block mb-2">
                   {language === "en" ? "Tasks:" : "कार्य:"}
                 </label>
                 <button
                   onClick={handleCreateTask}
-                  className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold text-sm hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 vol-t1 font-semibold text-sm hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   {language === "en" ? "New Task" : "नया कार्य"}
@@ -387,9 +387,9 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
 
       {/* Task Control Bar (Bottom) */}
       {tasks.length > 0 && (
-        <div className="mt-4 p-3 rounded-xl bg-white/5 border border-white/10">
+        <div className="mt-4 p-3 rounded-xl vol-wash border vol-line">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-white/70 font-semibold">
+            <span className="vol-t1 font-semibold">
               {language === "en" ? "Quick Actions:" : "त्वरित क्रिया:"}
             </span>
             <div className="flex gap-2">

@@ -1787,9 +1787,9 @@ const pushToast = useToast();
   );
 
   const renderModelSelect = () => (
-    <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-2 bg-black/40">
-      <div className="text-[#FF5F00]/70 text-xs tracking-wider">ENGINE</div>
-      <ChevronDown className="w-4 h-4 text-[#FF5F00]/60" />
+    <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-veil">
+      <div className="vol-accent-soft text-xs tracking-wider">ENGINE</div>
+      <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
         id="model-select-dropdown"
         value={selectedModel.id}
@@ -1798,13 +1798,13 @@ const pushToast = useToast();
           setSelectedModel(model);
           addLog(`Selected execution model: ${model.name}`, "info");
         }}
-        className="bg-transparent text-white outline-none min-w-[180px] font-semibold text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none min-w-[180px] font-semibold text-xs cursor-pointer"
       >
         {FREE_MODELS.map((model) => (
           <option
             key={model.id}
             value={model.id}
-            className="bg-[#121212] text-white"
+            className="vol-elev vol-t1"
           >
             {model.name} ({model.tag} • {model.ctx})
           </option>
@@ -1819,22 +1819,22 @@ const pushToast = useToast();
     onChange: (value: string) => void,
     options: string[],
   ) => (
-    <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-2 bg-black/40">
-      <div className="text-[#FF5F00]/70 text-xs tracking-wider">{label}</div>
-      <ChevronDown className="w-4 h-4 text-[#FF5F00]/60" />
+    <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-veil">
+      <div className="vol-accent-soft text-xs tracking-wider">{label}</div>
+      <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
           addLog(`Updated config: ${label} -> ${e.target.value}`, "info");
         }}
-        className="bg-transparent text-white outline-none min-w-[130px] text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none min-w-[130px] text-xs cursor-pointer"
       >
         {options.map((option) => (
           <option
             key={option}
             value={option}
-            className="bg-[#121212] text-white"
+            className="vol-elev vol-t1"
           >
             {option}
           </option>
@@ -1846,10 +1846,10 @@ const pushToast = useToast();
   const renderAboutWhitePaper = () => {
     return (
       <div className="p-8 max-w-4xl mx-auto overflow-y-auto h-full pb-20 select-text">
-        <div className="bg-white text-black p-12 shadow-2xl rounded-2xl border-4 border-double border-black font-serif relative">
+        <div className="bg-white text-black p-12 shadow-2xl rounded-2xl border-4 border-double vol-line font-serif relative">
           <button
             onClick={() => setCurrentView("editor")}
-            className="absolute top-6 right-6 px-4 py-2 rounded-full border border-black hover:bg-black hover:text-white transition-all font-sans text-xs font-bold"
+            className="absolute top-6 right-6 px-4 py-2 rounded-full border vol-line hover:vol-well hover:vol-t1 transition-all font-sans text-xs font-bold"
           >
             DISAPPEAR DOCUMENT [ESC]
           </button>
@@ -1860,8 +1860,8 @@ const pushToast = useToast();
               onClick={() => setAboutDocPage("whitepaper")}
               className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
                 aboutDocPage === "whitepaper"
-                  ? "bg-black text-white border-black shadow-md"
-                  : "bg-white text-black border-black/20 hover:bg-black/5"
+                  ? "vol-well vol-t1 vol-line shadow-md"
+                  : "bg-white text-black vol-line hover:vol-wash"
               }`}
             >
               TECHNICAL SPECIFICATION (SPEC-001)
@@ -1870,8 +1870,8 @@ const pushToast = useToast();
               onClick={() => setAboutDocPage("changelog")}
               className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
                 aboutDocPage === "changelog"
-                  ? "bg-black text-white border-black shadow-md"
-                  : "bg-white text-black border-black/20 hover:bg-black/5"
+                  ? "vol-well vol-t1 vol-line shadow-md"
+                  : "bg-white text-black vol-line hover:vol-wash"
               }`}
             >
               UPGRADE LOG (SPEC-002)
@@ -1880,8 +1880,8 @@ const pushToast = useToast();
               onClick={() => setAboutDocPage("comparison")}
               className={`px-4 py-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
                 aboutDocPage === "comparison"
-                  ? "bg-black text-white border-black shadow-md"
-                  : "bg-white text-black border-black/20 hover:bg-black/5"
+                  ? "vol-well vol-t1 vol-line shadow-md"
+                  : "bg-white text-black vol-line hover:vol-wash"
               }`}
             >
               COMPARISON MATRIX (SPEC-003)
@@ -1890,7 +1890,7 @@ const pushToast = useToast();
 
           {aboutDocPage === "whitepaper" && (
             <>
-              <div className="text-center mb-10 border-b-2 border-black pb-8">
+              <div className="text-center mb-10 border-b-2 vol-line pb-8">
                 <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">
                   Technical Specification Sheet
                 </div>
@@ -1911,7 +1911,7 @@ const pushToast = useToast();
                 </div>
               </div>
 
-              <div className="mb-10 px-6 py-4 bg-gray-50 border-l-4 border-black">
+              <div className="mb-10 px-6 py-4 bg-gray-50 border-l-4 vol-line">
                 <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">
                   Abstract
                 </h2>
@@ -1940,7 +1940,7 @@ const pushToast = useToast();
 
               <div className="space-y-8 text-sm leading-relaxed text-gray-900 font-serif">
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     2. Core Architecture Strategy
                   </h2>
                   <p className="mb-3">
@@ -1956,7 +1956,7 @@ const pushToast = useToast();
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     3. Sentinel Telemetry
                   </h2>
                   <p className="mb-3">
@@ -1970,7 +1970,7 @@ const pushToast = useToast();
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     4. Chat-First Agent Workspace
                   </h2>
                   <p className="mb-3">
@@ -1983,7 +1983,7 @@ const pushToast = useToast();
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     5. Dedicated Virtual Terminal Stream
                   </h2>
                   <p className="mb-3">
@@ -2000,7 +2000,7 @@ const pushToast = useToast();
 
           {aboutDocPage === "changelog" && (
             <>
-              <div className="text-center mb-10 border-b-2 border-black pb-8">
+              <div className="text-center mb-10 border-b-2 vol-line pb-8">
                 <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">
                   Technical specs restoration log
                 </div>
@@ -2018,7 +2018,7 @@ const pushToast = useToast();
                 </div>
               </div>
 
-              <div className="mb-10 px-6 py-4 bg-gray-50 border-l-4 border-black">
+              <div className="mb-10 px-6 py-4 bg-gray-50 border-l-4 vol-line">
                 <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">
                   Abstract
                 </h2>
@@ -2033,7 +2033,7 @@ const pushToast = useToast();
 
               <div className="space-y-8 text-sm leading-relaxed text-gray-900 font-serif">
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     1. Sentinel Background Telemetry Engine
                   </h2>
                   <p className="mb-3 font-bold text-gray-800">
@@ -2058,7 +2058,7 @@ const pushToast = useToast();
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     2. Conversational Agent Command Console
                   </h2>
                   <p className="mb-3 font-bold text-gray-800">
@@ -2082,7 +2082,7 @@ const pushToast = useToast();
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     3. LCS Diff Visualizer & Code Refactoring Bug
                   </h2>
                   <p className="mb-3 font-bold text-gray-800">
@@ -2107,7 +2107,7 @@ const pushToast = useToast();
                 </section>
 
                 <section>
-                  <h2 className="font-sans font-bold text-lg border-b border-black pb-1 mb-3 uppercase">
+                  <h2 className="font-sans font-bold text-lg border-b vol-line pb-1 mb-3 uppercase">
                     4. Virtual Dedicated Terminal
                   </h2>
                   <p className="mb-3 font-bold text-gray-800">
@@ -2131,7 +2131,7 @@ const pushToast = useToast();
 
           {aboutDocPage === "comparison" && (
             <>
-              <div className="text-center mb-10 border-b-2 border-black pb-8">
+              <div className="text-center mb-10 border-b-2 vol-line pb-8">
                 <div className="text-xs tracking-[4px] uppercase font-sans font-bold text-gray-500 mb-2">
                   Upgrade telemetry comparison matrix
                 </div>
@@ -2149,7 +2149,7 @@ const pushToast = useToast();
                 </div>
               </div>
 
-              <div className="mb-8 px-6 py-4 bg-gray-50 border-l-4 border-black font-serif">
+              <div className="mb-8 px-6 py-4 bg-gray-50 border-l-4 vol-line font-serif">
                 <h2 className="font-sans font-bold text-sm uppercase tracking-wider mb-2">
                   Notice
                 </h2>
@@ -2164,142 +2164,142 @@ const pushToast = useToast();
 
               {/* COMPARISON TABLE */}
               <div className="overflow-x-auto font-sans text-xs mb-8">
-                <table className="min-w-full border border-black/35 text-left border-collapse leading-relaxed">
+                <table className="min-w-full border vol-line text-left border-collapse leading-relaxed">
                   <thead>
-                    <tr className="bg-black text-white uppercase tracking-wider text-[10px]">
-                      <th className="border border-black px-4 py-3 font-bold">
+                    <tr className="vol-well vol-t1 uppercase tracking-wider text-[10px]">
+                      <th className="border vol-line px-4 py-3 font-bold">
                         Feature Name
                       </th>
-                      <th className="border border-black px-4 py-3 font-bold">
+                      <th className="border vol-line px-4 py-3 font-bold">
                         v4.9 State (Before / Dead)
                       </th>
-                      <th className="border border-black px-4 py-3 font-bold">
+                      <th className="border vol-line px-4 py-3 font-bold">
                         v5.0 State (After / Alive)
                       </th>
-                      <th className="border border-black px-4 py-3 font-bold">
+                      <th className="border vol-line px-4 py-3 font-bold">
                         Validation
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Sentinel Watchdog
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Static labels; dead placeholders.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Debounced active watcher scan, severity heatbars,
                         warning log feeds & instant patch buttons.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Agent Orchestrator
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Duplicate settings selectors modal; no actual agent
                         features.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Chat console with conversation history, active workspace
                         memory & quick audit button triggers.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Refactoring Patch Engine
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Discarded reducer results; auto-apply formatting bugs.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Modified patch logic to save and write the combined
                         `allFixed` reducer code successfully.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Unified Diff Visualizer
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Side-by-side unhighlighted pre containers.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Custom client-side LCS diff parser rendering red
                         deletions and green additions with numbers.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Virtual Diagnostic Terminal
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Non-existent; server timeouts failed silently.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Toggleable console panel logging server calls, response
                         timers, parsed tokens and errors.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Model Identity Badge
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Hidden until analysis finished; minimal watermark tags.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Always visible header badge tracking engine tags,
                         context size, and real-time scanning status.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="bg-gray-50 hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Keyboard Hotkeys
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         Non-existent.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Global shortcut hooks (Ctrl+Enter, Ctrl+Shift+F, Ctrl+/,
                         Ctrl+K, Escape, ?) and guide.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
                     <tr className="hover:bg-gray-100/50">
-                      <td className="border border-black/30 px-4 py-3 font-bold">
+                      <td className="border vol-line px-4 py-3 font-bold">
                         Session History Filter
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-red-700 italic">
+                      <td className="border vol-line px-4 py-3 text-red-700 italic">
                         List display with zero search capabilities.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-800 font-medium">
+                      <td className="border vol-line px-4 py-3 text-green-800 font-medium">
                         Interactive keyword input matching summaries, languages,
                         and models.
                       </td>
-                      <td className="border border-black/30 px-4 py-3 text-green-700 font-bold">
+                      <td className="border vol-line px-4 py-3 text-green-700 font-bold">
                         ✔ Verified
                       </td>
                     </tr>
@@ -2309,7 +2309,7 @@ const pushToast = useToast();
             </>
           )}
 
-          <div className="mt-12 pt-8 border-t border-black text-center text-xs font-sans text-gray-500">
+          <div className="mt-12 pt-8 border-t vol-line text-center text-xs font-sans text-gray-500">
             © 2026 Volt Code AI. Built under Vercel Serverless Architecture.
           </div>
         </div>
@@ -2320,69 +2320,69 @@ const pushToast = useToast();
   const renderSentinelBoard = () => {
     return (
       <div className="p-8 h-full overflow-auto space-y-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap border-b border-[#FF5F00]/20 pb-6">
+        <div className="flex items-center justify-between gap-4 flex-wrap border-b vol-ring pb-6">
           <div>
-            <div className="text-[#FF5F00] text-xs tracking-[3px] font-bold uppercase mb-1">
+            <div className="vol-accent text-xs tracking-[3px] font-bold uppercase mb-1">
               Live Telemetry & Telemetric Scan
             </div>
             <h1 className="text-3xl font-extrabold">SENTINEL OPERATIONS</h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#FF5F00]/30 bg-black/40 text-sm">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border vol-ring vol-veil text-sm">
               <span
                 className={`w-2 h-2 rounded-full ${enableSentinel ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
               ></span>
-              <span className="font-semibold text-white/90">
+              <span className="font-semibold vol-t1">
                 MONITOR: {enableSentinel ? "ACTIVE" : "STANDBY"}
               </span>
             </div>
-            <div className="px-4 py-2 rounded-xl border border-[#FF5F00]/30 bg-black/40 text-sm text-[#FF5F00]">
+            <div className="px-4 py-2 rounded-xl border vol-ring vol-veil text-sm vol-accent">
               Last Watch-Scan: {lastSentinelScan}
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">
+          <div className="border vol-ring vol-wash p-5 rounded-2xl">
+            <div className="text-xs vol-t2 uppercase font-semibold">
               Checks Executed
             </div>
-            <div className="text-2xl font-black text-[#FF5F00] mt-1">
+            <div className="text-2xl font-black vol-accent mt-1">
               {sentinelStats.totalRuns}
             </div>
           </div>
-          <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">
+          <div className="border vol-ring vol-wash p-5 rounded-2xl">
+            <div className="text-xs vol-t2 uppercase font-semibold">
               Telemetry Spent
             </div>
-            <div className="text-2xl font-black text-white mt-1">
+            <div className="text-2xl font-black vol-t1 mt-1">
               {sentinelStats.tokensConsumed}{" "}
-              <span className="text-xs font-normal text-white/40">tokens</span>
+              <span className="text-xs font-normal vol-t2">tokens</span>
             </div>
           </div>
-          <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">
+          <div className="border vol-ring vol-wash p-5 rounded-2xl">
+            <div className="text-xs vol-t2 uppercase font-semibold">
               Active Warnings
             </div>
             <div className="text-2xl font-black text-red-500 mt-1">
               {sentinelIssues.length}
             </div>
           </div>
-          <div className="border border-[#FF5F00]/20 bg-black/45 p-5 rounded-2xl">
-            <div className="text-xs text-white/50 uppercase font-semibold">
+          <div className="border vol-ring vol-wash p-5 rounded-2xl">
+            <div className="text-xs vol-t2 uppercase font-semibold">
               Time Saved (Est.)
             </div>
             <div className="text-2xl font-black text-green-400 mt-1">
               {sentinelStats.timeSavedMinutes}{" "}
-              <span className="text-xs font-normal text-white/40">mins</span>
+              <span className="text-xs font-normal vol-t2">mins</span>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 border border-[#FF5F00]/20 bg-black/40 p-6 rounded-3xl space-y-5">
+          <div className="lg:col-span-2 border vol-ring vol-veil p-6 rounded-3xl space-y-5">
             <h2 className="text-lg font-bold flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[#FF5F00]" />
+              <Shield className="w-5 h-5 vol-accent" />
               Watchdog Diagnostic Heatmap
             </h2>
 
@@ -2418,10 +2418,10 @@ const pushToast = useToast();
                 return (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-white/60">{bar.label}</span>
-                      <span className="text-white">{bar.count} issues</span>
+                      <span className="vol-t2">{bar.label}</span>
+                      <span className="vol-t1">{bar.count} issues</span>
                     </div>
-                    <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-2 w-full vol-wash rounded-full overflow-hidden">
                       <div
                         className={`h-full ${bar.color} transition-all duration-500`}
                         style={{ width: `${percent}%` }}
@@ -2432,7 +2432,7 @@ const pushToast = useToast();
               })}
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex flex-wrap gap-3">
+            <div className="pt-4 border-t vol-line flex flex-wrap gap-3">
               <button
                 onClick={() => {
                   if (sentinelIssues.length > 0) {
@@ -2448,7 +2448,7 @@ const pushToast = useToast();
                     showToast("No active sentinel issues to patch.", "info");
                   }
                 }}
-                className="px-5 py-2.5 rounded-xl bg-[#FF5F00] text-black font-extrabold text-xs cursor-pointer"
+                className="px-5 py-2.5 rounded-xl vol-acc-bg text-black font-extrabold text-xs cursor-pointer"
               >
                 APPLY SENTINEL PATCH
               </button>
@@ -2457,34 +2457,34 @@ const pushToast = useToast();
                   setLanguage(detectedLanguage);
                   analyzeCode();
                 }}
-                className="px-5 py-2.5 rounded-xl border border-white/20 hover:bg-white/5 text-white text-xs font-bold cursor-pointer"
+                className="px-5 py-2.5 rounded-xl border vol-line hover:vol-wash vol-t1 text-xs font-bold cursor-pointer"
               >
                 RUN FORCE TELEMETRY ANALYSIS
               </button>
             </div>
           </div>
 
-          <div className="border border-[#FF5F00]/20 bg-black/40 p-6 rounded-3xl space-y-4">
+          <div className="border vol-ring vol-veil p-6 rounded-3xl space-y-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#FF5F00]" />
+              <Sparkles className="w-5 h-5 vol-accent" />
               Passive Scan Feed
             </h2>
             <div className="space-y-3 max-h-[300px] overflow-y-auto">
               {sentinelIssues.length === 0 ? (
-                <div className="text-center py-12 text-white/30 text-xs">
+                <div className="text-center py-12 vol-t2 text-xs">
                   Watcher scanning current editor inputs. Keep writing code...
                 </div>
               ) : (
                 sentinelIssues.map((issue, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-[#0a0a0a] rounded-xl border-l-4 border-[#FF5F00] text-xs"
+                    className="p-3 vol-surface rounded-xl border-l-4 vol-ring-strong text-xs"
                   >
                     <div className="flex justify-between font-bold mb-1">
                       <span>{issue.type}</span>
-                      <span className="text-[#FF5F00]">{issue.severity}</span>
+                      <span className="vol-accent">{issue.severity}</span>
                     </div>
-                    <p className="text-white/60 mb-2">{issue.description}</p>
+                    <p className="vol-t2 mb-2">{issue.description}</p>
                   </div>
                 ))
               )}
@@ -2501,15 +2501,15 @@ const pushToast = useToast();
 
   const renderSidebar = () => {
     return (
-      <div className="p-6 flex flex-col h-full bg-[#121212]">
+      <div className="p-6 flex flex-col h-full vol-elev">
         <div className="mb-12 select-none">
-          <div className="text-[#FF5F00] text-3xl font-black tracking-tighter">
+          <div className="vol-accent text-3xl font-black tracking-tighter">
             VOLT
           </div>
-          <div className="text-white text-2xl font-extrabold tracking-tight">
+          <div className="vol-t1 text-2xl font-extrabold tracking-tight">
             CODE AI
           </div>
-          <div className="text-[#FF5F00] text-[10px] mt-1 font-bold tracking-[3px]">
+          <div className="vol-accent text-[10px] mt-1 font-bold tracking-[3px]">
             v6.0 ENTERPRISE
           </div>
         </div>
@@ -2517,19 +2517,19 @@ const pushToast = useToast();
         {!isLoggedIn ? (
           <button
             onClick={() => setShowLoginModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-black font-extrabold transition-all active:scale-[0.985] cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl vol-acc-bg hover:vol-accbg-hi text-black font-extrabold transition-all active:scale-[0.985] cursor-pointer"
           >
             <User className="w-4 h-4" />
             LOGIN TO SAVE
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="text-[#FF5F00] font-semibold truncate max-w-[120px]">
+            <div className="vol-accent font-semibold truncate max-w-[120px]">
               {username}
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white text-[10px] font-bold transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg vol-wash hover:vol-wash vol-t2 hover:vol-t1 text-[10px] font-bold transition-all cursor-pointer"
               title="Sign out"
             >
               <X className="w-3.5 h-3.5" />
@@ -2543,8 +2543,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("editor")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "editor"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Play className="w-5 h-5" />
@@ -2555,8 +2555,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("ide")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "ide"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Sparkles className="w-5 h-5" />
@@ -2567,8 +2567,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("swarm")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "swarm"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Bot className="w-5 h-5" />
@@ -2579,8 +2579,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("history")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "history"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <History className="w-5 h-5" />
@@ -2591,8 +2591,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("sentinel")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "sentinel"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Shield className="w-5 h-5" />
@@ -2603,8 +2603,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("boss")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "boss"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Crown className="w-5 h-5" />
@@ -2615,8 +2615,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("meeting")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "meeting"
-                ? "bg-blue-600 text-white font-bold"
-                : "hover:bg-white/5 text-blue-400"
+                ? "bg-blue-600 vol-t1 font-bold"
+                : "hover:vol-wash text-blue-400"
             }`}
           >
             <Users className="w-5 h-5" />
@@ -2627,8 +2627,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("pr-review")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "pr-review"
-                ? "bg-orange-600 text-white font-bold"
-                : "hover:bg-white/5 text-orange-400"
+                ? "bg-orange-600 vol-t1 font-bold"
+                : "hover:vol-wash text-orange-400"
             }`}
           >
             <GitPullRequest className="w-5 h-5" />
@@ -2639,8 +2639,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("settings")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "settings"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Settings className="w-5 h-5" />
@@ -2651,8 +2651,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("github")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "github"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <GitBranch className="w-5 h-5" />
@@ -2663,8 +2663,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("admin")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "admin"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <Wrench className="w-5 h-5" />
@@ -2675,8 +2675,8 @@ const pushToast = useToast();
             onClick={() => setCurrentView("about")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
               currentView === "about"
-                ? "bg-[#FF5F00] text-black font-bold"
-                : "hover:bg-white/5 text-[#FF5F00]"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
             }`}
           >
             <HelpCircle className="w-5 h-5" />
@@ -2701,19 +2701,19 @@ const pushToast = useToast();
               PREVIOUS SESSIONS
             </h1>
             <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-white/40" />
+              <Search className="absolute left-3 top-3 w-4 h-4 vol-t2" />
               <input
                 type="text"
                 placeholder="Search sessions..."
                 value={historySearch}
                 onChange={(e) => setHistorySearch(e.target.value)}
-                className="w-full bg-black border border-[#FF5F00]/30 py-2.5 pl-10 pr-4 rounded-xl text-sm text-white focus:outline-none focus:border-[#FF5F00] transition-all"
+                className="w-full vol-well border vol-ring py-2.5 pl-10 pr-4 rounded-xl text-sm vol-t1 focus:outline-none focus:vol-ring-hi transition-all"
               />
             </div>
           </div>
 
           {filteredSessions.length === 0 ? (
-            <div className="text-center py-24 text-[#FF5F00]/60">
+            <div className="text-center py-24 vol-accent-soft">
               No matching sessions. Run analysis to start history logs.
             </div>
           ) : (
@@ -2722,24 +2722,24 @@ const pushToast = useToast();
                 <div
                   key={idx}
                   onClick={() => loadSession(session)}
-                  className="p-5 border border-[#FF5F00]/20 hover:border-[#FF5F00] rounded-2xl cursor-pointer group bg-black/40 transition-all"
+                  className="p-5 border vol-ring hover:vol-ring-hi rounded-2xl cursor-pointer group vol-veil transition-all"
                 >
                   <div className="flex justify-between mb-4">
-                    <div className="font-mono text-sm text-[#FF5F00]">
+                    <div className="font-mono text-sm vol-accent">
                       {new Date(session.timestamp).toLocaleDateString()}
                     </div>
-                    <div className="uppercase text-xs tracking-widest px-3 py-px bg-[#FF5F00]/10 text-[#FF5F00] rounded font-bold">
+                    <div className="uppercase text-xs tracking-widest px-3 py-px vol-acc-wash vol-accent rounded font-bold">
                       {session.language}
                     </div>
                   </div>
-                  <div className="font-semibold line-clamp-2 text-lg mb-3 pr-2 text-white/95">
+                  <div className="font-semibold line-clamp-2 text-lg mb-3 pr-2 vol-t1/95">
                     {session.summary}
                   </div>
-                  <div className="text-xs text-[#FF5F00]/60 font-bold">
+                  <div className="text-xs vol-accent-soft font-bold">
                     {session.issues.length} FIXES COMPLETED
                   </div>
                   {session.modelUsed && (
-                    <div className="text-xs text-white/40 mt-2">
+                    <div className="text-xs vol-t2 mt-2">
                       Model: {session.modelUsed}
                     </div>
                   )}
@@ -2760,21 +2760,21 @@ const pushToast = useToast();
         <div className="p-8 max-w-2xl overflow-y-auto h-full pb-20">
           <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="text-lg font-bold mb-1">Workspace Backup</div>
-              <p className="text-[10px] text-white/40 mb-4">
+              <p className="text-[10px] vol-t2 mb-4">
                 Export or restore all sessions, todos, repo links and keys as a
                 single JSON file. Keep it safe — it contains your API keys.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={exportWorkspaceData}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FF5F00] text-black text-xs font-bold cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-bold cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   EXPORT BACKUP
                 </button>
-                <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold cursor-pointer hover:bg-[#FF5F00]/10">
+                <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-well border vol-ring-strong vol-accent text-xs font-bold cursor-pointer hover:vol-acc-wash">
                   <RefreshCw className="w-4 h-4" />
                   RESTORE BACKUP
                   <input
@@ -2791,7 +2791,7 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="text-lg font-bold mb-4">Default Model</div>
               <select
                 value={selectedModel.id}
@@ -2801,21 +2801,21 @@ const pushToast = useToast();
                   )!;
                   setSelectedModel(model);
                 }}
-                className="w-full bg-black border border-[#FF5F00]/40 px-4 py-3 rounded text-white cursor-pointer font-mono font-semibold"
+                className="w-full vol-well border vol-ring-strong px-4 py-3 rounded vol-t1 cursor-pointer font-mono font-semibold"
               >
                 {Array.from(new Set(FREE_MODELS.map((m) => m.provider))).map(
                   (provider) => (
                     <optgroup
                       key={provider}
                       label={provider}
-                      className="bg-[#121212] text-[#FF5F00] font-bold"
+                      className="vol-elev vol-accent font-bold"
                     >
                       {FREE_MODELS.filter((m) => m.provider === provider).map(
                         (model) => (
                           <option
                             key={model.id}
                             value={model.id}
-                            className="bg-[#121212] text-white font-normal"
+                            className="vol-elev vol-t1 font-normal"
                           >
                             {model.name} ({model.tag} • {model.ctx})
                           </option>
@@ -2827,7 +2827,7 @@ const pushToast = useToast();
               </select>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40 space-y-4">
+            <div className="border vol-ring rounded-xl p-6 vol-veil space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-lg font-bold">Provider API Keys</div>
                 <div className="flex items-center gap-2">
@@ -2838,7 +2838,7 @@ const pushToast = useToast();
                     </span>
                   )}
                   {vaultSyncState === "saving" && (
-                    <span className="text-[10px] text-[#FF5F00] font-semibold uppercase tracking-wider">
+                    <span className="text-[10px] vol-accent font-semibold uppercase tracking-wider">
                       Syncing…
                     </span>
                   )}
@@ -2854,13 +2854,13 @@ const pushToast = useToast();
                   )}
                 </div>
               </div>
-              <p className="text-[10px] text-white/40 -mt-2 mb-1">
+              <p className="text-[10px] vol-t2 -mt-2 mb-1">
                 Keys are encrypted and stored in the MongoDB secret vault.
                 Entering a key auto-syncs it to the vault.
               </p>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
                   OpenRouter Key
                 </label>
                 <input
@@ -2871,12 +2871,12 @@ const pushToast = useToast();
                     localStorage.setItem("volt_openrouter_key", e.target.value);
                   }}
                   placeholder="sk-or-..."
-                  className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
+                  className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
                   Groq Key
                 </label>
                 <input
@@ -2887,12 +2887,12 @@ const pushToast = useToast();
                     localStorage.setItem("volt_groq_key", e.target.value);
                   }}
                   placeholder="gsk_..."
-                  className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
+                  className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
                   NVIDIA Key
                 </label>
                 <input
@@ -2903,12 +2903,12 @@ const pushToast = useToast();
                     localStorage.setItem("volt_nvidia_key", e.target.value);
                   }}
                   placeholder="nvapi-..."
-                  className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
+                  className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-[#FF5F00]/70 mb-1 tracking-wider uppercase font-semibold">
+                <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
                   HuggingFace Key
                 </label>
                 <input
@@ -2922,19 +2922,19 @@ const pushToast = useToast();
                     );
                   }}
                   placeholder="hf_..."
-                  className="w-full bg-black border border-[#FF5F00]/40 px-4 py-2.5 rounded-xl text-white text-xs outline-none focus:border-[#FF5F00] font-mono"
+                  className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
                 />
               </div>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-bold">
                   Live Provider Availability
                 </div>
                 <button
                   onClick={refreshLiveProviders}
-                  className="flex items-center gap-1.5 text-xs text-[#FF5F00] hover:text-[#FF5F00]/80 disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-xs vol-accent hover:vol-accent disabled:opacity-50"
                   disabled={liveProviderLoading}
                 >
                   <RefreshCw
@@ -2945,14 +2945,14 @@ const pushToast = useToast();
               </div>
 
               {liveProviderUpdated && (
-                <p className="text-[10px] text-white/40 mb-3 font-mono">
+                <p className="text-[10px] vol-t2 mb-3 font-mono">
                   Last checked:{" "}
                   {new Date(liveProviderUpdated).toLocaleTimeString()}
                 </p>
               )}
 
               {liveProviderAvailability.length === 0 ? (
-                <p className="text-xs text-white/40">
+                <p className="text-xs vol-t2">
                   No live model data yet. Press Refresh to load the model
                   catalog from connected providers.
                 </p>
@@ -2961,7 +2961,7 @@ const pushToast = useToast();
                   {liveProviderAvailability.map((provider) => (
                     <div
                       key={provider.provider}
-                      className="p-3 bg-black/60 border border-white/10 rounded-xl flex items-center justify-between"
+                      className="p-3 vol-veil border vol-line rounded-xl flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -2971,7 +2971,7 @@ const pushToast = useToast();
                               : "bg-red-500"
                           }`}
                         />
-                        <span className="text-sm font-bold text-white">
+                        <span className="text-sm font-bold vol-t1">
                           {provider.label}
                         </span>
                         {provider.connected ? (
@@ -2984,7 +2984,7 @@ const pushToast = useToast();
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-white/50 font-mono">
+                      <div className="text-[10px] vol-t2 font-mono">
                         {provider.freeCount} free / {provider.paidCount} paid
                       </div>
                     </div>
@@ -2993,12 +2993,12 @@ const pushToast = useToast();
               )}
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="text-lg font-bold mb-4">Agent Mode Default</div>
               <select
                 value={agentMode}
                 onChange={(e) => setAgentMode(e.target.value as AgentMode)}
-                className="w-full bg-black border border-[#FF5F00]/40 px-4 py-3 rounded text-white cursor-pointer font-semibold"
+                className="w-full vol-well border vol-ring-strong px-4 py-3 rounded vol-t1 cursor-pointer font-semibold"
               >
                 {modeOptions.map((mode) => (
                   <option key={mode} value={mode}>
@@ -3008,11 +3008,11 @@ const pushToast = useToast();
               </select>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="text-lg font-bold mb-2">
                 Sentinel Debounce Delay
               </div>
-              <div className="text-sm text-[#FF5F00]/60 mb-3">
+              <div className="text-sm vol-accent-soft mb-3">
                 Delay after typing before passive analysis runs: {debounceDelay}
                 ms
               </div>
@@ -3023,22 +3023,22 @@ const pushToast = useToast();
                 step="50"
                 value={debounceDelay}
                 onChange={(e) => setDebounceDelay(Number(e.target.value))}
-                className="w-full accent-[#FF5F00] bg-white/10 h-1.5 rounded-lg appearance-none cursor-pointer"
+                className="w-full accent-[#FF5F00] vol-wash h-1.5 rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">Auto-Apply Fixes</div>
-                  <div className="text-sm text-[#FF5F00]/60 mt-1">
+                  <div className="text-sm vol-accent-soft mt-1">
                     Automatically apply all fixes without confirmation
                   </div>
                 </div>
                 <button
                   onClick={() => setAutoApplyFixes(!autoApplyFixes)}
                   className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-                    autoApplyFixes ? "bg-[#FF5F00]" : "bg-white/10"
+                    autoApplyFixes ? "vol-acc-bg" : "vol-wash"
                   }`}
                 >
                   <div
@@ -3050,20 +3050,20 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">
                     Sentinel Live Monitoring
                   </div>
-                  <div className="text-sm text-[#FF5F00]/60 mt-1">
+                  <div className="text-sm vol-accent-soft mt-1">
                     Enable real-time code monitoring watchdog
                   </div>
                 </div>
                 <button
                   onClick={() => setEnableSentinel(!enableSentinel)}
                   className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-                    enableSentinel ? "bg-[#FF5F00]" : "bg-white/10"
+                    enableSentinel ? "vol-acc-bg" : "vol-wash"
                   }`}
                 >
                   <div
@@ -3075,20 +3075,20 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">
                     Show Token Usage Panel
                   </div>
-                  <div className="text-sm text-[#FF5F00]/60 mt-1">
+                  <div className="text-sm vol-accent-soft mt-1">
                     Show prompt, completion, and cost estimates after runs
                   </div>
                 </div>
                 <button
                   onClick={() => setShowTokenUsage(!showTokenUsage)}
                   className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-                    showTokenUsage ? "bg-[#FF5F00]" : "bg-white/10"
+                    showTokenUsage ? "vol-acc-bg" : "vol-wash"
                   }`}
                 >
                   <div
@@ -3100,9 +3100,9 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+            <div className="border vol-ring rounded-xl p-6 vol-veil">
               <div className="text-lg font-bold mb-2">Theme</div>
-              <div className="text-[#FF5F00]/70 font-semibold">
+              <div className="vol-accent-soft font-semibold">
                 Charcoal Black + Neon Orange (locked)
               </div>
             </div>
@@ -3123,7 +3123,7 @@ const pushToast = useToast();
                 downloadAnchor.remove();
                 showToast("Sessions exported successfully!", "success");
               }}
-              className="w-full px-6 py-4 rounded-xl border border-[#FF5F00]/40 text-[#FF5F00] font-bold hover:bg-[#FF5F00]/10 transition-all mb-3 cursor-pointer"
+              className="w-full px-6 py-4 rounded-xl border vol-ring-strong vol-accent font-bold hover:vol-acc-wash transition-all mb-3 cursor-pointer"
             >
               EXPORT ALL SESSIONS (JSON)
             </button>
@@ -3150,12 +3150,12 @@ const pushToast = useToast();
     if (currentView === "github") {
       return (
         <div className="p-8 h-full overflow-y-auto space-y-6">
-          <div className="flex justify-between items-center flex-wrap gap-4 border-b border-[#FF5F00]/20 pb-5">
+          <div className="flex justify-between items-center flex-wrap gap-4 border-b vol-ring pb-5">
             <div>
-              <h1 className="text-3xl font-black text-white">
+              <h1 className="text-3xl font-black vol-t1">
                 GITHUB DEPLOYMENT INTEGRATION
               </h1>
-              <p className="text-xs text-[#FF5F00] mt-1 font-bold">
+              <p className="text-xs vol-accent mt-1 font-bold">
                 Synchronize edits, branch patches, and quality gates directly to
                 git remote
               </p>
@@ -3163,7 +3163,7 @@ const pushToast = useToast();
             <button
               onClick={fetchGithubData}
               disabled={isFetchingGithub}
-              className="flex items-center gap-2 px-5 py-2.5 bg-black border border-[#FF5F00] text-[#FF5F00] hover:bg-[#FF5F00] hover:text-black font-extrabold text-xs uppercase rounded-xl transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 vol-well border vol-ring-strong vol-accent hover:vol-acc-bg hover:text-black font-extrabold text-xs uppercase rounded-xl transition-all cursor-pointer disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${isFetchingGithub ? "animate-spin" : ""}`}
@@ -3192,14 +3192,14 @@ const pushToast = useToast();
 
             {/* Git config form & log */}
             <div className="xl:col-span-2 space-y-6">
-              <div className="border border-[#FF5F00]/20 bg-black/40 rounded-2xl p-6 space-y-4">
-                <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+              <div className="border vol-ring vol-veil rounded-2xl p-6 space-y-4">
+                <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
                   Repository Synchronization Settings
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">
+                    <label className="block text-[10px] vol-t2 uppercase font-black mb-1">
                       Target Repository
                     </label>
                     <input
@@ -3212,11 +3212,11 @@ const pushToast = useToast();
                           e.target.value,
                         );
                       }}
-                      className="w-full bg-black border border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF5F00]"
+                      className="w-full vol-well border vol-line px-4 py-2.5 rounded-xl text-xs vol-t1 focus:outline-none focus:vol-ring-hi"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">
+                    <label className="block text-[10px] vol-t2 uppercase font-black mb-1">
                       Deployment Branch
                     </label>
                     <input
@@ -3229,11 +3229,11 @@ const pushToast = useToast();
                           e.target.value,
                         );
                       }}
-                      className="w-full bg-black border border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF5F00]"
+                      className="w-full vol-well border vol-line px-4 py-2.5 rounded-xl text-xs vol-t1 focus:outline-none focus:vol-ring-hi"
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-[10px] text-white/50 uppercase font-black mb-1">
+                    <label className="block text-[10px] vol-t2 uppercase font-black mb-1">
                       Personal Access Token (PAT)
                     </label>
                     <input
@@ -3247,38 +3247,38 @@ const pushToast = useToast();
                         );
                       }}
                       placeholder="ghp_..."
-                      className="w-full bg-black border border-white/10 px-4 py-2.5 rounded-xl text-xs text-white focus:outline-none focus:border-[#FF5F00]"
+                      className="w-full vol-well border vol-line px-4 py-2.5 rounded-xl text-xs vol-t1 focus:outline-none focus:vol-ring-hi"
                     />
                   </div>
                 </div>
               </div>
 
               {loadedFilePath && (
-                <div className="border border-white/5 bg-[#121212]/40 p-6 rounded-2xl space-y-4">
+                <div className="border vol-line vol-elev p-6 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-semibold text-white/80">
+                    <span className="font-semibold vol-t1">
                       Staged File:{" "}
-                      <span className="text-[#FF5F00]">{loadedFilePath}</span>
+                      <span className="vol-accent">{loadedFilePath}</span>
                     </span>
-                    <span className="text-white/40 text-[10px]">
+                    <span className="vol-t2 text-[10px]">
                       SHA: {loadedFileSha.slice(0, 7)}
                     </span>
                   </div>
                   <div>
-                    <label className="block text-[9px] text-white/40 uppercase font-black mb-1">
+                    <label className="block text-[9px] vol-t2 uppercase font-black mb-1">
                       Commit Message
                     </label>
                     <input
                       type="text"
                       value={commitMessage}
                       onChange={(e) => setCommitMessage(e.target.value)}
-                      className="w-full bg-black border border-white/10 px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-[#FF5F00]"
+                      className="w-full vol-well border vol-line px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:vol-ring-hi"
                     />
                   </div>
                   <button
                     onClick={handleCommitAndPush}
                     disabled={isFetchingGithub || !loadedFilePath}
-                    className="px-5 py-3 bg-[#FF5F00] text-black font-extrabold text-xs uppercase rounded-xl hover:bg-[#FF5F00]/90 transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-3 vol-acc-bg text-black font-extrabold text-xs uppercase rounded-xl hover:vol-accbg-hi transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     <GitBranch className="w-4 h-4" />
                     PUSH COMMIT TO BRANCH
@@ -3287,8 +3287,8 @@ const pushToast = useToast();
               )}
 
               {/* Issues list */}
-              <div className="border border-[#FF5F00]/20 bg-black/40 rounded-2xl p-6 space-y-4">
-                <h3 className="font-bold text-sm text-[#FF5F00] uppercase tracking-wider flex items-center gap-2">
+              <div className="border vol-ring vol-veil rounded-2xl p-6 space-y-4">
+                <h3 className="font-bold text-sm vol-accent uppercase tracking-wider flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
                   Active Repo Issues ({githubIssues.length})
                 </h3>
@@ -3297,10 +3297,10 @@ const pushToast = useToast();
                     <div
                       key={issue.id}
                       onClick={() => handleLoadIssue(issue)}
-                      className="p-4 bg-black/40 border border-white/5 hover:border-[#FF5F00]/40 hover:bg-[#FF5F00]/5 rounded-xl cursor-pointer transition-all text-xs space-y-2"
+                      className="p-4 vol-veil border vol-line hover:vol-ring-hi hover:vol-acc-wash rounded-xl cursor-pointer transition-all text-xs space-y-2"
                     >
                       <div className="flex justify-between items-start gap-2">
-                        <span className="font-bold text-white hover:text-[#FF5F00] truncate">
+                        <span className="font-bold vol-t1 hover:vol-accent truncate">
                           #{issue.number} {issue.title}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-400 font-mono text-[9px] uppercase font-bold shrink-0">
@@ -3308,11 +3308,11 @@ const pushToast = useToast();
                         </span>
                       </div>
                       {issue.body && (
-                        <p className="text-white/50 line-clamp-2 leading-relaxed">
+                        <p className="vol-t2 line-clamp-2 leading-relaxed">
                           {issue.body}
                         </p>
                       )}
-                      <div className="text-[10px] text-[#FF5F00]/60 flex items-center gap-1.5">
+                      <div className="text-[10px] vol-accent-soft flex items-center gap-1.5">
                         <span>By {issue.user?.login}</span>
                         <span>•</span>
                         <span>
@@ -3322,7 +3322,7 @@ const pushToast = useToast();
                     </div>
                   ))}
                   {githubIssues.length === 0 && (
-                    <div className="text-center py-12 text-white/30 text-xs">
+                    <div className="text-center py-12 vol-t2 text-xs">
                       No active issues found.
                     </div>
                   )}
@@ -3366,25 +3366,25 @@ const pushToast = useToast();
     if (currentView === "boss") {
       return (
         <div className="p-4 md:p-8 flex flex-col h-full overflow-hidden bg-gradient-to-br from-[#0F0F10] to-[#050505] select-text">
-          <div className="flex justify-between items-center border-b border-[#FF5F00]/30 pb-4 mb-4 select-none shrink-0">
+          <div className="flex justify-between items-center border-b vol-ring pb-4 mb-4 select-none shrink-0">
             <div>
-              <div className="text-xl md:text-2xl font-black flex items-center gap-3 text-white tracking-widest">
-                <Crown className="text-[#FF5F00] animate-pulse" />
+              <div className="text-xl md:text-2xl font-black flex items-center gap-3 vol-t1 tracking-widest">
+                <Crown className="vol-accent animate-pulse" />
                 VOLT AI AGENT HEAD
               </div>
-              <div className="text-[10px] md:text-xs text-[#FF5F00]/80 mt-1 uppercase font-bold tracking-wider">
+              <div className="text-[10px] md:text-xs vol-accent-soft mt-1 uppercase font-bold tracking-wider">
                 Supreme Core Orchestrator & Code Mechanic Command Cockpit
               </div>
             </div>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[#FF5F00]/10 border border-[#FF5F00]/40 rounded-xl text-[10px] font-black text-[#FF5F00]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5F00] animate-ping"></span>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 vol-acc-wash border vol-ring-strong rounded-xl text-[10px] font-black vol-accent">
+              <span className="w-1.5 h-1.5 rounded-full vol-acc-bg animate-ping"></span>
               ORCHESTRATOR ONLINE
             </div>
           </div>
 
           <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
             {/* Chat column */}
-            <div className="flex-1 flex flex-col h-full bg-black/60 rounded-2xl border border-[#FF5F00]/15 overflow-hidden shadow-2xl relative">
+            <div className="flex-1 flex flex-col h-full vol-veil rounded-2xl border vol-ring overflow-hidden shadow-2xl relative">
               {/* Chat Feed */}
               <div className="flex-1 p-6 overflow-y-auto space-y-4">
                 {bossMessages.map((msg, idx) => (
@@ -3396,11 +3396,11 @@ const pushToast = useToast();
                       className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-xs md:text-sm leading-relaxed shadow-lg ${
                         msg.role === "user"
                           ? "bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] text-black font-extrabold"
-                          : "bg-[#141416] text-white border border-[#FF5F00]/25"
+                          : "vol-elev vol-t1 border vol-ring"
                       }`}
                     >
                       {msg.role === "agent" && (
-                        <div className="text-[10px] text-[#FF5F00] font-black uppercase tracking-wider mb-1 flex items-center gap-1.5 select-none">
+                        <div className="text-[10px] vol-accent font-black uppercase tracking-wider mb-1 flex items-center gap-1.5 select-none">
                           <Bot className="w-3.5 h-3.5" />
                           Volt AI Boss
                         </div>
@@ -3411,8 +3411,8 @@ const pushToast = useToast();
                 ))}
                 {isBossLoading && (
                   <div className="flex justify-start">
-                    <div className="max-w-[80%] rounded-2xl px-5 py-3.5 bg-[#141416] text-white/50 border border-white/5 text-xs md:text-sm flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-[#FF5F00]" />
+                    <div className="max-w-[80%] rounded-2xl px-5 py-3.5 vol-elev vol-t2 border vol-line text-xs md:text-sm flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin vol-accent" />
                       Aligning neural weights and selecting AI models...
                     </div>
                   </div>
@@ -3425,14 +3425,14 @@ const pushToast = useToast();
                   e.preventDefault();
                   sendBossMessage(bossInput);
                 }}
-                className="p-4 border-t border-white/5 bg-[#0D0D0E] flex gap-3 select-none shrink-0"
+                className="p-4 border-t vol-line vol-elev flex gap-3 select-none shrink-0"
               >
                 <input
                   type="text"
                   value={bossInput}
                   onChange={(e) => setBossInput(e.target.value)}
                   placeholder="Ask the Agent Head to delegate tasks, refine code, or recommend a model..."
-                  className="flex-1 bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5F00] text-white"
+                  className="flex-1 vol-well border vol-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:vol-ring-hi vol-t1"
                 />
                 <button
                   type="submit"
@@ -3448,12 +3448,12 @@ const pushToast = useToast();
             {/* Models recommendation index column */}
             <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 overflow-y-auto">
               {/* Mission Statement */}
-              <div className="machined-plate p-5 border border-[#FF5F00]/20 bg-black/45 space-y-3 shadow-xl">
-                <div className="text-[10px] text-[#FF5F00] uppercase font-black tracking-widest flex items-center gap-1.5">
+              <div className="machined-plate p-5 border vol-ring vol-wash space-y-3 shadow-xl">
+                <div className="text-[10px] vol-accent uppercase font-black tracking-widest flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                   Volt AI Mission
                 </div>
-                <p className="text-xs text-white/70 leading-relaxed font-mono">
+                <p className="text-xs vol-t1 leading-relaxed font-mono">
                   Volt AI is a state-of-the-art Agentic AI Coding Editor, Code
                   Fixer, Code Refiner, and Bug Diagnosing WebApp. Engineered as
                   a complete Code Mechanic, it automates parallel testing, AST
@@ -3462,8 +3462,8 @@ const pushToast = useToast();
               </div>
 
               {/* Model Decision Matrix */}
-              <div className="machined-plate p-5 border border-white/5 space-y-4 shadow-xl">
-                <div className="text-[10px] text-white/50 uppercase font-black tracking-widest">
+              <div className="machined-plate p-5 border vol-line space-y-4 shadow-xl">
+                <div className="text-[10px] vol-t2 uppercase font-black tracking-widest">
                   Model Recommendation Matrix
                 </div>
 
@@ -3492,12 +3492,12 @@ const pushToast = useToast();
                   ].map((m) => (
                     <div
                       key={m.name}
-                      className={`p-3 bg-black/40 rounded-xl space-y-1.5 ${m.color}`}
+                      className={`p-3 vol-veil rounded-xl space-y-1.5 ${m.color}`}
                     >
-                      <div className="text-xs font-extrabold text-white">
+                      <div className="text-xs font-extrabold vol-t1">
                         {m.name}
                       </div>
-                      <div className="text-[10px] text-white/50 leading-relaxed font-mono">
+                      <div className="text-[10px] vol-t2 leading-relaxed font-mono">
                         {m.task}
                       </div>
                     </div>
@@ -3513,7 +3513,7 @@ const pushToast = useToast();
     // Agent Swarm View
     if (currentView === "swarm") {
       return (
-        <div className="w-full h-full overflow-y-auto bg-[#050505] pt-6">
+        <div className="w-full h-full overflow-y-auto vol-surface pt-6">
           <SwarmPanel
             agentBreakdown={agentBreakdown}
             consensusScore={consensusScore}
@@ -3527,24 +3527,24 @@ const pushToast = useToast();
     // IDE Canvas View (v0 dormant restore)
     if (currentView === "ide") {
       return (
-        <div className="w-full h-full flex flex-col md:flex-row overflow-hidden bg-[#050505]">
+        <div className="w-full h-full flex flex-col md:flex-row overflow-hidden vol-surface">
           <div className="flex-1 min-w-0 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-2 border-b border-[#FF5F00]/20 shrink-0">
-              <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-[#FF5F00]">
+            <div className="flex items-center justify-between px-4 py-2 border-b vol-ring shrink-0">
+              <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest vol-accent">
                 <Sparkles className="w-4 h-4" />
                 IDE CANVAS · {language.toUpperCase()}
               </div>
               <button
                 onClick={() => setCurrentView("editor")}
-                className="text-[10px] font-bold text-white/60 hover:text-white px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10"
+                className="text-[10px] font-bold vol-t2 hover:vol-t1 px-3 py-1.5 rounded-lg vol-wash hover:vol-wash"
               >
                 BACK TO EDITOR
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {isAnalyzing && (
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#FF5F00]/10 border-b border-[#FF5F00]/20 text-[10px] font-bold tracking-widest text-[#FF5F00]">
-                  <span className="w-2 h-2 rounded-full bg-[#FF5F00] animate-ping" />
+                <div className="flex items-center gap-2 px-4 py-1.5 vol-acc-wash border-b vol-ring text-[10px] font-bold tracking-widest vol-accent">
+                  <span className="w-2 h-2 rounded-full vol-acc-bg animate-ping" />
                   AGENT SCAN IN PROGRESS
                 </div>
               )}
@@ -3560,7 +3560,7 @@ const pushToast = useToast();
             </div>
           </div>
 
-          <div className="w-full md:w-80 shrink-0 border-l border-[#FF5F00]/20 bg-black/40 overflow-y-auto">
+          <div className="w-full md:w-80 shrink-0 border-l vol-ring vol-veil overflow-y-auto">
             <TODOListWidget
               todos={todos}
               onAddTodo={(t) => setTodos((prev) => [...prev, t])}
@@ -3636,17 +3636,17 @@ const pushToast = useToast();
     return (
       <div className="flex flex-col h-full overflow-hidden">
         {/* Editor Toolbar Header */}
-        <div className="border-b border-[#FF5F00]/20 p-6 shrink-0 bg-[#0F0F0F]">
+        <div className="border-b vol-ring p-6 shrink-0 vol-elev">
           <div className="mb-1 flex justify-between items-start">
             <div>
               <div className="text-2xl font-bold">MULTI-LANGUAGE EDITOR</div>
-              <div className="text-xs text-[#FF5F00]/70 font-semibold tracking-wide">
+              <div className="text-xs vol-accent-soft font-semibold tracking-wide">
                 AI Bug Finder, Agent Runner & Telemetrist
               </div>
             </div>
             <button
               onClick={() => setShowShortcutsCheatSheet(true)}
-              className="px-3 py-1.5 rounded-lg border border-white/20 hover:bg-white/5 text-white/60 hover:text-white text-xs font-semibold cursor-pointer"
+              className="px-3 py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
             >
               SHORTCUTS [?]
             </button>
@@ -3676,7 +3676,7 @@ const pushToast = useToast();
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="bg-black border border-[#FF5F00]/60 px-4 py-2 text-sm rounded focus:outline-none focus:border-[#FF5F00] cursor-pointer text-white font-semibold"
+              className="vol-well border vol-ring-strong px-4 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold"
             >
               {languages.map((l) => (
                 <option key={l.value} value={l.value}>
@@ -3685,33 +3685,33 @@ const pushToast = useToast();
               ))}
             </select>
 
-            <div className="px-4 py-2 rounded bg-[#FF5F00]/10 text-[#FF5F00] text-sm font-semibold">
+            <div className="px-4 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold">
               DETECTED: {detectedLanguage.toUpperCase()}
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-4 items-center">
-            <div className="px-4 py-2.5 rounded-xl border border-[#FF5F00] bg-black/60 inline-flex items-center gap-3 select-none">
-              <Zap className="w-4 h-4 text-[#FF5F00] animate-pulse" />
+            <div className="px-4 py-2.5 rounded-xl border vol-ring-strong vol-veil inline-flex items-center gap-3 select-none">
+              <Zap className="w-4 h-4 vol-accent animate-pulse" />
               <div className="flex flex-col">
-                <div className="text-[#FF5F00] text-[9px] tracking-widest font-bold uppercase">
+                <div className="vol-accent text-[9px] tracking-widest font-bold uppercase">
                   Active Engine
                 </div>
-                <div className="font-extrabold text-sm text-white">
+                <div className="font-extrabold text-sm vol-t1">
                   {selectedModel.name}
                 </div>
               </div>
               <div className="h-6 w-px bg-white/20"></div>
-              <div className="text-[10px] text-white/60 uppercase font-semibold">
+              <div className="text-[10px] vol-t2 uppercase font-semibold">
                 {selectedModel.tag} • {selectedModel.ctx} Context • Free Tier
               </div>
             </div>
 
-            <div className="flex items-center gap-3 border border-[#FF5F00]/40 rounded-xl px-4 py-1.5 bg-black/60 select-none">
-              <div className="text-[9px] text-[#FF5F00] tracking-wider uppercase font-bold">
+            <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-1.5 vol-veil select-none">
+              <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                 Operation Mode
               </div>
-              <div className="flex items-center gap-1.5 bg-black/40 rounded-lg p-0.5 border border-white/5">
+              <div className="flex items-center gap-1.5 vol-veil rounded-lg p-0.5 border vol-line">
                 <button
                   onClick={() => {
                     setAgentMode("manual");
@@ -3720,7 +3720,7 @@ const pushToast = useToast();
                   className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
                     agentMode === "manual"
                       ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
-                      : "text-white/40 hover:text-white/80"
+                      : "vol-t2 hover:vol-t1"
                   }`}
                 >
                   Manual Mode
@@ -3735,8 +3735,8 @@ const pushToast = useToast();
                   }}
                   className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
                     agentMode !== "manual"
-                      ? "bg-[#FF5F00]/20 text-[#FF5F00] border border-[#FF5F00]/40 shadow-sm shadow-[#FF5F00]/10"
-                      : "text-white/40 hover:text-white/80"
+                      ? "vol-acc-wash vol-accent border vol-ring-strong shadow-sm shadow-[#FF5F00]/10"
+                      : "vol-t2 hover:vol-t1"
                   }`}
                 >
                   Autonomous Mode
@@ -3745,20 +3745,20 @@ const pushToast = useToast();
             </div>
 
             {showTokenUsage && tokensUsed > 0 && (
-              <div className="p-3 rounded-xl border border-[#FF5F00]/20 bg-black/40 flex items-center gap-6">
+              <div className="p-3 rounded-xl border vol-ring vol-veil flex items-center gap-6">
                 <div>
-                  <div className="text-[#FF5F00] text-[10px] tracking-wider font-bold">
+                  <div className="vol-accent text-[10px] tracking-wider font-bold">
                     TOTAL CONSUMPTION
                   </div>
-                  <div className="text-white font-extrabold text-lg">
+                  <div className="vol-t1 font-extrabold text-lg">
                     {tokensUsed}{" "}
-                    <span className="text-xs text-white/50 font-normal">
+                    <span className="text-xs vol-t2 font-normal">
                       tokens
                     </span>
                   </div>
                 </div>
-                <div className="h-8 w-px bg-white/10"></div>
-                <div className="text-xs text-white/50 space-y-0.5 select-none">
+                <div className="h-8 w-px vol-wash"></div>
+                <div className="text-xs vol-t2 space-y-0.5 select-none">
                   <div>Prompt: {promptTokens}</div>
                   <div>Completion: {completionTokens}</div>
                 </div>
@@ -3768,19 +3768,19 @@ const pushToast = useToast();
         </div>
 
         {/* Textarea Area */}
-        <div className="flex-1 relative overflow-hidden flex flex-col bg-[#0A0A0A]">
+        <div className="flex-1 relative overflow-hidden flex flex-col vol-surface">
           {isScanning && (
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${scanProgress}%` }}
-              className="absolute top-0 left-0 h-1 bg-[#FF5F00] z-10"
+              className="absolute top-0 left-0 h-1 vol-acc-bg z-10"
             />
           )}
 
           {/* Agent scan progress bar */}
           {isAnalyzing && (
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-[#FF5F00]/10 border-b border-[#FF5F00]/20 text-[10px] font-bold tracking-widest text-[#FF5F00] shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#FF5F00] animate-ping" />
+            <div className="flex items-center gap-2 px-4 py-1.5 vol-acc-wash border-b vol-ring text-[10px] font-bold tracking-widest vol-accent shrink-0">
+              <span className="w-2 h-2 rounded-full vol-acc-bg animate-ping" />
               AGENT SCAN IN PROGRESS — COMPILING DIAGNOSTICS
             </div>
           )}
@@ -3790,7 +3790,7 @@ const pushToast = useToast();
             onChange={(e) => handleCodeChange(e.target.value)}
             spellCheck={false}
             autoCorrect="off"
-            className="w-full flex-1 resize-none bg-transparent p-8 font-mono text-[14px] leading-[1.65] outline-none text-[#EDEDED] caret-[#FF5F00]"
+            className="w-full flex-1 resize-none bg-transparent p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
             style={{
               fontFamily:
                 "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
@@ -3799,12 +3799,12 @@ const pushToast = useToast();
           />
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
-          <div className="md:hidden p-4 border-t border-[#FF5F00]/15 bg-black/45 flex flex-col gap-2 select-none w-full shrink-0">
+          <div className="md:hidden p-4 border-t vol-ring vol-wash flex flex-col gap-2 select-none w-full shrink-0">
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={analyzeCode}
                 disabled={isAnalyzing || isSystemHalted}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-black border border-[#FF5F00] text-[#FF5F00] text-xs font-bold disabled:opacity-60 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 py-3 rounded-xl vol-well border vol-ring-strong vol-accent text-xs font-bold disabled:opacity-60 transition-all cursor-pointer"
               >
                 <Bug className="w-4 h-4" />
                 {isAnalyzing ? "ANALYZING..." : "RUN AI"}
@@ -3812,7 +3812,7 @@ const pushToast = useToast();
 
               <button
                 onClick={() => setCurrentView("boss")}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 py-3 rounded-xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
               >
                 <Crown className="w-4 h-4" />
                 VOLT HUB
@@ -3823,7 +3823,7 @@ const pushToast = useToast();
               <button
                 id="fix-all-btn-mobile"
                 onClick={applyAllFixes}
-                className="w-full py-3.5 flex items-center justify-center gap-2 rounded-xl bg-[#FF5F00] text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
+                className="w-full py-3.5 flex items-center justify-center gap-2 rounded-xl vol-acc-bg text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
               >
                 <Zap className="w-4 h-4" />
                 APPLY ALL PATCHES ({issues.length})
@@ -3835,15 +3835,15 @@ const pushToast = useToast();
           {/* Agent Chat HUD (v0 restore — shares VOLT HUB chat pipeline) */}
           <div className="hidden md:block absolute left-6 bottom-6 z-50 select-none">
             {showAgentChat ? (
-              <div className="w-96 flex flex-col rounded-xl bg-black/90 border border-[#FF5F00]/50 shadow-[0_0_25px_rgba(255,95,0,0.25)] overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 border-b border-[#FF5F00]/30">
-                  <span className="text-[10px] font-bold tracking-widest text-[#FF5F00] flex items-center gap-2">
+              <div className="w-96 flex flex-col rounded-xl vol-veil border vol-ring-strong shadow-[0_0_25px_rgba(255,95,0,0.25)] overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2 border-b vol-ring">
+                  <span className="text-[10px] font-bold tracking-widest vol-accent flex items-center gap-2">
                     <Bot className="w-3.5 h-3.5" />
                     VOLT AGENTS · {isBossLoading ? "THINKING..." : "ONLINE"}
                   </span>
                   <button
                     onClick={() => setShowAgentChat(false)}
-                    className="text-white/50 hover:text-white"
+                    className="vol-t2 hover:vol-t1"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -3854,8 +3854,8 @@ const pushToast = useToast();
                       key={i}
                       className={`text-[11px] leading-snug rounded-lg px-2.5 py-2 ${
                         m.role === "user"
-                          ? "bg-[#FF5F00]/15 text-[#FF9E70]"
-                          : "bg-white/5 text-white/85"
+                          ? "vol-acc-wash vol-accent-soft"
+                          : "vol-wash vol-t1/85"
                       }`}
                     >
                       <span className="block text-[9px] font-bold tracking-wider opacity-60 mb-1">
@@ -3865,7 +3865,7 @@ const pushToast = useToast();
                     </div>
                   ))}
                 </div>
-                <div className="flex gap-2 p-2 border-t border-[#FF5F00]/30">
+                <div className="flex gap-2 p-2 border-t vol-ring">
                   <input
                     value={bossInput}
                     onChange={(e) => setBossInput(e.target.value)}
@@ -3878,12 +3878,12 @@ const pushToast = useToast();
                         ? "Agents processing..."
                         : "Message the agent swarm..."
                     }
-                    className="flex-1 bg-white/5 rounded-lg px-3 py-2 text-[11px] text-white outline-none placeholder:text-white/40 disabled:opacity-50"
+                    className="flex-1 vol-wash rounded-lg px-3 py-2 text-[11px] vol-t1 outline-none placeholder:vol-t2 disabled:opacity-50"
                   />
                   <button
                     onClick={() => sendBossMessage(bossInput)}
                     disabled={isBossLoading}
-                    className="px-3 rounded-lg bg-[#FF5F00] text-black disabled:opacity-50 cursor-pointer"
+                    className="px-3 rounded-lg vol-acc-bg text-black disabled:opacity-50 cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
                   </button>
@@ -3892,7 +3892,7 @@ const pushToast = useToast();
             ) : (
               <button
                 onClick={() => setShowAgentChat(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/90 border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold hover:bg-black cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-veil border vol-ring-strong vol-accent text-xs font-bold hover:vol-well cursor-pointer"
               >
                 <Bot className="w-4 h-4" />
                 AGENT CHAT
@@ -3905,7 +3905,7 @@ const pushToast = useToast();
               whileTap={{ scale: 0.985 }}
               onClick={analyzeCode}
               disabled={isAnalyzing || isSystemHalted}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-black border-2 border-[#FF5F00] text-[#FF5F00] font-semibold disabled:opacity-60 active:bg-[#FF5F00] active:text-black transition-all cursor-pointer"
+              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-well border-2 vol-ring-strong vol-accent font-semibold disabled:opacity-60 active:vol-acc-bg active:text-black transition-all cursor-pointer"
             >
               <Bug className="w-5 h-5" />
               {isAnalyzing ? "ANALYZING..." : "RUN AI ANALYSIS"}
@@ -3915,7 +3915,7 @@ const pushToast = useToast();
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
               onClick={() => setCurrentView("boss")}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-[#FF5F00]/60 text-[#FF5F00] font-semibold hover:bg-black transition-all cursor-pointer"
+              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border vol-ring-strong vol-accent font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
               VOLT HUB
@@ -3925,7 +3925,7 @@ const pushToast = useToast();
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
               onClick={() => setCurrentView("meeting")}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-blue-600/60 text-blue-400 font-semibold hover:bg-black transition-all cursor-pointer"
+              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border border-blue-600/60 text-blue-400 font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <Users className="w-5 h-5" />
               MEETING PANEL
@@ -3935,7 +3935,7 @@ const pushToast = useToast();
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
               onClick={() => setCurrentView("pr-review")}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl bg-[#1a1a1a] border border-orange-600/60 text-orange-400 font-semibold hover:bg-black transition-all cursor-pointer"
+              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border border-orange-600/60 text-orange-400 font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <GitPullRequest className="w-5 h-5" />
               PR REVIEW
@@ -3947,7 +3947,7 @@ const pushToast = useToast();
                 whileHover={{ scale: 1.015 }}
                 whileTap={{ scale: 0.985 }}
                 onClick={applyAllFixes}
-                className="flex items-center gap-3 px-9 py-3.5 rounded-xl bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-black font-extrabold shadow-[0_0_25px_rgba(255,95,0,0.5)] active:scale-[0.985] transition-all cursor-pointer"
+                className="flex items-center gap-3 px-9 py-3.5 rounded-xl vol-acc-bg hover:vol-accbg-hi text-black font-extrabold shadow-[0_0_25px_rgba(255,95,0,0.5)] active:scale-[0.985] transition-all cursor-pointer"
               >
                 <Zap className="w-5 h-5" />
                 FIX ALL ({issues.length})
@@ -3987,14 +3987,14 @@ const pushToast = useToast();
     return (
       <div className="space-y-6 select-none">
         {/* REPO HEALTH SCORE */}
-        <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-4 space-y-3">
-          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+        <div className="border vol-line vol-elev rounded-2xl p-4 space-y-3">
+          <div className="text-[10px] vol-t2 uppercase font-black tracking-wider">
             Repository Health Metric
           </div>
           <div className="flex items-end justify-between">
-            <div className="text-3xl font-black text-white">
+            <div className="text-3xl font-black vol-t1">
               {repoHealth.totalScore}
-              <span className="text-xs text-white/30 font-normal">/100</span>
+              <span className="text-xs vol-t2 font-normal">/100</span>
             </div>
             <span
               className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
@@ -4006,13 +4006,13 @@ const pushToast = useToast();
               {repoHealth.totalScore > 85 ? "EXCELLENT" : "DEGRADED"}
             </span>
           </div>
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full vol-wash h-1.5 rounded-full overflow-hidden">
             <div
-              className="bg-[#FF5F00] h-full"
+              className="vol-acc-bg h-full"
               style={{ width: `${repoHealth.totalScore}%` }}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] text-white/40">
+          <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] vol-t2">
             <div>Complexity Penalty: -{repoHealth.complexityPenalty}</div>
             <div>Circular Dependencies: {repoHealth.circularCyclesCount}</div>
           </div>
@@ -4028,7 +4028,7 @@ const pushToast = useToast();
             }`}
           >
             <div className="flex justify-between items-center">
-              <span className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+              <span className="text-[10px] vol-t2 uppercase font-black tracking-wider">
                 Consensus Gate Check
               </span>
               <span
@@ -4041,16 +4041,16 @@ const pushToast = useToast();
                 {consensusPassed ? "PASSED" : "REJECTED"}
               </span>
             </div>
-            <div className="text-2xl font-black text-white">
+            <div className="text-2xl font-black vol-t1">
               {consensusScore}
-              <span className="text-xs text-white/30 font-normal">/100</span>
+              <span className="text-xs vol-t2 font-normal">/100</span>
             </div>
 
-            <div className="space-y-1 pt-1.5 border-t border-white/5">
+            <div className="space-y-1 pt-1.5 border-t vol-line">
               {Object.entries(agentBreakdown).map(([agent, score]) => (
                 <div
                   key={agent}
-                  className="flex justify-between text-[10px] text-white/60"
+                  className="flex justify-between text-[10px] vol-t2"
                 >
                   <span className="truncate">{agent}</span>
                   <span className="font-mono font-bold">{score}/100</span>
@@ -4059,10 +4059,10 @@ const pushToast = useToast();
             </div>
 
             {consensusFeedback.length > 0 && (
-              <div className="space-y-1 mt-2 text-[9px] text-white/40 max-h-24 overflow-y-auto pr-1">
+              <div className="space-y-1 mt-2 text-[9px] vol-t2 max-h-24 overflow-y-auto pr-1">
                 {consensusFeedback.map((f, i) => (
                   <div key={i} className="flex gap-1.5 items-start">
-                    <span className="text-[#FF5F00] font-bold">•</span>
+                    <span className="vol-accent font-bold">•</span>
                     <span>{f}</span>
                   </div>
                 ))}
@@ -4072,8 +4072,8 @@ const pushToast = useToast();
         )}
 
         {/* REPAIR PRIORITY PLANNER ROADMAP */}
-        <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-4 space-y-4">
-          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider font-semibold">
+        <div className="border vol-line vol-elev rounded-2xl p-4 space-y-4">
+          <div className="text-[10px] vol-t2 uppercase font-black tracking-wider font-semibold">
             Repair Priority Roadmap
           </div>
 
@@ -4112,7 +4112,7 @@ const pushToast = useToast();
                     {group.list.map((iss, idx) => (
                       <div
                         key={idx}
-                        className="p-2 bg-black/40 border border-white/5 rounded-lg text-[10px] text-white/70"
+                        className="p-2 vol-veil border vol-line rounded-lg text-[10px] vol-t1"
                       >
                         {iss.description}
                       </div>
@@ -4124,7 +4124,7 @@ const pushToast = useToast();
 
             {issues.length === 0 &&
               (!enableSentinel || sentinelIssues.length === 0) && (
-                <div className="text-center text-white/20 py-8 text-[10px] font-mono">
+                <div className="text-center vol-t2 py-8 text-[10px] font-mono">
                   No detected defects. Repository roadmap is clear.
                 </div>
               )}
@@ -4132,8 +4132,8 @@ const pushToast = useToast();
         </div>
 
         {/* ACTIVE WORKFORCE SUB-AGENTS */}
-        <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-4 space-y-3">
-          <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+        <div className="border vol-line vol-elev rounded-2xl p-4 space-y-3">
+          <div className="text-[10px] vol-t2 uppercase font-black tracking-wider">
             AI Junior Workers
           </div>
           <div className="space-y-2">
@@ -4144,11 +4144,11 @@ const pushToast = useToast();
             ].map((agent) => (
               <div
                 key={agent.name}
-                className="flex justify-between items-center text-[10px] p-2 bg-black/40 border border-white/5 rounded-xl"
+                className="flex justify-between items-center text-[10px] p-2 vol-veil border vol-line rounded-xl"
               >
                 <div>
-                  <div className="font-bold text-white/80">{agent.name}</div>
-                  <div className="text-[9px] text-white/40 mt-0.5">
+                  <div className="font-bold vol-t1">{agent.name}</div>
+                  <div className="text-[9px] vol-t2 mt-0.5">
                     {agent.role}
                   </div>
                 </div>
@@ -4165,17 +4165,17 @@ const pushToast = useToast();
     return (
       <AnimatePresence>
         {showDiff && (
-          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[70] p-6 select-text">
+          <div className="fixed inset-0 vol-veil flex items-center justify-center z-[70] p-6 select-text">
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.985, y: 15 }}
               transition={{ ease: [0.21, 0.92, 0.3, 1] }}
-              className="w-full max-w-6xl bg-[#121212] border border-[#FF5F00] rounded-3xl overflow-hidden"
+              className="w-full max-w-6xl vol-elev border vol-ring-strong rounded-3xl overflow-hidden"
             >
-              <div className="px-8 py-5 border-b border-[#FF5F00]/30 flex justify-between items-center select-none">
+              <div className="px-8 py-5 border-b vol-ring flex justify-between items-center select-none">
                 <div className="font-bold text-2xl flex items-center gap-3">
-                  <AlertTriangle className="text-[#FF5F00]" />
+                  <AlertTriangle className="vol-accent" />
                   SELECTIVE HUNK DIFF PREVIEW & QUALITY CONSENSUS
                 </div>
                 <button
@@ -4194,10 +4194,10 @@ const pushToast = useToast();
                 />
               </div>
 
-              <div className="p-8 flex justify-between items-center bg-black/60 border-t border-[#FF5F00]/20 select-none">
+              <div className="p-8 flex justify-between items-center vol-veil border-t vol-ring select-none">
                 <button
                   onClick={() => copyToClipboard(fixedCode)}
-                  className="px-6 py-3 rounded-xl border border-[#FF5F00] hover:bg-white/5 text-[#FF5F00] font-bold text-xs flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-3 rounded-xl border vol-ring-strong hover:vol-wash vol-accent font-bold text-xs flex items-center gap-2 cursor-pointer"
                 >
                   <Copy className="w-4 h-4" />
                   COPY FIXED CODE
@@ -4206,13 +4206,13 @@ const pushToast = useToast();
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowDiff(false)}
-                    className="px-6 py-3 rounded-xl border border-white/30 text-xs font-semibold cursor-pointer"
+                    className="px-6 py-3 rounded-xl border vol-line text-xs font-semibold cursor-pointer"
                   >
                     CLOSE
                   </button>
                   <button
                     onClick={applyAllFixes}
-                    className="px-9 py-3 rounded-xl bg-[#FF5F00] text-black font-extrabold text-xs cursor-pointer shadow-[0_0_15px_rgba(255,95,0,0.3)]"
+                    className="px-9 py-3 rounded-xl vol-acc-bg text-black font-extrabold text-xs cursor-pointer shadow-[0_0_15px_rgba(255,95,0,0.3)]"
                   >
                     APPLY ACCEPTED PATCHES ({acceptedHunkIds.length})
                   </button>
@@ -4230,7 +4230,7 @@ const pushToast = useToast();
       <AnimatePresence>
         {showReport && (
           <div
-            className="fixed inset-0 bg-black/80 z-[80] flex justify-end select-text"
+            className="fixed inset-0 vol-veil z-[80] flex justify-end select-text"
             onClick={() => setShowReport(false)}
           >
             <motion.div
@@ -4238,12 +4238,12 @@ const pushToast = useToast();
               animate={{ x: 0 }}
               exit={{ x: 80 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-[#121212] h-full border-l border-[#FF5F00] overflow-auto flex flex-col"
+              className="w-full max-w-lg vol-elev h-full border-l vol-ring-strong overflow-auto flex flex-col"
             >
-              <div className="sticky top-0 bg-[#121212] p-8 border-b border-[#FF5F00]/40 flex justify-between select-none">
+              <div className="sticky top-0 vol-elev p-8 border-b vol-ring-strong flex justify-between select-none">
                 <div>
                   <div className="font-bold text-xl">DETAILED DIAGNOSTICS</div>
-                  <div className="text-[#FF5F00] text-sm font-bold">
+                  <div className="vol-accent text-sm font-bold">
                     ALL PATCHES APPLIED TO CODEBASE
                   </div>
                 </div>
@@ -4257,37 +4257,37 @@ const pushToast = useToast();
 
               <div className="p-8 space-y-7 flex-1 overflow-y-auto">
                 {issues.map((issue, index) => (
-                  <div key={index} className="border-l-4 border-[#FF5F00] pl-6">
+                  <div key={index} className="border-l-4 vol-ring-strong pl-6">
                     <div className="flex justify-between items-center mb-1">
                       <div className="font-bold text-lg">{issue.type}</div>
                       <div
                         className={`px-3 py-px text-xs font-bold rounded ${
                           issue.severity === "Critical" ||
                           issue.severity === "High"
-                            ? "bg-[#FF5F00] text-black"
-                            : "bg-white/10 text-[#FF5F00]"
+                            ? "vol-acc-bg text-black"
+                            : "vol-wash vol-accent"
                         }`}
                       >
                         {issue.severity}
                       </div>
                     </div>
-                    <div className="text-[#FF5F00] mb-3">
+                    <div className="vol-accent mb-3">
                       {issue.description}
                     </div>
                     <div className="text-sm opacity-75 leading-snug mb-4">
                       {issue.explanation}
                     </div>
-                    <div className="text-[10px] font-mono bg-black p-3 rounded overflow-x-auto">
+                    <div className="text-[10px] font-mono vol-well p-3 rounded overflow-x-auto">
                       FIX: {issue.fixed}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="p-8 flex gap-3 sticky bottom-0 bg-[#121212] border-t border-white/5 select-none">
+              <div className="p-8 flex gap-3 sticky bottom-0 vol-elev border-t vol-line select-none">
                 <button
                   onClick={() => copyToClipboard(fixedCode)}
-                  className="flex-1 flex justify-center gap-2 items-center py-3 border border-[#FF5F00] hover:bg-white/5 rounded-xl font-semibold cursor-pointer"
+                  className="flex-1 flex justify-center gap-2 items-center py-3 border vol-ring-strong hover:vol-wash rounded-xl font-semibold cursor-pointer"
                 >
                   <Copy className="w-4 h-4" />
                   COPY CODE
@@ -4296,7 +4296,7 @@ const pushToast = useToast();
                   onClick={() =>
                     downloadCode(fixedCode, `fixed-${Date.now()}.js`)
                   }
-                  className="flex-1 flex justify-center gap-2 items-center py-3 bg-[#FF5F00] text-black font-extrabold rounded-xl cursor-pointer"
+                  className="flex-1 flex justify-center gap-2 items-center py-3 vol-acc-bg text-black font-extrabold rounded-xl cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   DOWNLOAD
@@ -4313,16 +4313,16 @@ const pushToast = useToast();
     return (
       <AnimatePresence>
         {showShortcutsCheatSheet && (
-          <div className="fixed inset-0 bg-black/85 z-[100] flex items-center justify-center p-6 select-text">
+          <div className="fixed inset-0 vol-veil z-[100] flex items-center justify-center p-6 select-text">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#121212] border border-[#FF5F00] p-8 rounded-3xl space-y-6"
+              className="w-full max-w-md vol-elev border vol-ring-strong p-8 rounded-3xl space-y-6"
             >
-              <div className="flex justify-between items-center border-b border-[#FF5F00]/25 pb-4 select-none">
+              <div className="flex justify-between items-center border-b vol-ring pb-4 select-none">
                 <h3 className="font-bold text-xl flex items-center gap-2">
-                  <HelpCircle className="text-[#FF5F00]" />
+                  <HelpCircle className="vol-accent" />
                   Keyboard Shortcuts
                 </h3>
                 <button
@@ -4346,10 +4346,10 @@ const pushToast = useToast();
                 ].map((s, idx) => (
                   <div
                     key={idx}
-                    className="flex justify-between py-1.5 border-b border-white/5"
+                    className="flex justify-between py-1.5 border-b vol-line"
                   >
-                    <span className="text-white/60">{s.action}</span>
-                    <kbd className="px-2 py-0.5 bg-[#FF5F00]/10 border border-[#FF5F00]/40 text-[#FF5F00] font-mono text-xs rounded-md">
+                    <span className="vol-t2">{s.action}</span>
+                    <kbd className="px-2 py-0.5 vol-acc-wash border vol-ring-strong vol-accent font-mono text-xs rounded-md">
                       {s.keys}
                     </kbd>
                   </div>
@@ -4366,12 +4366,12 @@ const pushToast = useToast();
     return (
       <AnimatePresence>
         {showLangAlert && (
-          <div className="fixed inset-0 bg-black/85 z-[110] flex items-center justify-center p-6 select-text">
+          <div className="fixed inset-0 vol-veil z-[110] flex items-center justify-center p-6 select-text">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#121212] border border-red-500 p-8 rounded-3xl space-y-6"
+              className="w-full max-w-md vol-elev border border-red-500 p-8 rounded-3xl space-y-6"
             >
               <div className="flex justify-between items-center border-b border-red-500/25 pb-4 select-none">
                 <h3 className="font-bold text-xl flex items-center gap-2 text-red-500">
@@ -4380,12 +4380,12 @@ const pushToast = useToast();
                 </h3>
                 <button
                   onClick={() => setShowLangAlert(false)}
-                  className="cursor-pointer text-white/60 hover:text-white"
+                  className="cursor-pointer vol-t2 hover:vol-t1"
                 >
                   <X />
                 </button>
               </div>
-              <div className="text-sm text-white/80 leading-relaxed font-mono">
+              <div className="text-sm vol-t1 leading-relaxed font-mono">
                 The analysis engine could not auto-detect the programming
                 language of the active editor code. Please explicitly select the
                 language from the dropdown menu (e.g. JavaScript, Python, C++,
@@ -4394,7 +4394,7 @@ const pushToast = useToast();
               <div className="flex justify-end gap-3 pt-4 select-none">
                 <button
                   onClick={() => setShowLangAlert(false)}
-                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl cursor-pointer transition-all"
+                  className="px-6 py-2.5 bg-red-600 hover:bg-red-700 vol-t1 font-bold rounded-xl cursor-pointer transition-all"
                 >
                   OK
                 </button>
@@ -4410,12 +4410,12 @@ const pushToast = useToast();
     return (
       <AnimatePresence>
         {showLoginModal && (
-          <div className="fixed inset-0 bg-black/90 z-[90] flex items-center justify-center select-text">
-            <div className="bg-[#121212] border border-[#FF5F00] w-full max-w-xl p-9 rounded-3xl max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 vol-veil z-[90] flex items-center justify-center select-text">
+            <div className="vol-elev border vol-ring-strong w-full max-w-xl p-9 rounded-3xl max-h-[90vh] overflow-y-auto">
               <div className="font-bold text-center text-2xl mb-2 select-none">
                 {loginMode === "register" ? "CREATE ACCOUNT" : "SIGN IN"}
               </div>
-              <div className="text-center text-sm mb-6 text-[#FF5F00]/60 select-none">
+              <div className="text-center text-sm mb-6 vol-accent-soft select-none">
                 Secure login — your data and keys stay protected
               </div>
 
@@ -4427,8 +4427,8 @@ const pushToast = useToast();
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                     loginMode === "login"
-                      ? "bg-[#FF5F00] text-black"
-                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                      ? "vol-acc-bg text-black"
+                      : "vol-wash vol-t2 hover:vol-wash"
                   }`}
                 >
                   SIGN IN
@@ -4440,8 +4440,8 @@ const pushToast = useToast();
                   }}
                   className={`flex-1 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
                     loginMode === "register"
-                      ? "bg-[#FF5F00] text-black"
-                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                      ? "vol-acc-bg text-black"
+                      : "vol-wash vol-t2 hover:vol-wash"
                   }`}
                 >
                   CREATE ACCOUNT
@@ -4451,7 +4451,7 @@ const pushToast = useToast();
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
+                className="w-full vol-well border vol-ring-strong py-3 px-4 mb-3 rounded-xl focus:outline-none focus:vol-ring-hi"
                 placeholder="Username"
                 autoComplete="username"
               />
@@ -4460,7 +4460,7 @@ const pushToast = useToast();
                 value={loginPassword}
                 onChange={(e) => setLoginPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                className="w-full bg-black border border-[#FF5F00]/40 py-3 px-4 mb-3 rounded-xl focus:outline-none focus:border-[#FF5F00]"
+                className="w-full vol-well border vol-ring-strong py-3 px-4 mb-3 rounded-xl focus:outline-none focus:vol-ring-hi"
                 placeholder="Password (min 8 characters)"
                 autoComplete={
                   loginMode === "register" ? "new-password" : "current-password"
@@ -4476,7 +4476,7 @@ const pushToast = useToast();
               <button
                 onClick={handleLogin}
                 disabled={loginBusy}
-                className="mt-2 w-full py-3.5 bg-[#FF5F00] font-extrabold text-black rounded-xl cursor-pointer select-none disabled:opacity-60"
+                className="mt-2 w-full py-3.5 vol-acc-bg font-extrabold text-black rounded-xl cursor-pointer select-none disabled:opacity-60"
               >
                 {loginBusy
                   ? "PLEASE WAIT..."
@@ -4486,8 +4486,8 @@ const pushToast = useToast();
               </button>
 
               {isLoggedIn && (
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <div className="text-center text-xs font-bold text-white/50 mb-4 select-none uppercase tracking-wider">
+                <div className="mt-6 pt-6 border-t vol-line">
+                  <div className="text-center text-xs font-bold vol-t2 mb-4 select-none uppercase tracking-wider">
                     Connect Cloud Accounts
                   </div>
                   <div className="max-h-72 overflow-y-auto pr-1">
@@ -4504,24 +4504,24 @@ const pushToast = useToast();
 
   return (
     <div
-      className="min-h-screen bg-[#0A0A0A] text-white flex select-none"
+      className="min-h-screen vol-surface vol-t1 flex select-none"
       style={{ fontFamily: "Inter, system-ui, sans-serif" }}
     >
       {/* First-run onboarding overlay */}
       {showOnboarding && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[100] vol-veil backdrop-blur-sm flex items-center justify-center p-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-md w-full rounded-xl border border-[#FF5F00]/50 bg-[#050505] p-8"
+            className="max-w-md w-full rounded-xl border vol-ring-strong vol-surface p-8"
           >
             <div className="flex items-center gap-3 mb-4">
-              <Zap className="w-6 h-6 text-[#FF5F00]" />
-              <h2 className="text-white font-bold text-lg tracking-wider">
+              <Zap className="w-6 h-6 vol-accent" />
+              <h2 className="vol-t1 font-bold text-lg tracking-wider">
                 WELCOME TO VOLT CODE AI v5
               </h2>
             </div>
-            <p className="text-white/60 text-xs mb-5">
+            <p className="vol-t2 text-xs mb-5">
               Four things you need to know. Click any one to jump straight in.
             </p>
             <div className="space-y-2 mb-6">
@@ -4559,12 +4559,12 @@ const pushToast = useToast();
                     setCurrentView(view);
                     finishOnboarding();
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-[#FF5F00]/15 border border-white/5 hover:border-[#FF5F00]/40 text-left cursor-pointer transition-all"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl vol-wash hover:vol-acc-wash border vol-line hover:vol-ring-hi text-left cursor-pointer transition-all"
                 >
-                  <Icon className="w-5 h-5 text-[#FF5F00] shrink-0" />
-                  <span className="text-[11px] font-bold tracking-widest text-white">
+                  <Icon className="w-5 h-5 vol-accent shrink-0" />
+                  <span className="text-[11px] font-bold tracking-widest vol-t1">
                     {title}
-                    <span className="block text-[10px] font-normal text-white/50 tracking-normal mt-0.5">
+                    <span className="block text-[10px] font-normal vol-t2 tracking-normal mt-0.5">
                       {desc}
                     </span>
                   </span>
@@ -4573,7 +4573,7 @@ const pushToast = useToast();
             </div>
             <button
               onClick={finishOnboarding}
-              className="w-full py-2.5 rounded-xl bg-[#FF5F00] text-black text-xs font-bold cursor-pointer"
+              className="w-full py-2.5 rounded-xl vol-acc-bg text-black text-xs font-bold cursor-pointer"
             >
               GET ME CODING
             </button>

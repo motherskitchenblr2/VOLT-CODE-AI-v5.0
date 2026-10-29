@@ -52,21 +52,21 @@ export function ResponsiveMobileLayout({
   ];
 
   return (
-    <div className="h-screen flex flex-col bg-[#0A0A0A] overflow-hidden">
+    <div className="h-screen flex flex-col vol-surface overflow-hidden">
       {/* Mobile Header */}
-      <div className="sticky top-0 z-40 bg-[#121212] border-b border-[#FF5F00]/20 px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-40 vol-elev border-b vol-ring px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#FF5F00] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 vol-acc-bg rounded-lg flex items-center justify-center">
             <Code className="w-5 h-5 text-black" />
           </div>
           <div>
-            <div className="text-xs text-white/40 font-bold">VOLT CODE AI</div>
-            <div className="text-xs font-bold text-[#FF5F00]">Mobile View</div>
+            <div className="text-xs vol-t2 font-bold">VOLT CODE AI</div>
+            <div className="text-xs font-bold vol-accent">Mobile View</div>
           </div>
         </div>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 hover:bg-white/10 rounded-lg transition-all"
+          className="p-2 hover:vol-wash rounded-lg transition-all"
         >
           {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -79,7 +79,7 @@ export function ResponsiveMobileLayout({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="bg-[#1a1a1a] border-b border-[#FF5F00]/20 overflow-hidden"
+            className="vol-elev border-b vol-ring overflow-hidden"
           >
             <div className="p-4 space-y-2">
               {[
@@ -98,8 +98,8 @@ export function ResponsiveMobileLayout({
                   }}
                   className={`w-full px-4 py-2 rounded-lg text-sm font-semibold transition-all text-left ${
                     currentView === item.view
-                      ? "bg-[#FF5F00] text-black"
-                      : "text-white/70 hover:bg-white/5"
+                      ? "vol-acc-bg text-black"
+                      : "vol-t1 hover:vol-wash"
                   }`}
                 >
                   {item.label}
@@ -113,9 +113,9 @@ export function ResponsiveMobileLayout({
       {/* Main Content Area - Vertical Stack */}
       <div className="flex-1 overflow-y-auto pb-32 space-y-4 p-4">
         {/* Code Editor Section */}
-        <div className="bg-[#1a1a1a] border border-[#FF5F00]/20 rounded-xl overflow-hidden">
+        <div className="vol-elev border vol-ring rounded-xl overflow-hidden">
           {/* Tab Selection */}
-          <div className="flex gap-1 p-2 bg-[#0a0a0a] border-b border-[#FF5F00]/10">
+          <div className="flex gap-1 p-2 vol-surface border-b vol-ring">
             {[
               { id: "code", label: "Code", icon: Code },
               { id: "preview", label: "Preview", icon: Eye },
@@ -129,8 +129,8 @@ export function ResponsiveMobileLayout({
                 }
                 className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-bold transition-all ${
                   activeTab === id
-                    ? "bg-[#FF5F00] text-black"
-                    : "text-white/50 hover:text-white"
+                    ? "vol-acc-bg text-black"
+                    : "vol-t2 hover:vol-t1"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -146,7 +146,7 @@ export function ResponsiveMobileLayout({
                 value={code}
                 onChange={(e) => onCodeChange(e.target.value)}
                 spellCheck={false}
-                className="w-full h-48 bg-black/60 border border-white/10 rounded-lg p-3 font-mono text-xs text-[#EDEDED] caret-[#FF5F00] focus:border-[#FF5F00]/40 outline-none resize-none"
+                className="w-full h-48 vol-veil border vol-line rounded-lg p-3 font-mono text-xs vol-t1 caret-[#FF5F00] focus:vol-ring-hi outline-none resize-none"
                 style={{
                   fontFamily:
                     "ui-monospace, Menlo, Monaco, Consolas, monospace",
@@ -155,7 +155,7 @@ export function ResponsiveMobileLayout({
             )}
 
             {activeTab === "preview" && (
-              <div className="bg-black/60 border border-white/10 rounded-lg p-3 text-xs text-white/70 max-h-48 overflow-auto">
+              <div className="vol-veil border vol-line rounded-lg p-3 text-xs vol-t1 max-h-48 overflow-auto">
                 <pre className="font-mono whitespace-pre-wrap break-words">
                   {code.slice(0, 300)}
                 </pre>
@@ -164,10 +164,10 @@ export function ResponsiveMobileLayout({
 
             {activeTab === "compare" && (
               <div className="space-y-2">
-                <div className="text-[10px] text-white/40 font-bold">
+                <div className="text-[10px] vol-t2 font-bold">
                   Original
                 </div>
-                <div className="bg-black/60 border border-white/10 rounded-lg p-2 font-mono text-[10px] text-white/60 max-h-20 overflow-auto">
+                <div className="vol-veil border vol-line rounded-lg p-2 font-mono text-[10px] vol-t2 max-h-20 overflow-auto">
                   {code.slice(0, 150)}...
                 </div>
               </div>
@@ -178,17 +178,17 @@ export function ResponsiveMobileLayout({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Quick notes..."
-                className="w-full h-32 bg-black/60 border border-white/10 rounded-lg p-3 text-xs text-white focus:border-[#FF5F00]/40 outline-none resize-none"
+                className="w-full h-32 vol-veil border vol-line rounded-lg p-3 text-xs vol-t1 focus:vol-ring-hi outline-none resize-none"
               />
             )}
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2 p-3 border-t border-[#FF5F00]/10">
-            <button className="py-2 bg-black border border-[#FF5F00] text-[#FF5F00] text-xs font-bold rounded-lg hover:bg-[#FF5F00]/10 transition-all">
+          <div className="grid grid-cols-2 gap-2 p-3 border-t vol-ring">
+            <button className="py-2 vol-well border vol-ring-strong vol-accent text-xs font-bold rounded-lg hover:vol-acc-wash transition-all">
               Analyze
             </button>
-            <button className="py-2 bg-[#FF5F00] text-black text-xs font-bold rounded-lg hover:bg-[#FF5F00]/90 transition-all">
+            <button className="py-2 vol-acc-bg text-black text-xs font-bold rounded-lg hover:vol-accbg-hi transition-all">
               Fix
             </button>
           </div>
@@ -203,23 +203,23 @@ export function ResponsiveMobileLayout({
           ].map((stat) => (
             <div
               key={stat.label}
-              className="p-3 bg-black/40 border border-white/10 rounded-lg text-center"
+              className="p-3 vol-veil border vol-line rounded-lg text-center"
             >
               <div className={`text-lg font-bold ${stat.color}`}>
                 {stat.value}
               </div>
-              <div className="text-[10px] text-white/40 mt-1">{stat.label}</div>
+              <div className="text-[10px] vol-t2 mt-1">{stat.label}</div>
             </div>
           ))}
         </div>
 
         {/* TODOs Section */}
-        <div className="bg-[#1a1a1a] border border-[#FF5F00]/20 rounded-xl p-4">
+        <div className="vol-elev border vol-ring rounded-xl p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-sm font-bold text-[#FF5F00]">TODOs</div>
+            <div className="text-sm font-bold vol-accent">TODOs</div>
             <button
               onClick={() => setShowTodo(!showTodo)}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
+              className="p-1.5 hover:vol-wash rounded-lg transition-all"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -230,9 +230,9 @@ export function ResponsiveMobileLayout({
               <input
                 type="text"
                 placeholder="New task..."
-                className="flex-1 bg-black/60 border border-white/10 px-3 py-2 rounded-lg text-xs text-white focus:border-[#FF5F00]/40 outline-none"
+                className="flex-1 vol-veil border vol-line px-3 py-2 rounded-lg text-xs vol-t1 focus:vol-ring-hi outline-none"
               />
-              <button className="px-3 py-2 bg-[#FF5F00] text-black text-xs font-bold rounded-lg">
+              <button className="px-3 py-2 vol-acc-bg text-black text-xs font-bold rounded-lg">
                 Add
               </button>
             </div>
@@ -242,10 +242,10 @@ export function ResponsiveMobileLayout({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 p-2 bg-black/40 rounded-lg"
+                className="flex items-center gap-2 p-2 vol-veil rounded-lg"
               >
                 <CheckCircle2 className="w-4 h-4 text-green-400" />
-                <div className="flex-1 text-xs text-white/70">Task {i}</div>
+                <div className="flex-1 text-xs vol-t1">Task {i}</div>
                 <span className="text-[9px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded">
                   High
                 </span>
@@ -256,7 +256,7 @@ export function ResponsiveMobileLayout({
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#121212] border-t border-[#FF5F00]/20 px-2 py-2 flex gap-1 justify-around">
+      <div className="fixed bottom-0 left-0 right-0 vol-elev border-t vol-ring px-2 py-2 flex gap-1 justify-around">
         {bottomNavItems.map(({ id, label, icon: Icon, view }) => (
           <button
             key={id}
@@ -266,8 +266,8 @@ export function ResponsiveMobileLayout({
             }}
             className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg text-[9px] font-bold transition-all ${
               (view && currentView === view) || (id === "more" && menuOpen)
-                ? "bg-[#FF5F00]/20 text-[#FF5F00]"
-                : "text-white/40 hover:text-white/60"
+                ? "vol-acc-wash vol-accent"
+                : "vol-t2 hover:vol-t2"
             }`}
           >
             <Icon className="w-5 h-5" />

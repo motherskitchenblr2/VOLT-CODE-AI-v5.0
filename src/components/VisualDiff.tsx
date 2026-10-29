@@ -48,15 +48,15 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
           elements.push(
             <div
               key={`n-${i}`}
-              className="flex py-0.5 px-3 hover:bg-white/5 font-mono text-[11px] text-white/50"
+              className="flex py-0.5 px-3 hover:vol-wash font-mono text-[11px] vol-t2"
             >
-              <span className="w-8 select-none text-white/20 text-right pr-3">
+              <span className="w-8 select-none vol-t2 text-right pr-3">
                 {i + 1}
               </span>
-              <span className="w-8 select-none text-white/20 text-right pr-3">
+              <span className="w-8 select-none vol-t2 text-right pr-3">
                 {i + 1}
               </span>
-              <span className="w-5 select-none text-white/10 text-center font-bold">
+              <span className="w-5 select-none vol-t1/10 text-center font-bold">
                 {" "}
               </span>
               <span className="whitespace-pre-wrap">{orig}</span>
@@ -138,7 +138,7 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
     }
 
     return (
-      <div className="bg-[#050505] border border-white/5 rounded-xl overflow-hidden py-2 max-h-72 overflow-y-auto">
+      <div className="vol-surface border vol-line rounded-xl overflow-hidden py-2 max-h-72 overflow-y-auto">
         {elements}
       </div>
     );
@@ -155,7 +155,7 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
           <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider pl-1 mb-1">
             Original Code
           </div>
-          <div className="bg-[#0B0303] border border-red-500/10 rounded-xl p-3 max-h-72 overflow-y-auto font-mono text-[11px] text-red-300 space-y-0.5">
+          <div className="vol-well border border-red-500/10 rounded-xl p-3 max-h-72 overflow-y-auto font-mono text-[11px] text-red-300 space-y-0.5">
             {originalLines.map((line, idx) => (
               <div
                 key={idx}
@@ -175,7 +175,7 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
           <div className="text-[10px] text-green-400 font-bold uppercase tracking-wider pl-1 mb-1">
             Staged Patch
           </div>
-          <div className="bg-[#030B03] border border-green-500/10 rounded-xl p-3 max-h-72 overflow-y-auto font-mono text-[11px] text-green-300 space-y-0.5">
+          <div className="vol-well border border-green-500/10 rounded-xl p-3 max-h-72 overflow-y-auto font-mono text-[11px] text-green-300 space-y-0.5">
             {fixedLines.map((line, idx) => (
               <div
                 key={idx}
@@ -196,8 +196,8 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
   return (
     <div className="space-y-6 select-none">
       {/* Tab Control */}
-      <div className="flex justify-between items-center bg-[#121212] border border-white/5 rounded-xl p-2 shrink-0">
-        <div className="text-xs text-white/50 font-bold uppercase tracking-wider pl-2">
+      <div className="flex justify-between items-center vol-elev border vol-line rounded-xl p-2 shrink-0">
+        <div className="text-xs vol-t2 font-bold uppercase tracking-wider pl-2">
           Staged Changes ({issues.length} Hunks Available)
         </div>
         <div className="flex gap-2">
@@ -205,8 +205,8 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
             onClick={() => setDiffMode("inline")}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
               diffMode === "inline"
-                ? "bg-[#FF5F00] text-black"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                ? "vol-acc-bg text-black"
+                : "vol-t2 hover:vol-t1 hover:vol-wash"
             }`}
           >
             Inline View
@@ -215,8 +215,8 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
             onClick={() => setDiffMode("side-by-side")}
             className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer ${
               diffMode === "side-by-side"
-                ? "bg-[#FF5F00] text-black"
-                : "text-white/60 hover:text-white hover:bg-white/5"
+                ? "vol-acc-bg text-black"
+                : "vol-t2 hover:vol-t1 hover:vol-wash"
             }`}
           >
             Side-By-Side
@@ -235,12 +235,12 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
               key={issue.id}
               className={`border rounded-2xl overflow-hidden transition-all ${
                 isAccepted
-                  ? "border-[#FF5F00]/30 bg-black/35 shadow-[0_0_15px_rgba(255,95,0,0.02)]"
-                  : "border-white/5 bg-[#121212]/30 opacity-75"
+                  ? "vol-ring vol-wash shadow-[0_0_15px_rgba(255,95,0,0.02)]"
+                  : "vol-line vol-elev opacity-75"
               }`}
             >
               {/* Hunk Header */}
-              <div className="p-4 bg-[#121212] border-b border-white/5 flex flex-wrap justify-between items-center gap-3">
+              <div className="p-4 vol-elev border-b vol-line flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-3 flex-wrap">
                   <span
                     className={`px-2.5 py-1 rounded-md text-[9px] font-black tracking-wider uppercase ${
@@ -256,10 +256,10 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
                     {issue.severity}
                   </span>
                   <div>
-                    <h4 className="text-xs font-bold text-white leading-relaxed">
+                    <h4 className="text-xs font-bold vol-t1 leading-relaxed">
                       {issue.type}
                     </h4>
-                    <p className="text-[10px] text-white/50 mt-0.5">
+                    <p className="text-[10px] vol-t2 mt-0.5">
                       {issue.description}
                     </p>
                   </div>
@@ -269,7 +269,7 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
                   {/* AI Explanation Toggle */}
                   <button
                     onClick={() => toggleExplanation(issue.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-[10px] font-bold text-white/70 hover:text-white transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border vol-line hover:vol-wash text-[10px] font-bold vol-t1 hover:vol-t1 transition-all cursor-pointer"
                   >
                     {showExp ? (
                       <EyeOff className="w-3 h-3" />
@@ -284,7 +284,7 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
                     onClick={() => onToggleHunk(issue.id)}
                     className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[10px] font-extrabold uppercase transition-all cursor-pointer ${
                       isAccepted
-                        ? "bg-green-600 text-white hover:bg-green-700"
+                        ? "bg-green-600 vol-t1 hover:bg-green-700"
                         : "bg-red-600/20 text-red-400 border border-red-500/35 hover:bg-red-600/30"
                     }`}
                   >
@@ -304,15 +304,15 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
               </div>
 
               {/* Diff Code Box */}
-              <div className="p-4 bg-black/25">
+              <div className="p-4 vol-wash">
                 {diffMode === "inline"
                   ? renderInlineDiff(issue.original, issue.fixed)
                   : renderSideBySideDiff(issue.original, issue.fixed)}
 
                 {/* AI Explanation Pane */}
                 {showExp && (
-                  <div className="mt-4 p-4 rounded-xl border border-[#FF5F00]/25 bg-[#FF5F00]/5 text-xs text-white/90 leading-relaxed font-mono space-y-2">
-                    <div className="text-[9px] text-[#FF5F00] font-black uppercase tracking-wider">
+                  <div className="mt-4 p-4 rounded-xl border vol-ring vol-acc-wash text-xs vol-t1 leading-relaxed font-mono space-y-2">
+                    <div className="text-[9px] vol-accent font-black uppercase tracking-wider">
                       AI Explanation & Analysis
                     </div>
                     <p className="whitespace-pre-line">{issue.explanation}</p>

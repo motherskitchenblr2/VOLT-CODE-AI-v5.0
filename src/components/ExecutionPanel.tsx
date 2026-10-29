@@ -91,18 +91,18 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-lg flex items-center justify-between">
+      <div className="px-4 py-3 border-b vol-line vol-veil backdrop-blur-lg flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500">
-            <CheckSquare className="w-4 h-4 text-white" />
+            <CheckSquare className="w-4 h-4 vol-t1" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-sm">
+            <h3 className="font-bold vol-t1 text-sm">
               {language === "en" ? "Execution Status" : "निष्पादन स्थिति"}
             </h3>
-            <p className="text-xs text-white/50">
+            <p className="text-xs vol-t2">
               {tasks.length} {language === "en" ? "tasks" : "कार्य"}
             </p>
           </div>
@@ -134,7 +134,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="text-3xl mb-2">📋</div>
-              <p className="text-white/60 text-sm">
+              <p className="vol-t2 text-sm">
                 {language === "en" ? "No tasks yet" : "अभी कोई कार्य नहीं"}
               </p>
             </div>
@@ -152,10 +152,10 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                 {/* Task Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-sm text-white truncate">
+                    <h4 className="font-bold text-sm vol-t1 truncate">
                       {task.title}
                     </h4>
-                    <p className="text-xs text-white/60 truncate">
+                    <p className="text-xs vol-t2 truncate">
                       {task.description}
                     </p>
                   </div>
@@ -167,7 +167,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                       {task.severity[0].toUpperCase()}
                     </span>
 
-                    <div className="flex items-center gap-1 px-2 py-1 rounded bg-white/5">
+                    <div className="flex items-center gap-1 px-2 py-1 rounded vol-wash">
                       <StatusIcon
                         className={`w-3 h-3 ${statusConfig.textColor}`}
                       />
@@ -184,7 +184,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
 
                 {/* Task Type & Assigned Agents */}
                 <div className="flex items-center gap-2 flex-wrap text-xs">
-                  <span className="px-2 py-1 rounded-lg bg-white/10 text-white/70">
+                  <span className="px-2 py-1 rounded-lg vol-wash vol-t1">
                     {task.type.toUpperCase()}
                   </span>
 
@@ -195,7 +195,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                         return agent ? (
                           <div
                             key={agentId}
-                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold vol-t1"
                             style={{ backgroundColor: agent.color }}
                             title={agent.name}
                           >
@@ -207,7 +207,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                         ) : null;
                       })}
                       {task.assignedAgents.length > 3 && (
-                        <span className="text-white/60 text-xs">
+                        <span className="vol-t2 text-xs">
                           +{task.assignedAgents.length - 3}
                         </span>
                       )}
@@ -230,8 +230,8 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                 {/* Git Info */}
                 {task.gitBranch && (
                   <div className="flex items-center gap-2 text-xs">
-                    <GitBranch className="w-3 h-3 text-white/50" />
-                    <code className="font-mono text-white/70 bg-black/50 px-2 py-0.5 rounded truncate">
+                    <GitBranch className="w-3 h-3 vol-t2" />
+                    <code className="font-mono vol-t1 vol-veil px-2 py-0.5 rounded truncate">
                       {task.gitBranch}
                     </code>
                   </div>
@@ -254,11 +254,11 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
 
                 {/* Execution Changes Preview */}
                 {task.executionChanges && (
-                  <div className="mt-2 p-2 rounded-lg bg-black/50 border border-white/10">
-                    <p className="text-xs font-semibold text-white/70 mb-1">
+                  <div className="mt-2 p-2 rounded-lg vol-veil border vol-line">
+                    <p className="text-xs font-semibold vol-t1 mb-1">
                       {language === "en" ? "Changes:" : "परिवर्तन:"}
                     </p>
-                    <pre className="text-xs text-white/60 overflow-x-auto whitespace-pre-wrap break-words max-h-24 bg-black/80 p-2 rounded">
+                    <pre className="text-xs vol-t2 overflow-x-auto whitespace-pre-wrap break-words max-h-24 vol-veil p-2 rounded">
                       {task.executionChanges.substring(0, 200)}...
                     </pre>
                   </div>
@@ -267,7 +267,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                 {/* Suggested Solutions */}
                 {task.suggestedSolutions.length > 0 && (
                   <div className="mt-2 space-y-1">
-                    <p className="text-xs font-semibold text-white/70">
+                    <p className="text-xs font-semibold vol-t1">
                       {language === "en" ? "Solutions:" : "समाधान:"}
                     </p>
                     {task.suggestedSolutions.map((solution, idx) => {
@@ -275,9 +275,9 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                       return (
                         <div
                           key={idx}
-                          className="text-xs text-white/60 ml-2 flex gap-2"
+                          className="text-xs vol-t2 ml-2 flex gap-2"
                         >
-                          <span className="font-mono text-white/40">•</span>
+                          <span className="font-mono vol-t2">•</span>
                           <span>
                             <span style={{ color: agent?.color }}>
                               {solution.agentName}
@@ -298,9 +298,9 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
 
       {/* Summary Footer */}
       {tasks.length > 0 && (
-        <div className="px-4 py-3 border-t border-white/10 bg-black/50 backdrop-blur-lg grid grid-cols-2 gap-2 text-xs">
+        <div className="px-4 py-3 border-t vol-line vol-veil backdrop-blur-lg grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center justify-center gap-1">
-            <span className="text-white/60">
+            <span className="vol-t2">
               {language === "en" ? "Completed:" : "पूरा:"}
             </span>
             <span className="font-bold text-green-400">
@@ -309,7 +309,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
             </span>
           </div>
           <div className="flex items-center justify-center gap-1">
-            <span className="text-white/60">
+            <span className="vol-t2">
               {language === "en" ? "In Progress:" : "प्रगति में:"}
             </span>
             <span className="font-bold text-blue-400">

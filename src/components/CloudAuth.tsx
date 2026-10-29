@@ -171,18 +171,18 @@ export const CloudAuth: React.FC = () => {
     return (
       <div
         key={provider}
-        className="border border-white/10 bg-black/40 rounded-2xl p-5 space-y-4"
+        className="border vol-line vol-veil rounded-2xl p-5 space-y-4"
       >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center ${meta.color}`}
+              className={`w-10 h-10 rounded-xl vol-wash flex items-center justify-center ${meta.color}`}
             >
               {meta.icon}
             </div>
             <div>
               <div className="font-extrabold text-sm">{meta.label}</div>
-              <div className="text-[10px] text-white/50 uppercase tracking-wider">
+              <div className="text-[10px] vol-t2 uppercase tracking-wider">
                 {st?.configured ? "Configured" : "Not configured"}
               </div>
             </div>
@@ -209,7 +209,7 @@ export const CloudAuth: React.FC = () => {
           ) : (
             <button
               onClick={() => startSignIn(provider)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-black bg-[#FF5F00] text-black hover:opacity-90 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-black vol-acc-bg text-black hover:opacity-90 transition-all cursor-pointer"
             >
               <Cloud className="w-3.5 h-3.5" />
               SIGN IN WITH {meta.label.toUpperCase()}
@@ -218,7 +218,7 @@ export const CloudAuth: React.FC = () => {
         </div>
 
         {st?.connected && (
-          <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-3 vol-wash border vol-line rounded-xl px-3 py-2">
             {st.picture ? (
               <img
                 src={st.picture}
@@ -226,7 +226,7 @@ export const CloudAuth: React.FC = () => {
                 className="w-8 h-8 rounded-full object-cover"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-[#FF5F00]/20 text-[#FF5F00] flex items-center justify-center font-black text-sm">
+              <div className="w-8 h-8 rounded-full vol-acc-wash vol-accent flex items-center justify-center font-black text-sm">
                 {(st.name || st.email || "?").charAt(0).toUpperCase()}
               </div>
             )}
@@ -234,12 +234,12 @@ export const CloudAuth: React.FC = () => {
               <div className="text-xs font-bold truncate">
                 {st.name || st.email}
               </div>
-              <div className="text-[10px] text-white/50 truncate">
+              <div className="text-[10px] vol-t2 truncate">
                 {st.email}
               </div>
             </div>
             {st.services.length > 0 && (
-              <div className="ml-auto text-[9px] text-white/40 uppercase tracking-wider">
+              <div className="ml-auto text-[9px] vol-t2 uppercase tracking-wider">
                 {st.services.join(" + ")}
               </div>
             )}
@@ -254,9 +254,9 @@ export const CloudAuth: React.FC = () => {
     if (!st?.connected) return null;
 
     return (
-      <div className="border border-[#FF5F00]/20 bg-black/40 rounded-2xl p-5 space-y-4">
+      <div className="border vol-ring vol-veil rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+          <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
             {providerMeta[activeProvider].label} Cloud Access
           </h3>
           <div className="flex gap-2">
@@ -273,8 +273,8 @@ export const CloudAuth: React.FC = () => {
                   }}
                   className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                     activeProvider === p
-                      ? "bg-[#FF5F00] text-black"
-                      : "bg-white/5 text-white/60 hover:bg-white/10"
+                      ? "vol-acc-bg text-black"
+                      : "vol-wash vol-t2 hover:vol-wash"
                   }`}
                 >
                   {providerMeta[p].label}
@@ -286,8 +286,8 @@ export const CloudAuth: React.FC = () => {
                 onClick={() => switchService(svc)}
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   activeService === svc
-                    ? "bg-[#FF5F00] text-black"
-                    : "bg-white/5 text-white/60 hover:bg-white/10"
+                    ? "vol-acc-bg text-black"
+                    : "vol-wash vol-t2 hover:vol-wash"
                 }`}
               >
                 {svc === "gmail" || svc === "mail" ? "Mail" : "Files"}
@@ -295,7 +295,7 @@ export const CloudAuth: React.FC = () => {
             ))}
             <button
               onClick={() => loadItems(activeProvider, activeService)}
-              className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-white/5 text-white/60 hover:bg-white/10 transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-lg text-[10px] font-bold vol-wash vol-t2 hover:vol-wash transition-all cursor-pointer"
               title="Refresh"
             >
               <RefreshCw
@@ -306,7 +306,7 @@ export const CloudAuth: React.FC = () => {
         </div>
 
         {itemsLoading && (
-          <div className="flex items-center justify-center py-10 text-white/40 text-xs gap-2">
+          <div className="flex items-center justify-center py-10 vol-t2 text-xs gap-2">
             <Loader2 className="w-4 h-4 animate-spin" /> Loading {activeService}
             ...
           </div>
@@ -320,7 +320,7 @@ export const CloudAuth: React.FC = () => {
         )}
 
         {!itemsLoading && !itemsError && items.length === 0 && (
-          <div className="text-center py-10 text-white/40 text-xs">
+          <div className="text-center py-10 vol-t2 text-xs">
             No {activeService} items found.
           </div>
         )}
@@ -330,9 +330,9 @@ export const CloudAuth: React.FC = () => {
             {items.map((item, idx) => (
               <div
                 key={item.id || idx}
-                className="flex items-center gap-3 bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3"
+                className="flex items-center gap-3 vol-wash border vol-line rounded-xl px-4 py-3"
               >
-                <div className="text-[#FF5F00]/70 shrink-0">
+                <div className="vol-accent-soft shrink-0">
                   {activeService === "gmail" || activeService === "mail" ? (
                     <Mail className="w-4 h-4" />
                   ) : item.isFolder ? (
@@ -348,7 +348,7 @@ export const CloudAuth: React.FC = () => {
                       : item.name}
                   </div>
                   {(activeService === "gmail" || activeService === "mail") && (
-                    <div className="text-[10px] text-white/50 truncate">
+                    <div className="text-[10px] vol-t2 truncate">
                       {typeof item.from === "string"
                         ? item.from
                         : item.from
@@ -358,12 +358,12 @@ export const CloudAuth: React.FC = () => {
                   )}
                   {(activeService === "gmail" || activeService === "mail") &&
                     item.snippet && (
-                      <div className="text-[10px] text-white/40 truncate">
+                      <div className="text-[10px] vol-t2 truncate">
                         {item.snippet}
                       </div>
                     )}
                 </div>
-                <div className="text-[10px] text-white/40 shrink-0">
+                <div className="text-[10px] vol-t2 shrink-0">
                   {activeService === "gmail" || activeService === "mail"
                     ? (item.date || item.receivedAt || "").slice(0, 10)
                     : (item.modifiedAt || "").slice(0, 10)}
@@ -390,7 +390,7 @@ export const CloudAuth: React.FC = () => {
           <span>{notice.text}</span>
           <button
             onClick={() => setNotice(null)}
-            className="ml-auto text-white/40 hover:text-white cursor-pointer"
+            className="ml-auto vol-t2 hover:vol-t1 cursor-pointer"
           >
             ✕
           </button>
@@ -406,7 +406,7 @@ export const CloudAuth: React.FC = () => {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center py-16 text-white/40 text-xs gap-2">
+        <div className="flex items-center justify-center py-16 vol-t2 text-xs gap-2">
           <Loader2 className="w-4 h-4 animate-spin" /> Checking connections...
         </div>
       ) : (
@@ -418,7 +418,7 @@ export const CloudAuth: React.FC = () => {
 
       {renderServiceBrowser()}
 
-      <div className="text-[10px] text-white/35 leading-relaxed">
+      <div className="text-[10px] vol-t1/35 leading-relaxed">
         Google sign-in grants read access to Gmail and Google Drive. Microsoft
         sign-in grants access to OneDrive and Outlook Mail. Tokens are encrypted
         at rest and never stored as plaintext.

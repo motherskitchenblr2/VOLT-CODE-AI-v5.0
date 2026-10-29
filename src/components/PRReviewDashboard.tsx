@@ -136,19 +136,19 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 rounded-3xl border border-white/10 overflow-hidden flex flex-col">
+    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 rounded-3xl border vol-line overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-white/10 bg-black/50 backdrop-blur-lg">
+      <div className="px-6 py-4 border-b vol-line vol-veil backdrop-blur-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-gradient-to-br from-orange-500 to-red-500">
-              <GitPullRequest className="w-5 h-5 text-white" />
+              <GitPullRequest className="w-5 h-5 vol-t1" />
             </div>
             <div>
-              <h2 className="font-bold text-xl text-white">
+              <h2 className="font-bold text-xl vol-t1">
                 {language === "en" ? "Pull Requests" : "पुल अनुरोध"}
               </h2>
-              <p className="text-xs text-white/60">
+              <p className="text-xs vol-t2">
                 {language === "en"
                   ? `${prs.length} total • ${prs.filter((p) => p.status === "open").length} pending`
                   : `कुल ${prs.length} • ${prs.filter((p) => p.status === "open").length} लंबित`}
@@ -158,32 +158,32 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
 
           {/* Stats */}
           <div className="grid grid-cols-4 gap-3">
-            <div className="text-center p-2 rounded-lg bg-white/5">
-              <p className="text-xs text-white/60">
+            <div className="text-center p-2 rounded-lg vol-wash">
+              <p className="text-xs vol-t2">
                 {language === "en" ? "Open" : "खुला"}
               </p>
               <p className="text-lg font-bold text-blue-400">
                 {prs.filter((p) => p.status === "open").length}
               </p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-white/5">
-              <p className="text-xs text-white/60">
+            <div className="text-center p-2 rounded-lg vol-wash">
+              <p className="text-xs vol-t2">
                 {language === "en" ? "Merged" : "मर्ज़"}
               </p>
               <p className="text-lg font-bold text-green-400">
                 {prs.filter((p) => p.status === "merged").length}
               </p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-white/5">
-              <p className="text-xs text-white/60">
+            <div className="text-center p-2 rounded-lg vol-wash">
+              <p className="text-xs vol-t2">
                 {language === "en" ? "Squashed" : "स्क्वैश"}
               </p>
               <p className="text-lg font-bold text-purple-400">
                 {prs.filter((p) => p.status === "squashed").length}
               </p>
             </div>
-            <div className="text-center p-2 rounded-lg bg-white/5">
-              <p className="text-xs text-white/60">
+            <div className="text-center p-2 rounded-lg vol-wash">
+              <p className="text-xs vol-t2">
                 {language === "en" ? "Ignored" : "अनदेखा"}
               </p>
               <p className="text-lg font-bold text-red-400">
@@ -202,8 +202,8 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                 onClick={() => setFilterStatus(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   filterStatus === status
-                    ? "bg-blue-600 text-white"
-                    : "bg-white/10 text-white/60 hover:text-white"
+                    ? "bg-blue-600 vol-t1"
+                    : "vol-wash vol-t2 hover:vol-t1"
                 }`}
               >
                 {language === "en"
@@ -228,7 +228,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="text-4xl mb-2">📭</div>
-                <p className="text-white/60">
+                <p className="vol-t2">
                   {language === "en"
                     ? "No pull requests"
                     : "कोई पुल अनुरोध नहीं"}
@@ -246,7 +246,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                 onClick={() =>
                   setSelectedPr(selectedPr === pr.id ? null : pr.id)
                 }
-                className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer transition-all"
+                className="p-4 rounded-xl border vol-line vol-wash hover:vol-wash cursor-pointer transition-all"
               >
                 {/* PR Header */}
                 <div className="flex items-start justify-between gap-3">
@@ -257,14 +257,14 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                       >
                         {getStatusIcon(pr.status)}
                       </div>
-                      <h3 className="font-bold text-white text-sm truncate">
+                      <h3 className="font-bold vol-t1 text-sm truncate">
                         {pr.title}
                       </h3>
-                      <span className="text-xs text-white/50">
+                      <span className="text-xs vol-t2">
                         #{pr.prNumber}
                       </span>
                     </div>
-                    <p className="text-xs text-white/60 truncate mb-2">
+                    <p className="text-xs vol-t2 truncate mb-2">
                       {pr.description?.substring(0, 100)}...
                     </p>
                   </div>
@@ -284,10 +284,10 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                 </div>
 
                 {/* PR Details */}
-                <div className="flex items-center gap-2 text-xs text-white/60 mt-2">
+                <div className="flex items-center gap-2 text-xs vol-t2 mt-2">
                   <span>
                     Branch:{" "}
-                    <code className="font-mono text-white/70">{pr.branch}</code>
+                    <code className="font-mono vol-t1">{pr.branch}</code>
                   </span>
                   <span>•</span>
                   <span>{new Date(pr.createdAt).toLocaleDateString()}</span>
@@ -300,14 +300,14 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mt-4 pt-4 border-t border-white/10 space-y-3"
+                      className="mt-4 pt-4 border-t vol-line space-y-3"
                     >
                       {/* Description */}
-                      <div className="bg-black/50 rounded-lg p-3">
-                        <p className="text-xs font-semibold text-white/70 mb-2">
+                      <div className="vol-veil rounded-lg p-3">
+                        <p className="text-xs font-semibold vol-t1 mb-2">
                           {language === "en" ? "Description" : "विवरण"}
                         </p>
-                        <p className="text-xs text-white/60 whitespace-pre-wrap max-h-24 overflow-y-auto">
+                        <p className="text-xs vol-t2 whitespace-pre-wrap max-h-24 overflow-y-auto">
                           {pr.description}
                         </p>
                       </div>
@@ -320,7 +320,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                               ? "Agent Discussions"
                               : "एजेंट चर्चा"}
                           </p>
-                          <p className="text-xs text-white/60 whitespace-pre-wrap max-h-20 overflow-y-auto">
+                          <p className="text-xs vol-t2 whitespace-pre-wrap max-h-20 overflow-y-auto">
                             {pr.agentDiscussions}
                           </p>
                         </div>
@@ -347,7 +347,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                               {pr.userDecision}
                             </span>
                             {pr.userDecisionTime && (
-                              <span className="text-xs text-white/50">
+                              <span className="text-xs vol-t2">
                                 {new Date(pr.userDecisionTime).toLocaleString()}
                               </span>
                             )}
@@ -364,7 +364,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                               handleMergePr(pr);
                             }}
                             disabled={processingPr === pr.id}
-                            className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
+                            className="px-3 py-2 rounded-lg bg-green-600 vol-t1 text-xs font-bold hover:bg-green-700 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
                           >
                             <GitMerge className="w-3 h-3" />
                             {language === "en" ? "Merge" : "मर्ज़"}
@@ -376,7 +376,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                               handleSquashPr(pr);
                             }}
                             disabled={processingPr === pr.id}
-                            className="px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-bold hover:bg-purple-700 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
+                            className="px-3 py-2 rounded-lg bg-purple-600 vol-t1 text-xs font-bold hover:bg-purple-700 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
                           >
                             <GitCommit className="w-3 h-3" />
                             {language === "en" ? "Squash" : "स्क्वैश"}
@@ -388,7 +388,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                               handleIgnorePr(pr);
                             }}
                             disabled={processingPr === pr.id}
-                            className="px-3 py-2 rounded-lg bg-red-600/70 text-white text-xs font-bold hover:bg-red-600 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
+                            className="px-3 py-2 rounded-lg bg-red-600/70 vol-t1 text-xs font-bold hover:bg-red-600 disabled:opacity-50 transition-all flex items-center justify-center gap-1"
                           >
                             <XCircle className="w-3 h-3" />
                             {language === "en" ? "Ignore" : "अनदेखा"}
@@ -401,7 +401,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                         href={pr.gitHubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-blue-400 hover:text-blue-300 text-xs font-semibold transition-colors"
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg vol-wash text-blue-400 hover:text-blue-300 text-xs font-semibold transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
                         {language === "en"

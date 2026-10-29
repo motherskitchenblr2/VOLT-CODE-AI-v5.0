@@ -52,13 +52,13 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (!this.state.hasError) return this.props.children;
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505] p-6">
-        <div className="max-w-md w-full rounded-xl border border-[#FF5F00]/40 bg-black p-8 text-center">
-          <AlertTriangle className="w-10 h-10 text-[#FF5F00] mx-auto mb-4" />
-          <h1 className="text-white font-bold text-lg mb-2">
+      <div className="min-h-screen flex items-center justify-center vol-surface p-6">
+        <div className="max-w-md w-full rounded-xl border vol-ring-strong vol-well p-8 text-center">
+          <AlertTriangle className="w-10 h-10 vol-accent mx-auto mb-4" />
+          <h1 className="vol-t1 font-bold text-lg mb-2">
             VOLT AI CORE: RENDER FAULT CONTAINED
           </h1>
-          <p className="text-white/60 text-xs mb-1">
+          <p className="vol-t2 text-xs mb-1">
             The interface hit an unexpected error. Your sessions are still
             stored locally.
           </p>
@@ -68,14 +68,14 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF5F00] text-black text-xs font-bold cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-bold cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
               RELOAD SESSION
             </button>
             <button
               onClick={this.exportBackup}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold cursor-pointer"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl vol-well border vol-ring-strong vol-accent text-xs font-bold cursor-pointer"
             >
               <Download className="w-4 h-4" />
               BACKUP

@@ -110,11 +110,11 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#070707] text-[#E0E0E0] border-t border-[#FF5F00]/30 font-mono text-xs overflow-hidden">
+    <div className="w-full h-full flex flex-col vol-surface vol-t1 border-t vol-ring font-mono text-xs overflow-hidden">
       {/* Header */}
-      <div className="h-10 bg-[#121212] border-b border-[#FF5F00]/25 px-4 flex justify-between items-center select-none shrink-0">
+      <div className="h-10 vol-elev border-b vol-ring px-4 flex justify-between items-center select-none shrink-0">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-[#FF5F00] font-black">
+          <div className="flex items-center gap-2 vol-accent font-black">
             <TerminalIcon className="w-4 h-4" />
             <span>SHELL GATEWAY</span>
           </div>
@@ -127,8 +127,8 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
                   onClick={() => setActiveTab(tab)}
                   className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-all cursor-pointer ${
                     activeTab === tab
-                      ? "bg-[#FF5F00] text-black"
-                      : "border border-[#FF5F00]/25 text-[#FF5F00] hover:bg-[#FF5F00]/5"
+                      ? "vol-acc-bg text-black"
+                      : "border vol-ring vol-accent hover:vol-acc-wash"
                   }`}
                 >
                   {tab}
@@ -150,13 +150,13 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
               else if (activeTab === "cmd")
                 setCmdLogs(["C:\\Workspace\\Volt-Code-AI> "]);
             }}
-            className="hover:text-red-400 text-white/50 transition-colors cursor-pointer"
+            className="hover:text-red-400 vol-t2 transition-colors cursor-pointer"
             title="Clear Console"
           >
             <Trash2 className="w-4 h-4" />
           </button>
           <button
-            className="hover:text-[#FF5F00] text-white/50 transition-colors cursor-pointer"
+            className="hover:vol-accent vol-t2 transition-colors cursor-pointer"
             title="Minimize"
           >
             <Minimize2 className="w-4 h-4" />
@@ -168,12 +168,12 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
       <div className="flex-1 p-4 overflow-y-auto space-y-1 select-text">
         {activeTab === "diagnostic" ? (
           logs.map((log, idx) => {
-            let color = "text-white/80";
+            let color = "vol-t1";
             if (log.includes("[SUCCESS]")) color = "text-green-400";
             else if (log.includes("[ERROR]")) color = "text-red-400";
             else if (log.includes("[WARNING]"))
               color = "text-yellow-400 font-bold";
-            else if (log.includes("[INFO]")) color = "text-[#FF5F00]";
+            else if (log.includes("[INFO]")) color = "vol-accent";
 
             return (
               <div key={idx} className={color}>
@@ -193,16 +193,16 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
               .map((line, idx) => (
                 <div
                   key={idx}
-                  className="text-white/80 whitespace-pre-wrap leading-relaxed"
+                  className="vol-t1 whitespace-pre-wrap leading-relaxed"
                 >
                   {line}
                 </div>
               ))}
             <form
               onSubmit={handleCommandSubmit}
-              className="flex items-center text-white mt-0.5"
+              className="flex items-center vol-t1 mt-0.5"
             >
-              <span className="text-[#FF5F00] font-bold mr-1.5 shrink-0">
+              <span className="vol-accent font-bold mr-1.5 shrink-0">
                 {
                   (activeTab === "powershell"
                     ? powershellLogs
@@ -216,7 +216,7 @@ export const TerminalPanel: React.FC<TerminalPanelProps> = ({
                 type="text"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                className="flex-1 bg-transparent text-white border-none outline-none focus:ring-0 focus:outline-none p-0 font-mono text-xs"
+                className="flex-1 bg-transparent vol-t1 border-none outline-none focus:ring-0 focus:outline-none p-0 font-mono text-xs"
                 placeholder="Run command..."
                 autoFocus
               />

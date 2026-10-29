@@ -150,14 +150,14 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 bg-black/50 backdrop-blur-lg">
+      <div className="px-4 py-3 border-b vol-line vol-veil backdrop-blur-lg">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
-            <Mic className="w-4 h-4 text-white" />
+            <Mic className="w-4 h-4 vol-t1" />
           </div>
-          <h3 className="font-bold text-white text-sm">
+          <h3 className="font-bold vol-t1 text-sm">
             {language === "en" ? "Audio" : "ऑडियो"}
           </h3>
         </div>
@@ -171,7 +171,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
             <button
               onClick={startRecording}
               disabled={isProcessing}
-              className="px-6 py-3 rounded-full bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold hover:from-red-700 hover:to-orange-700 disabled:opacity-50 transition-all flex items-center gap-2"
+              className="px-6 py-3 rounded-full bg-gradient-to-r from-red-600 to-orange-600 vol-t1 font-bold hover:from-red-700 hover:to-orange-700 disabled:opacity-50 transition-all flex items-center gap-2"
             >
               <Mic className="w-5 h-5" />
               {language === "en" ? "Start Recording" : "रिकॉर्डिंग शुरू करें"}
@@ -185,7 +185,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               <div className="animate-pulse">
                 <div className="w-16 h-16 rounded-full bg-red-600/50 flex items-center justify-center mx-auto">
                   <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center">
-                    <Mic className="w-6 h-6 text-white animate-pulse" />
+                    <Mic className="w-6 h-6 vol-t1 animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -199,7 +199,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               {!recordingState.isPaused ? (
                 <button
                   onClick={pauseRecording}
-                  className="px-4 py-2 rounded-lg bg-yellow-600 text-white text-sm font-semibold hover:bg-yellow-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg bg-yellow-600 vol-t1 text-sm font-semibold hover:bg-yellow-700 transition-colors flex items-center gap-2"
                 >
                   <Pause className="w-4 h-4" />
                   {language === "en" ? "Pause" : "रोकें"}
@@ -207,7 +207,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               ) : (
                 <button
                   onClick={resumeRecording}
-                  className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg bg-blue-600 vol-t1 text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                   <Play className="w-4 h-4" />
                   {language === "en" ? "Resume" : "फिर से शुरू करें"}
@@ -217,7 +217,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               <button
                 onClick={stopRecording}
                 disabled={isProcessing}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                className="px-4 py-2 rounded-lg bg-red-600 vol-t1 text-sm font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-2"
               >
                 <Square className="w-4 h-4" />
                 {language === "en" ? "Stop" : "रोकें"}
@@ -234,7 +234,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               </p>
 
               {transcript && (
-                <div className="text-xs text-white/80 bg-black/30 p-2 rounded mb-2 max-h-16 overflow-y-auto">
+                <div className="text-xs vol-t1 vol-wash p-2 rounded mb-2 max-h-16 overflow-y-auto">
                   <p className="font-semibold mb-1">
                     {language === "en" ? "Transcript:" : "ट्रांस्क्रिप्ट:"}
                   </p>
@@ -245,7 +245,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
               <div className="flex gap-2">
                 <button
                   onClick={playRecording}
-                  className="flex-1 px-3 py-1.5 rounded bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
+                  className="flex-1 px-3 py-1.5 rounded bg-blue-600 vol-t1 text-xs font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1"
                 >
                   <Volume2 className="w-3 h-3" />
                   {language === "en" ? "Play" : "चलाएं"}
@@ -253,14 +253,14 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
 
                 <button
                   onClick={downloadRecording}
-                  className="px-3 py-1.5 rounded bg-green-600 text-white text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1"
+                  className="px-3 py-1.5 rounded bg-green-600 vol-t1 text-xs font-semibold hover:bg-green-700 transition-colors flex items-center gap-1"
                 >
                   <Download className="w-3 h-3" />
                 </button>
 
                 <button
                   onClick={clearRecording}
-                  className="px-3 py-1.5 rounded bg-red-600/50 text-white text-xs font-semibold hover:bg-red-600 transition-colors"
+                  className="px-3 py-1.5 rounded bg-red-600/50 vol-t1 text-xs font-semibold hover:bg-red-600 transition-colors"
                 >
                   {language === "en" ? "Clear" : "साफ़"}
                 </button>
@@ -272,9 +272,9 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
         {isProcessing && (
           <div className="text-center">
             <div className="inline-block animate-spin">
-              <div className="w-8 h-8 border-4 border-white/20 border-t-blue-500 rounded-full" />
+              <div className="w-8 h-8 border-4 vol-line border-t-blue-500 rounded-full" />
             </div>
-            <p className="text-xs text-white/60 mt-2">
+            <p className="text-xs vol-t2 mt-2">
               {language === "en" ? "Processing..." : "प्रक्रिया जारी है..."}
             </p>
           </div>

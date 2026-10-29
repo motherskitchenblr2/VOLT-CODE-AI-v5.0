@@ -56,21 +56,21 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
       case "audio":
         return "bg-blue-900/20 border-l-4 border-blue-500";
       default:
-        return "bg-white/5";
+        return "vol-wash";
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border border-white/10 overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-white/10 bg-black/50 backdrop-blur-lg">
+      <div className="px-6 py-4 border-b vol-line vol-veil backdrop-blur-lg">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
-            <MessageCircle className="w-5 h-5 text-white" />
+            <MessageCircle className="w-5 h-5 vol-t1" />
           </div>
           <div>
-            <h3 className="font-bold text-lg text-white">Agent Meeting Chat</h3>
-            <p className="text-xs text-white/60">
+            <h3 className="font-bold text-lg vol-t1">Agent Meeting Chat</h3>
+            <p className="text-xs vol-t2">
               {messages.length} messages • {agents.size} agents
             </p>
           </div>
@@ -83,7 +83,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="text-4xl mb-3">💬</div>
-              <p className="text-white/60 font-medium">
+              <p className="vol-t2 font-medium">
                 {language === "en" ? "No messages yet" : "अभी कोई संदेश नहीं"}
               </p>
             </div>
@@ -101,7 +101,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                 {/* Avatar */}
                 {!isSystem && sender && (
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg font-bold text-white text-sm"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg font-bold vol-t1 text-sm"
                     style={{ backgroundColor: sender.color }}
                     title={sender.name}
                   >
@@ -119,21 +119,21 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                   {!isSystem && sender && (
                     <p className="text-xs font-bold mb-1">
                       <span style={{ color: sender.color }}>{sender.name}</span>
-                      <span className="text-white/40 ml-2">{sender.role}</span>
+                      <span className="vol-t2 ml-2">{sender.role}</span>
                     </p>
                   )}
 
                   <div
                     className={`rounded-2xl px-4 py-3 ${getMessageBackgroundColor(message.type)}`}
                   >
-                    <p className="text-sm text-white break-words">
+                    <p className="text-sm vol-t1 break-words">
                       {message.content}
                     </p>
 
                     {/* Audio Transcript */}
                     {message.audioTranscript && (
-                      <div className="mt-2 pt-2 border-t border-white/10">
-                        <p className="text-xs text-white/70 italic">
+                      <div className="mt-2 pt-2 border-t vol-line">
+                        <p className="text-xs vol-t1 italic">
                           {language === "en"
                             ? "Transcript:"
                             : "ट्रांस्क्रिप्ट:"}{" "}
@@ -143,7 +143,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                     )}
 
                     {/* Message Footer */}
-                    <div className="flex items-center justify-between mt-2 text-xs text-white/50">
+                    <div className="flex items-center justify-between mt-2 text-xs vol-t2">
                       <span>
                         {new Date(message.timestamp).toLocaleTimeString()}
                       </span>
@@ -151,7 +151,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                         {message.audioUrl && (
                           <button
                             onClick={() => handlePlayAudio(message.audioUrl)}
-                            className="hover:text-white/80 transition-colors"
+                            className="hover:vol-t1 transition-colors"
                             title={
                               language === "en" ? "Play audio" : "ऑडियो चलाएं"
                             }
@@ -161,7 +161,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                         )}
                         <button
                           onClick={() => copyToClipboard(message.content)}
-                          className="hover:text-white/80 transition-colors"
+                          className="hover:vol-t1 transition-colors"
                           title={
                             language === "en"
                               ? "Copy message"
@@ -182,7 +182,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="px-6 py-4 border-t border-white/10 bg-black/50 backdrop-blur-lg">
+      <div className="px-6 py-4 border-t vol-line vol-veil backdrop-blur-lg">
         <div className="flex gap-3">
           <input
             type="text"
@@ -200,12 +200,12 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                 : "टीम को संदेश टाइप करें..."
             }
             disabled={isLoading}
-            className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/40 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+            className="flex-1 vol-wash border vol-line rounded-xl px-4 py-2.5 vol-t1 placeholder-white/40 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
           />
           <button
             onClick={handleSendMessage}
             disabled={isLoading || !inputValue.trim()}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 vol-t1 font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {language === "en" ? "Send" : "भेजें"}
           </button>

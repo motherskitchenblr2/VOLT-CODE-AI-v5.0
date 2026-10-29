@@ -106,11 +106,11 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="fixed bottom-6 right-6 w-96 max-h-96 bg-gradient-to-br from-slate-950 to-black rounded-2xl border border-white/20 shadow-2xl overflow-hidden z-50"
+        className="fixed bottom-6 right-6 w-96 max-h-96 bg-gradient-to-br from-slate-950 to-black rounded-2xl border vol-line shadow-2xl overflow-hidden z-50"
       >
         {/* Header */}
         <div
-          className={`p-4 bg-gradient-to-r ${getRiskColor(guidance.riskLevel)} text-white`}
+          className={`p-4 bg-gradient-to-r ${getRiskColor(guidance.riskLevel)} vol-t1`}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 flex-1">
@@ -123,7 +123,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
                     ? concernTexts.en[guidance.concern]
                     : concernTexts.hi[guidance.concern]}
                 </h3>
-                <p className="text-xs text-white/80 mt-1">
+                <p className="text-xs vol-t1 mt-1">
                   {language === "en"
                     ? riskTexts.en[guidance.riskLevel]
                     : riskTexts.hi[guidance.riskLevel]}
@@ -136,7 +136,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
                 setIsExpanded(false);
                 onDismiss?.();
               }}
-              className="p-1 rounded hover:bg-white/20 transition-colors"
+              className="p-1 rounded hover:vol-wash transition-colors"
               title={language === "en" ? "Dismiss" : "बंद करें"}
             >
               <X className="w-4 h-4" />
@@ -152,7 +152,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
               <span className="w-2 h-2 rounded-full bg-yellow-400" />
               {language === "en" ? "Boss Concern" : "बॉस की चिंता"}
             </p>
-            <p className="text-sm text-white/80 leading-relaxed">
+            <p className="text-sm vol-t1 leading-relaxed">
               {guidance.reason}
             </p>
           </div>
@@ -163,7 +163,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
               <CheckCircle2 className="w-3.5 h-3.5" />
               {language === "en" ? "Recommendation" : "सिफारिश"}
             </p>
-            <p className="text-sm text-white/80 leading-relaxed">
+            <p className="text-sm vol-t1 leading-relaxed">
               {guidance.recommendation}
             </p>
           </div>
@@ -176,7 +176,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
               </p>
               <ul className="space-y-1">
                 {guidance.agentFeedback.map((feedback, idx) => (
-                  <li key={idx} className="text-xs text-white/70 flex gap-2">
+                  <li key={idx} className="text-xs vol-t1 flex gap-2">
                     <span className="text-blue-400">•</span>
                     <span>{feedback}</span>
                   </li>
@@ -192,7 +192,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
             <p className="text-xs font-bold mb-2">
               {language === "en" ? "Risk Level" : "जोखिम स्तर"}
             </p>
-            <div className="w-full bg-black/50 rounded-full h-2 overflow-hidden">
+            <div className="w-full vol-veil rounded-full h-2 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{
@@ -208,7 +208,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
                 transition={{ duration: 0.5 }}
               />
             </div>
-            <p className="text-xs text-white/60 mt-2">
+            <p className="text-xs vol-t2 mt-2">
               {language === "en"
                 ? `This decision carries a ${guidance.riskLevel} risk level`
                 : `इस निर्णय में ${guidance.riskLevel} स्तर का जोखिम है`}
@@ -216,8 +216,8 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
           </div>
 
           {/* Info Message */}
-          <div className="p-3 rounded-lg bg-white/5 border border-white/10">
-            <p className="text-xs text-white/70 text-center">
+          <div className="p-3 rounded-lg vol-wash border vol-line">
+            <p className="text-xs vol-t1 text-center">
               {language === "en"
                 ? "The Boss is providing guidance to help avoid potential issues. Please review carefully."
                 : "संभावित समस्याओं से बचने में मदद के लिए बॉस मार्गदर्शन प्रदान कर रहा है। कृपया सावधानीपूर्वक समीक्षा करें।"}
@@ -226,13 +226,13 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t border-white/10 bg-black/50 grid grid-cols-2 gap-3">
+        <div className="p-4 border-t vol-line vol-veil grid grid-cols-2 gap-3">
           <button
             onClick={() => {
               onAccept?.(guidance.id);
               setIsExpanded(false);
             }}
-            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all"
+            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 vol-t1 font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all"
           >
             {language === "en" ? "Accept" : "स्वीकार करें"}
           </button>
@@ -242,7 +242,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
               onConfirm?.(guidance.id);
               setIsExpanded(false);
             }}
-            className="px-4 py-2.5 rounded-lg bg-white/10 text-white font-bold text-sm hover:bg-white/20 transition-all border border-white/20"
+            className="px-4 py-2.5 rounded-lg vol-wash vol-t1 font-bold text-sm hover:vol-wash transition-all border vol-line"
           >
             {language === "en" ? "Confirm Decision" : "निर्णय की पुष्टि करें"}
           </button>

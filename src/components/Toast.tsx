@@ -26,7 +26,7 @@ export function useToast() {
 const ICONS: Record<ToastKind, React.ReactNode> = {
   success: <CheckCircle2 className="w-4 h-4 text-green-400" />,
   error: <AlertTriangle className="w-4 h-4 text-red-400" />,
-  info: <Info className="w-4 h-4 text-[#FF5F00]" />,
+  info: <Info className="w-4 h-4 vol-accent" />,
 };
 
 /**
@@ -57,18 +57,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
               initial={{ opacity: 0, y: 16, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-black/95 border border-[#FF5F00]/30 shadow-[0_0_20px_rgba(255,95,0,0.2)] pointer-events-auto max-w-sm"
+              className="flex items-center gap-2.5 px-4 py-3 rounded-xl vol-veil border vol-ring shadow-[0_0_20px_rgba(255,95,0,0.2)] pointer-events-auto max-w-sm"
               style={{ background: "var(--toast-bg)" }}
             >
               {ICONS[t.kind]}
-              <span className="text-[12px] text-white leading-snug flex-1">
+              <span className="text-[12px] vol-t1 leading-snug flex-1">
                 {t.text}
               </span>
               <button
                 onClick={() =>
                   setToasts((prev) => prev.filter((x) => x.id !== t.id))
                 }
-                className="text-white/40 hover:text-white cursor-pointer"
+                className="vol-t2 hover:vol-t1 cursor-pointer"
                 aria-label="Dismiss notification"
               >
                 <X className="w-3.5 h-3.5" />

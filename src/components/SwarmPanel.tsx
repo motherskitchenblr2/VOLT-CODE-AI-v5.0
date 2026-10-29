@@ -46,27 +46,27 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto select-none">
       <div className="flex items-center gap-3 mb-4">
-        <Zap className="w-5 h-5 text-[#FF5F00]" />
-        <h1 className="text-xl font-black tracking-widest text-white">
+        <Zap className="w-5 h-5 vol-accent" />
+        <h1 className="text-xl font-black tracking-widest vol-t1">
           AGENT SWARM
         </h1>
         <span
           className={`flex items-center gap-1.5 text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full border ${
             isAnalyzing
-              ? "border-[#FF5F00] text-[#FF5F00] animate-pulse"
+              ? "vol-ring-strong vol-accent animate-pulse"
               : "border-green-500/40 text-green-400"
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              isAnalyzing ? "bg-[#FF5F00]" : "bg-green-500"
+              isAnalyzing ? "vol-acc-bg" : "bg-green-500"
             }`}
           />
           {isAnalyzing ? "ORCHESTRATION RUNNING" : "IDLE — READY"}
         </span>
       </div>
 
-      <div className="rounded-2xl border border-[#FF5F00]/25 bg-[#050505] p-2">
+      <div className="rounded-2xl border vol-ring vol-surface p-2">
         <svg
           viewBox="0 0 500 320"
           className="w-full h-auto"
@@ -187,7 +187,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
             CONSENSUS: {consensusScore}/100 {consensusPassed ? "PASSED" : "REJECTED"}
           </span>
         ) : (
-          <span className="text-white/40">
+          <span className="vol-t2">
             Run an AI analysis to activate the swarm and populate live scores.
           </span>
         )}

@@ -98,26 +98,26 @@ export function TODOListWidget({
       case "blocked":
         return <AlertCircle className="w-5 h-5 text-red-400" />;
       default:
-        return <Circle className="w-5 h-5 text-white/40" />;
+        return <Circle className="w-5 h-5 vol-t2" />;
     }
   };
 
   return (
-    <div className="space-y-6 p-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#FF5F00]/20 rounded-2xl">
+    <div className="space-y-6 p-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border vol-ring rounded-2xl">
       {/* Header with Stats */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Flag className="w-5 h-5 text-[#FF5F00]" />
+          <h2 className="text-lg font-bold vol-t1 flex items-center gap-2">
+            <Flag className="w-5 h-5 vol-accent" />
             TODO List
           </h2>
-          <div className="text-xs text-white/50 font-semibold">
+          <div className="text-xs vol-t2 font-semibold">
             {stats.completed}/{stats.total} completed
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="h-1.5 bg-black/60 rounded-full overflow-hidden">
+        <div className="h-1.5 vol-veil rounded-full overflow-hidden">
           <motion.div
             animate={{
               width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%`,
@@ -130,7 +130,7 @@ export function TODOListWidget({
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Total", value: stats.total, color: "text-white" },
+            { label: "Total", value: stats.total, color: "vol-t1" },
             {
               label: "Active",
               value: stats.inProgress,
@@ -141,12 +141,12 @@ export function TODOListWidget({
           ].map((stat) => (
             <div
               key={stat.label}
-              className="p-2 bg-black/40 border border-white/10 rounded-lg text-center"
+              className="p-2 vol-veil border vol-line rounded-lg text-center"
             >
               <div className={`text-lg font-bold ${stat.color}`}>
                 {stat.value}
               </div>
-              <div className="text-[10px] text-white/40 uppercase font-bold">
+              <div className="text-[10px] vol-t2 uppercase font-bold">
                 {stat.label}
               </div>
             </div>
@@ -155,7 +155,7 @@ export function TODOListWidget({
       </div>
 
       {/* Add New Todo */}
-      <div className="space-y-3 p-4 bg-black/40 border border-[#FF5F00]/20 rounded-xl">
+      <div className="space-y-3 p-4 vol-veil border vol-ring rounded-xl">
         <div className="flex gap-2">
           <input
             type="text"
@@ -163,7 +163,7 @@ export function TODOListWidget({
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleAddTodo()}
             placeholder="Add a new task..."
-            className="flex-1 bg-black border border-white/10 px-3 py-2 rounded-lg text-sm text-white focus:border-[#FF5F00]/40 outline-none"
+            className="flex-1 vol-well border vol-line px-3 py-2 rounded-lg text-sm vol-t1 focus:vol-ring-hi outline-none"
           />
           <select
             value={newPriority}
@@ -172,7 +172,7 @@ export function TODOListWidget({
                 e.target.value as "low" | "medium" | "high" | "critical",
               )
             }
-            className="px-3 py-2 bg-black border border-white/10 rounded-lg text-sm text-white focus:border-[#FF5F00]/40 outline-none"
+            className="px-3 py-2 vol-well border vol-line rounded-lg text-sm vol-t1 focus:vol-ring-hi outline-none"
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -181,7 +181,7 @@ export function TODOListWidget({
           </select>
           <button
             onClick={handleAddTodo}
-            className="px-4 py-2 bg-[#FF5F00] hover:bg-[#FF5F00]/90 text-black font-bold rounded-lg flex items-center gap-2 transition-all"
+            className="px-4 py-2 vol-acc-bg hover:vol-accbg-hi text-black font-bold rounded-lg flex items-center gap-2 transition-all"
           >
             <Plus className="w-4 h-4" />
             Add
@@ -199,8 +199,8 @@ export function TODOListWidget({
             onClick={() => setFilterStatus(status)}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
               filterStatus === status
-                ? "bg-[#FF5F00] text-black"
-                : "bg-white/5 text-white/60 hover:bg-white/10"
+                ? "vol-acc-bg text-black"
+                : "vol-wash vol-t2 hover:vol-wash"
             }`}
           >
             {status.replace("-", " ").toUpperCase()}
@@ -212,7 +212,7 @@ export function TODOListWidget({
       <div className="space-y-2 max-h-96 overflow-y-auto">
         <AnimatePresence>
           {filteredTodos.length === 0 ? (
-            <div className="text-center py-8 text-white/40 text-sm">
+            <div className="text-center py-8 vol-t2 text-sm">
               No tasks in this category
             </div>
           ) : (
@@ -223,7 +223,7 @@ export function TODOListWidget({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ delay: idx * 0.05 }}
-                className="border border-white/10 rounded-lg p-3 bg-black/40 hover:bg-black/60 transition-all cursor-pointer group"
+                className="border vol-line rounded-lg p-3 vol-veil hover:vol-veil transition-all cursor-pointer group"
                 onClick={() =>
                   setExpandedId(expandedId === todo.id ? null : todo.id)
                 }
@@ -250,14 +250,14 @@ export function TODOListWidget({
                     <h3
                       className={`font-semibold text-sm ${
                         todo.status === "completed"
-                          ? "text-white/40 line-through"
-                          : "text-white"
+                          ? "vol-t2 line-through"
+                          : "vol-t1"
                       }`}
                     >
                       {todo.title}
                     </h3>
                     {todo.description && (
-                      <p className="text-xs text-white/40 mt-1 line-clamp-1">
+                      <p className="text-xs vol-t2 mt-1 line-clamp-1">
                         {todo.description}
                       </p>
                     )}
@@ -288,16 +288,16 @@ export function TODOListWidget({
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="mt-3 pt-3 border-t border-white/10 space-y-2"
+                      className="mt-3 pt-3 border-t vol-line space-y-2"
                     >
                       {todo.assignedTo && (
-                        <div className="flex items-center gap-2 text-xs text-white/60">
+                        <div className="flex items-center gap-2 text-xs vol-t2">
                           <User className="w-3 h-3" />
                           Assigned: {todo.assignedTo}
                         </div>
                       )}
                       {todo.dueDate && (
-                        <div className="flex items-center gap-2 text-xs text-white/60">
+                        <div className="flex items-center gap-2 text-xs vol-t2">
                           <Calendar className="w-3 h-3" />
                           Due: {todo.dueDate.toLocaleDateString()}
                         </div>

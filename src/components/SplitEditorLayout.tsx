@@ -47,7 +47,7 @@ export function SplitEditorLayout({
 
   return (
     <div
-      className="flex h-[calc(100vh-400px)] gap-0 bg-[#0A0A0A] rounded-2xl border border-[#FF5F00]/20 overflow-hidden"
+      className="flex h-[calc(100vh-400px)] gap-0 vol-surface rounded-2xl border vol-ring overflow-hidden"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -55,20 +55,20 @@ export function SplitEditorLayout({
       {/* Left Panel - Code Editor (50%+ height) */}
       <div
         style={{ width: `${dividerPos}%` }}
-        className="flex flex-col overflow-hidden bg-[#0A0A0A]"
+        className="flex flex-col overflow-hidden vol-surface"
       >
-        <div className="border-b border-[#FF5F00]/20 px-6 py-3 bg-[#121212] flex items-center justify-between">
-          <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider">
+        <div className="border-b vol-ring px-6 py-3 vol-elev flex items-center justify-between">
+          <div className="text-xs font-bold vol-accent uppercase tracking-wider">
             Code Editor
           </div>
-          <div className="text-[10px] text-white/40 font-mono">{language}</div>
+          <div className="text-[10px] vol-t2 font-mono">{language}</div>
         </div>
 
         <textarea
           value={code}
           onChange={(e) => onCodeChange(e.target.value)}
           spellCheck={false}
-          className="flex-1 w-full resize-none bg-transparent p-6 font-mono text-[13px] leading-[1.65] outline-none text-[#EDEDED] caret-[#FF5F00]"
+          className="flex-1 w-full resize-none bg-transparent p-6 font-mono text-[13px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
           style={{
             fontFamily:
               "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
@@ -80,16 +80,16 @@ export function SplitEditorLayout({
       {/* Draggable Divider */}
       <div
         onMouseDown={handleMouseDown}
-        className="w-1 bg-[#FF5F00]/20 hover:bg-[#FF5F00]/40 cursor-col-resize transition-colors"
+        className="w-1 vol-acc-wash hover:vol-acc-wash cursor-col-resize transition-colors"
       />
 
       {/* Right Panel - Preview/Comparison/Notepad/Review */}
       <div
         style={{ width: `${100 - dividerPos}%` }}
-        className="flex flex-col overflow-hidden bg-[#0A0A0A]"
+        className="flex flex-col overflow-hidden vol-surface"
       >
         {/* Tab Navigation */}
-        <div className="border-b border-[#FF5F00]/20 px-4 py-2 bg-[#121212] flex items-center gap-1 overflow-x-auto">
+        <div className="border-b vol-ring px-4 py-2 vol-elev flex items-center gap-1 overflow-x-auto">
           {[
             { id: "preview", label: "Preview", icon: Eye },
             { id: "comparison", label: "Comparison", icon: GitCompare },
@@ -105,8 +105,8 @@ export function SplitEditorLayout({
               }
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 rightPanel === id
-                  ? "bg-[#FF5F00] text-black"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "vol-acc-bg text-black"
+                  : "vol-t2 hover:vol-t1 hover:vol-wash"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -119,13 +119,13 @@ export function SplitEditorLayout({
         <div className="flex-1 overflow-auto p-6">
           {rightPanel === "preview" && (
             <div className="space-y-4">
-              <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider mb-4">
+              <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4">
                 Live Preview
               </div>
-              <div className="bg-black/40 border border-white/10 rounded-lg p-4 text-sm text-white/70 font-mono">
+              <div className="vol-veil border vol-line rounded-lg p-4 text-sm vol-t1 font-mono">
                 <pre>{code.slice(0, 500)}</pre>
                 {code.length > 500 && (
-                  <div className="text-white/30 text-xs mt-2">
+                  <div className="vol-t2 text-xs mt-2">
                     ... ({code.length} characters)
                   </div>
                 )}
@@ -135,13 +135,13 @@ export function SplitEditorLayout({
 
           {rightPanel === "comparison" && fixedCode && (
             <div className="space-y-4">
-              <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider mb-4">
+              <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4">
                 Code Comparison
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="border border-white/10 rounded-lg p-3 bg-black/40">
-                  <div className="text-[10px] text-white/50 mb-2">Original</div>
-                  <pre className="text-[11px] text-white/60 max-h-48 overflow-auto">
+                <div className="border vol-line rounded-lg p-3 vol-veil">
+                  <div className="text-[10px] vol-t2 mb-2">Original</div>
+                  <pre className="text-[11px] vol-t2 max-h-48 overflow-auto">
                     {code.slice(0, 250)}
                   </pre>
                 </div>
@@ -157,21 +157,21 @@ export function SplitEditorLayout({
 
           {rightPanel === "notepad" && (
             <div className="space-y-3">
-              <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider mb-4">
+              <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4">
                 Quick Notes
               </div>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add notes, TODOs, or observations..."
-                className="w-full h-64 bg-black/40 border border-white/10 rounded-lg p-3 text-sm text-white/80 focus:border-[#FF5F00]/40 outline-none resize-none"
+                className="w-full h-64 vol-veil border vol-line rounded-lg p-3 text-sm vol-t1 focus:vol-ring-hi outline-none resize-none"
               />
             </div>
           )}
 
           {rightPanel === "review" && (
             <div className="space-y-4">
-              <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider mb-4">
+              <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4">
                 Code Review
               </div>
               <div className="space-y-3">
@@ -189,7 +189,7 @@ export function SplitEditorLayout({
                 {fixedCode && (
                   <button
                     onClick={onApplyFix}
-                    className="w-full py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-lg transition-colors"
+                    className="w-full py-2 bg-green-600 hover:bg-green-700 vol-t1 text-xs font-bold rounded-lg transition-colors"
                   >
                     Apply Fixes
                   </button>

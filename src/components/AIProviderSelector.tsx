@@ -180,9 +180,9 @@ export function AIProviderSelector({
   };
 
   return (
-    <div className="space-y-4 p-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border border-[#FF5F00]/20 rounded-2xl">
-      <div className="text-xs font-bold text-[#FF5F00] uppercase tracking-wider mb-4 flex items-center gap-2">
-        <div className="w-2 h-2 bg-[#FF5F00] rounded-full"></div>
+    <div className="space-y-4 p-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border vol-ring rounded-2xl">
+      <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4 flex items-center gap-2">
+        <div className="w-2 h-2 vol-acc-bg rounded-full"></div>
         AI Provider Selection
       </div>
 
@@ -190,44 +190,44 @@ export function AIProviderSelector({
       <div className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between p-3 bg-black/60 border border-[#FF5F00]/30 rounded-xl text-left hover:border-[#FF5F00]/50 transition-all"
+          className="w-full flex items-center justify-between p-3 vol-veil border vol-ring rounded-xl text-left hover:vol-ring-hi transition-all"
         >
           <div>
-            <div className="text-xs text-white/40 uppercase font-bold tracking-wide">
+            <div className="text-xs vol-t2 uppercase font-bold tracking-wide">
               Provider
             </div>
-            <div className="text-sm font-bold text-[#FF5F00]">
+            <div className="text-sm font-bold vol-accent">
               {selectedProvider?.name}
             </div>
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-[#FF5F00] transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`w-4 h-4 vol-accent transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
 
         {isOpen && (
-          <div className="absolute top-full mt-2 w-full bg-[#0a0a0a] border border-[#FF5F00]/40 rounded-xl overflow-hidden z-50 shadow-lg">
+          <div className="absolute top-full mt-2 w-full vol-surface border vol-ring-strong rounded-xl overflow-hidden z-50 shadow-lg">
             {providers.map((provider) => (
               <button
                 key={provider.id}
                 onClick={() => handleProviderSelect(provider)}
                 className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-all ${
                   selectedProvider?.id === provider.id
-                    ? "bg-[#FF5F00]/20 text-[#FF5F00] border-l-2 border-[#FF5F00]"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                    ? "vol-acc-wash vol-accent border-l-2 vol-ring-strong"
+                    : "vol-t1 hover:vol-wash hover:vol-t1"
                 }`}
               >
                 <div
-                  className={`w-2 h-2 rounded-full ${selectedProvider?.id === provider.id ? "bg-[#FF5F00]" : "bg-white/20"}`}
+                  className={`w-2 h-2 rounded-full ${selectedProvider?.id === provider.id ? "vol-acc-bg" : "bg-white/20"}`}
                 ></div>
                 <div>
                   <div className="font-bold text-sm">{provider.name}</div>
-                  <div className="text-xs text-white/40">
+                  <div className="text-xs vol-t2">
                     {provider.models.length} models available
                   </div>
                 </div>
                 {selectedProvider?.id === provider.id && (
-                  <Check className="w-4 h-4 ml-auto text-[#FF5F00]" />
+                  <Check className="w-4 h-4 ml-auto vol-accent" />
                 )}
               </button>
             ))}
@@ -239,13 +239,13 @@ export function AIProviderSelector({
       {selectedProvider && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs text-white/40 uppercase font-bold tracking-wide">
+            <div className="text-xs vol-t2 uppercase font-bold tracking-wide">
               Model
             </div>
             <button
               onClick={refreshModels}
               disabled={isLoading}
-              className="text-[10px] text-[#FF5F00] hover:text-[#FF5F00]/80 flex items-center gap-1 disabled:opacity-50"
+              className="text-[10px] vol-accent hover:vol-accent flex items-center gap-1 disabled:opacity-50"
             >
               <RefreshCw
                 className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`}
@@ -261,18 +261,18 @@ export function AIProviderSelector({
                 onClick={() => handleModelSelect(model)}
                 className={`p-3 rounded-lg text-left text-xs transition-all border ${
                   selectedModel?.id === model.id
-                    ? "bg-[#FF5F00]/10 border-[#FF5F00]/60 text-[#FF5F00]"
-                    : "bg-black/40 border-white/10 text-white/70 hover:border-white/30"
+                    ? "vol-acc-wash vol-ring-strong vol-accent"
+                    : "vol-veil vol-line vol-t1 hover:vol-line"
                 }`}
               >
                 <div className="font-semibold">{model.name}</div>
-                <div className="text-[10px] text-white/40 mt-1 space-y-0.5">
+                <div className="text-[10px] vol-t2 mt-1 space-y-0.5">
                   <div>Max Tokens: {model.maxTokens.toLocaleString()}</div>
                   <div className="flex gap-2">
-                    <span className="px-1.5 py-0.5 bg-white/10 rounded">
+                    <span className="px-1.5 py-0.5 vol-wash rounded">
                       Tier: {model.tier}
                     </span>
-                    <span className="px-1.5 py-0.5 bg-white/10 rounded">
+                    <span className="px-1.5 py-0.5 vol-wash rounded">
                       Type: {model.capability}
                     </span>
                   </div>
@@ -285,7 +285,7 @@ export function AIProviderSelector({
 
       {/* Cost Calculator */}
       {selectedModel && (
-        <div className="p-3 bg-black/60 border border-green-500/20 rounded-lg">
+        <div className="p-3 vol-veil border border-green-500/20 rounded-lg">
           <div className="text-xs font-bold text-green-400 mb-2">
             Cost Estimate
           </div>
@@ -294,7 +294,7 @@ export function AIProviderSelector({
               ${(selectedModel.costPer1kTokens * 1000).toFixed(4)} per 1000
               tokens
             </div>
-            <div className="text-[10px] text-white/30 mt-1">
+            <div className="text-[10px] vol-t2 mt-1">
               Actual cost varies by request size
             </div>
           </div>

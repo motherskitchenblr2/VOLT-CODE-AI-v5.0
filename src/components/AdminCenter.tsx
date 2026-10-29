@@ -350,8 +350,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   // Lock Screen Render
   if (!isUnlocked) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-[#0A0A0A] p-6 select-text font-mono">
-        <div className="w-full max-w-md bg-[#121212] border border-red-500/30 rounded-3xl p-8 space-y-6 shadow-2xl relative overflow-hidden">
+      <div className="flex flex-col items-center justify-center h-full vol-surface p-6 select-text font-mono">
+        <div className="w-full max-w-md vol-elev border border-red-500/30 rounded-3xl p-8 space-y-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-red-600 animate-pulse" />
 
           <div className="flex flex-col items-center space-y-3">
@@ -361,14 +361,14 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             <h2 className="text-xl font-black tracking-widest text-red-500 uppercase">
               RESTRICTED OPERATIONAL ZONE
             </h2>
-            <p className="text-[10px] text-white/50 text-center uppercase tracking-wider select-none">
+            <p className="text-[10px] vol-t2 text-center uppercase tracking-wider select-none">
               Volt AI Enterprise v6.0 Core Administrator Access Required
             </p>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-[10px] text-white/40 uppercase font-black tracking-wider mb-2 select-none">
+              <label className="block text-[10px] vol-t2 uppercase font-black tracking-wider mb-2 select-none">
                 Administrator Access Secret
               </label>
               <input
@@ -376,7 +376,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 value={enteredKey}
                 onChange={(e) => setEnteredKey(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
-                className="w-full bg-black border border-red-500/30 text-white font-bold py-3 px-4 rounded-xl text-center focus:outline-none focus:border-red-500 text-sm tracking-widest"
+                className="w-full vol-well border border-red-500/30 vol-t1 font-bold py-3 px-4 rounded-xl text-center focus:outline-none focus:border-red-500 text-sm tracking-widest"
                 placeholder="••••••••"
               />
             </div>
@@ -389,13 +389,13 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
             <button
               onClick={handleUnlock}
-              className="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg active:scale-[0.985] select-none"
+              className="w-full py-3.5 bg-red-600 hover:bg-red-700 vol-t1 font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg active:scale-[0.985] select-none"
             >
               AUTHENTICATE CREDENTIALS
             </button>
           </div>
 
-          <div className="text-[9px] text-white/30 text-center pt-2 select-none">
+          <div className="text-[9px] vol-t2 text-center pt-2 select-none">
             DEFAULT KEY:{" "}
             <span className="text-red-500/80 font-bold">admin123</span>
           </div>
@@ -405,9 +405,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   }
 
   return (
-    <div className="p-8 h-full overflow-y-auto space-y-6 bg-[#0A0A0A] select-none">
+    <div className="p-8 h-full overflow-y-auto space-y-6 vol-surface select-none">
       {/* Header */}
-      <div className="flex justify-between items-center border-b border-[#FF5F00]/25 pb-5 flex-wrap gap-4">
+      <div className="flex justify-between items-center border-b vol-ring pb-5 flex-wrap gap-4">
         <div className="flex gap-2 flex-wrap">
           {(
             [
@@ -432,8 +432,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
               onClick={() => setActiveAdminTab(tab.id)}
               className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 cursor-pointer transition-all ${
                 activeAdminTab === tab.id
-                  ? "bg-[#FF5F00] text-black"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
+                  ? "vol-acc-bg text-black"
+                  : "vol-t2 hover:vol-t1 hover:vol-wash"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -447,8 +447,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
           onClick={emergencyHalt}
           className={`flex items-center gap-2.5 px-6 py-3 rounded-xl font-extrabold text-xs tracking-wider uppercase transition-all shadow-lg active:scale-95 cursor-pointer ${
             isSystemHalted
-              ? "bg-green-600 text-white shadow-green-500/20 shadow-lg"
-              : "bg-red-600 text-black shadow-red-500/30 hover:bg-red-700 hover:text-white"
+              ? "bg-green-600 vol-t1 shadow-green-500/20 shadow-lg"
+              : "bg-red-600 text-black shadow-red-500/30 hover:bg-red-700 hover:vol-t1"
           }`}
         >
           <Power className="w-4 h-4" />
@@ -460,45 +460,45 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
       {activeAdminTab === "status" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border border-[#FF5F00]/20 bg-[#121212]/50 p-5 rounded-2xl flex items-center justify-between">
+            <div className="border vol-ring vol-elev p-5 rounded-2xl flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-white/50 uppercase font-black">
+                <div className="text-[10px] vol-t2 uppercase font-black">
                   AI Operations Expenditure
                 </div>
-                <div className="text-2xl font-black text-white mt-1">
+                <div className="text-2xl font-black vol-t1 mt-1">
                   ${(tokensUsed * 0.0000025).toFixed(4)}
                 </div>
-                <div className="text-[10px] text-white/30 mt-1">
+                <div className="text-[10px] vol-t2 mt-1">
                   {tokensUsed} tokens used
                 </div>
               </div>
-              <Activity className="w-7 h-7 text-[#FF5F00]" />
+              <Activity className="w-7 h-7 vol-accent" />
             </div>
 
-            <div className="border border-[#FF5F00]/20 bg-[#121212]/50 p-5 rounded-2xl flex items-center justify-between">
+            <div className="border vol-ring vol-elev p-5 rounded-2xl flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-white/50 uppercase font-black">
+                <div className="text-[10px] vol-t2 uppercase font-black">
                   Active Workers
                 </div>
-                <div className="text-2xl font-black text-white mt-1">
+                <div className="text-2xl font-black vol-t1 mt-1">
                   {activeAgents}
                 </div>
-                <div className="text-[10px] text-white/30 mt-1">
+                <div className="text-[10px] vol-t2 mt-1">
                   Specialist sub-agents executing tasks
                 </div>
               </div>
-              <Users className="w-7 h-7 text-[#FF5F00]" />
+              <Users className="w-7 h-7 vol-accent" />
             </div>
 
-            <div className="border border-[#FF5F00]/20 bg-[#121212]/50 p-5 rounded-2xl flex items-center justify-between">
+            <div className="border vol-ring vol-elev p-5 rounded-2xl flex items-center justify-between">
               <div>
-                <div className="text-[10px] text-white/50 uppercase font-black">
+                <div className="text-[10px] vol-t2 uppercase font-black">
                   Core Engine Security
                 </div>
                 <div className="text-2xl font-black text-green-400 mt-1">
                   {isSystemHalted ? "HALTED" : "SECURE"}
                 </div>
-                <div className="text-[10px] text-white/30 mt-1">
+                <div className="text-[10px] vol-t2 mt-1">
                   Server key encryption: active
                 </div>
               </div>
@@ -506,11 +506,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
           </div>
 
-          <div className="border border-[#FF5F00]/20 bg-[#121212]/20 p-6 rounded-2xl space-y-4">
-            <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+          <div className="border vol-ring vol-elev p-6 rounded-2xl space-y-4">
+            <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
               Engine Credentials Configuration
             </h3>
-            <p className="text-xs text-white/60 leading-relaxed font-mono">
+            <p className="text-xs vol-t2 leading-relaxed font-mono">
               API credentials are automatically encrypted utilizing the
               server-side AES-256-GCM engine prior to database writing. The
               private key is maintained in deployment environments with zero
@@ -523,19 +523,19 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
       {/* 2. AI Provider Registry Tab */}
       {activeAdminTab === "providers" && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center flex-wrap gap-4 border-b border-white/5 pb-4">
+          <div className="flex justify-between items-center flex-wrap gap-4 border-b vol-line pb-4">
             <div>
-              <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+              <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
                 Registered Model Catalogs
               </h3>
-              <p className="text-[10px] text-white/40 mt-1 uppercase">
+              <p className="text-[10px] vol-t2 mt-1 uppercase">
                 Health LEDs show actual latencies to provider gateway endpoints
               </p>
             </div>
 
             {/* Auto-Refresh Dropdown */}
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-white/50 uppercase font-bold">
+              <span className="text-[10px] vol-t2 uppercase font-bold">
                 Auto-Refresh LEDs:
               </span>
               <select
@@ -547,7 +547,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                     e.target.value,
                   );
                 }}
-                className="bg-black border border-white/10 px-2 py-1 rounded text-xs text-white focus:outline-none focus:border-[#FF5F00]"
+                className="vol-well border vol-line px-2 py-1 rounded text-xs vol-t1 focus:outline-none focus:vol-ring-hi"
               >
                 <option value="off">Disabled</option>
                 <option value="10s">10 seconds</option>
@@ -561,7 +561,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             {providers.map((p) => (
               <div
                 key={p.name}
-                className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-5 space-y-4 relative overflow-hidden"
+                className="border vol-line vol-elev rounded-2xl p-5 space-y-4 relative overflow-hidden"
               >
                 {/* Background glow matching LED status */}
                 <div
@@ -576,7 +576,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-black text-base text-white flex items-center gap-2">
+                    <h4 className="font-black text-base vol-t1 flex items-center gap-2">
                       {p.name}
                       <span
                         className={`inline-block w-2.5 h-2.5 rounded-full ${
@@ -589,7 +589,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                         title={`Health Status: ${p.status}`}
                       />
                     </h4>
-                    <p className="text-[10px] text-white/40 mt-1 uppercase font-bold tracking-wider">
+                    <p className="text-[10px] vol-t2 mt-1 uppercase font-bold tracking-wider">
                       {p.connected
                         ? "✓ Connected to Gateway"
                         : "✗ Credentials Staged Offline"}
@@ -599,7 +599,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   <button
                     onClick={() => handlePing(p.name)}
                     disabled={isPinging[p.name]}
-                    className="p-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-[10px] text-[#FF5F00] font-black uppercase flex items-center gap-1 cursor-pointer transition-all disabled:opacity-50"
+                    className="p-1.5 rounded-lg border vol-line hover:vol-wash text-[10px] vol-accent font-black uppercase flex items-center gap-1 cursor-pointer transition-all disabled:opacity-50"
                   >
                     <RefreshCw
                       className={`w-3 h-3 ${isPinging[p.name] ? "animate-spin" : ""}`}
@@ -610,29 +610,29 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   </button>
                 </div>
 
-                <div className="border-t border-white/5 pt-3 space-y-2">
-                  <div className="text-[10px] text-white/50 uppercase font-black tracking-wider">
+                <div className="border-t vol-line pt-3 space-y-2">
+                  <div className="text-[10px] vol-t2 uppercase font-black tracking-wider">
                     Staged Models
                   </div>
                   <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
                     {p.models.map((m) => (
                       <div
                         key={m.id}
-                        className="p-2.5 bg-black/40 border border-white/5 rounded-xl text-xs space-y-1.5"
+                        className="p-2.5 vol-veil border vol-line rounded-xl text-xs space-y-1.5"
                       >
-                        <div className="flex justify-between font-bold text-white/90 text-[11px]">
+                        <div className="flex justify-between font-bold vol-t1 text-[11px]">
                           <span>{m.name}</span>
-                          <span className="text-[#FF5F00]/80">
+                          <span className="vol-accent-soft">
                             {m.contextWindow.toLocaleString()} CTX
                           </span>
                         </div>
-                        <div className="flex justify-between text-[10px] text-white/40">
+                        <div className="flex justify-between text-[10px] vol-t2">
                           <span className="flex items-center gap-1.5 flex-wrap">
                             <span
                               className={
                                 m.capabilities.streaming
                                   ? "text-green-400 font-semibold"
-                                  : "text-white/20"
+                                  : "vol-t2"
                               }
                             >
                               STREAMING
@@ -642,7 +642,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                               className={
                                 m.capabilities.vision
                                   ? "text-green-400 font-semibold"
-                                  : "text-white/20"
+                                  : "vol-t2"
                               }
                             >
                               VISION
@@ -652,13 +652,13 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                               className={
                                 m.capabilities.toolCalling
                                   ? "text-green-400 font-semibold"
-                                  : "text-white/20"
+                                  : "vol-t2"
                               }
                             >
                               TOOLS
                             </span>
                           </span>
-                          <span className="font-mono text-white/60">
+                          <span className="font-mono vol-t2">
                             ${m.tokenCostPerMillionInput.toFixed(2)} / $
                             {(m.tokenCostPerMillionOutput || 0).toFixed(2)} M
                           </span>
@@ -677,16 +677,16 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
       {activeAdminTab === "performance" && (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+            <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
               Performance Audit Telemetry
             </h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* React renders and size */}
-            <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-5 space-y-4 col-span-1">
-              <h4 className="font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
-                <Layers className="w-4 h-4 text-[#FF5F00]" />
+            <div className="border vol-line vol-elev rounded-2xl p-5 space-y-4 col-span-1">
+              <h4 className="font-black text-sm vol-t1 uppercase tracking-wider flex items-center gap-2">
+                <Layers className="w-4 h-4 vol-accent" />
                 React Render Tracking
               </h4>
               <div className="space-y-2">
@@ -694,9 +694,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   ([comp, count]) => (
                     <div
                       key={comp}
-                      className="flex justify-between items-center text-xs p-2 bg-black/40 border border-white/5 rounded-xl"
+                      className="flex justify-between items-center text-xs p-2 vol-veil border vol-line rounded-xl"
                     >
-                      <span className="font-semibold text-white/80">
+                      <span className="font-semibold vol-t1">
                         {comp} Component
                       </span>
                       <span className="px-2.5 py-0.5 rounded-lg bg-orange-600/10 text-orange-400 font-black text-[10px]">
@@ -706,17 +706,17 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   ),
                 )}
               </div>
-              <div className="flex justify-between text-xs font-mono text-white/40 pt-2 border-t border-white/5">
+              <div className="flex justify-between text-xs font-mono vol-t2 pt-2 border-t vol-line">
                 <span>EST. BUNDLE SIZE</span>
-                <span className="text-white font-bold">
+                <span className="vol-t1 font-bold">
                   {optimizerReport.bundleSizeKb} KB
                 </span>
               </div>
             </div>
 
             {/* Warnings and Optimization */}
-            <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-5 space-y-4 col-span-1">
-              <h4 className="font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
+            <div className="border vol-line vol-elev rounded-2xl p-5 space-y-4 col-span-1">
+              <h4 className="font-black text-sm vol-t1 uppercase tracking-wider flex items-center gap-2">
                 <Flame className="w-4 h-4 text-red-500" />
                 Performance Alerts & Leaks
               </h4>
@@ -753,12 +753,12 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {optimizerReport.unusedImports.map((imp, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-black/40 border border-white/5 rounded-xl text-xs text-white/50 flex items-start gap-2"
+                    className="p-3 vol-veil border vol-line rounded-xl text-xs vol-t2 flex items-start gap-2"
                   >
-                    <Eye className="w-4 h-4 shrink-0 mt-0.5 text-white/30" />
+                    <Eye className="w-4 h-4 shrink-0 mt-0.5 vol-t2" />
                     <span>
                       Unused import:{" "}
-                      <strong className="text-white">{imp}</strong>
+                      <strong className="vol-t1">{imp}</strong>
                     </span>
                   </div>
                 ))}
@@ -766,7 +766,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   optimizerReport.lazyLoadingOpportunities.length === 0 &&
                   optimizerReport.duplicateDependencies.length === 0 &&
                   optimizerReport.unusedImports.length === 0 && (
-                    <div className="text-center text-white/20 py-12 text-xs">
+                    <div className="text-center vol-t2 py-12 text-xs">
                       No active memory leaks or dependency alerts detected.
                     </div>
                   )}
@@ -774,9 +774,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Unused CSS rules analyzer */}
-            <div className="border border-white/10 bg-[#0F0F0F] rounded-2xl p-5 space-y-4 col-span-1">
-              <h4 className="font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-[#FF5F00]" />
+            <div className="border vol-line vol-elev rounded-2xl p-5 space-y-4 col-span-1">
+              <h4 className="font-black text-sm vol-t1 uppercase tracking-wider flex items-center gap-2">
+                <Sliders className="w-4 h-4 vol-accent" />
                 Unused CSS Rules Check
               </h4>
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
@@ -799,27 +799,27 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
       {/* 4. Audit Logs Tab */}
       {activeAdminTab === "audit" && (
-        <div className="border border-[#FF5F00]/20 bg-[#121212]/20 p-6 rounded-2xl space-y-4">
+        <div className="border vol-ring vol-elev p-6 rounded-2xl space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="font-extrabold text-sm text-[#FF5F00] uppercase tracking-wider">
+            <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
               System Audit Trail
             </h3>
             <button
               onClick={onRefreshLogs}
-              className="text-[#FF5F00] text-xs font-bold hover:underline flex items-center gap-1.5 cursor-pointer"
+              className="vol-accent text-xs font-bold hover:underline flex items-center gap-1.5 cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               REFRESH
             </button>
           </div>
 
-          <div className="h-[350px] overflow-y-auto bg-black/60 rounded-xl p-4 font-mono text-[11px] leading-relaxed space-y-1.5 border border-white/5 select-text">
+          <div className="h-[350px] overflow-y-auto vol-veil rounded-xl p-4 font-mono text-[11px] leading-relaxed space-y-1.5 border vol-line select-text">
             {auditLogs.map((log, index) => (
               <div
                 key={index}
-                className="text-white/60 border-b border-white/5 pb-1.5 last:border-b-0"
+                className="vol-t2 border-b vol-line pb-1.5 last:border-b-0"
               >
-                <span className="text-[#FF5F00] font-bold">
+                <span className="vol-accent font-bold">
                   [{new Date(log.createdAt).toLocaleTimeString()}]
                 </span>{" "}
                 <span
@@ -833,7 +833,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 >
                   [{log.status}]
                 </span>{" "}
-                <span className="text-white font-semibold">{log.action}:</span>{" "}
+                <span className="vol-t1 font-semibold">{log.action}:</span>{" "}
                 {log.details}
               </div>
             ))}
@@ -851,8 +851,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 text-xs font-mono">
             {/* Thread and Sentinel Control */}
-            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl bg-black/40">
-              <div className="font-bold text-white uppercase border-b border-white/5 pb-2">
+            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-veil">
+              <div className="font-bold vol-t1 uppercase border-b vol-line pb-2">
                 Agent Workforce Control
               </div>
 
@@ -860,10 +860,10 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {/* Threads */}
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="text-white">
+                    <span className="vol-t1">
                       Max Junior Workers Threads:
                     </span>
-                    <div className="text-[9px] text-white/40">
+                    <div className="text-[9px] vol-t2">
                       Number of parallel repair subagents
                     </div>
                   </div>
@@ -887,8 +887,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {/* Sentinel watchdog */}
                 <div className="flex justify-between items-center pt-2">
                   <div>
-                    <span className="text-white">Sentinel Watchdog state:</span>
-                    <div className="text-[9px] text-white/40">
+                    <span className="vol-t1">Sentinel Watchdog state:</span>
+                    <div className="text-[9px] vol-t2">
                       Real-time code scan listeners
                     </div>
                   </div>
@@ -896,7 +896,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                     onClick={onToggleSentinel}
                     className={`px-3 py-1 text-[10px] rounded font-bold cursor-pointer transition-all ${
                       enableSentinel
-                        ? "bg-red-600 text-white"
+                        ? "bg-red-600 vol-t1"
                         : "border border-red-500/40 text-red-400 hover:bg-red-500/10"
                     }`}
                   >
@@ -907,8 +907,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {/* Maintenance mode */}
                 <div className="flex justify-between items-center pt-2">
                   <div>
-                    <span className="text-white">Maintenance mode state:</span>
-                    <div className="text-[9px] text-white/40">
+                    <span className="vol-t1">Maintenance mode state:</span>
+                    <div className="text-[9px] vol-t2">
                       Redirect operations to offline fallback pings
                     </div>
                   </div>
@@ -916,7 +916,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                     onClick={() => onMaintenanceToggle(!isMaintenanceActive)}
                     className={`px-3 py-1 text-[10px] rounded font-bold cursor-pointer transition-all ${
                       isMaintenanceActive
-                        ? "bg-red-600 text-white"
+                        ? "bg-red-600 vol-t1"
                         : "border border-red-500/40 text-red-400 hover:bg-red-500/10"
                     }`}
                   >
@@ -927,9 +927,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Consensus weights configuration */}
-            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl bg-black/40">
-              <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                <span className="font-bold text-white uppercase">
+            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-veil">
+              <div className="flex justify-between items-center border-b vol-line pb-2">
+                <span className="font-bold vol-t1 uppercase">
                   Consensus Matrix Weights
                 </span>
                 <span
@@ -958,8 +958,8 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                     key={item.key}
                     className="flex justify-between items-center"
                   >
-                    <span className="text-white flex items-center gap-1.5">
-                      <item.icon className="w-3.5 h-3.5 text-[#FF5F00]" />
+                    <span className="vol-t1 flex items-center gap-1.5">
+                      <item.icon className="w-3.5 h-3.5 vol-accent" />
                       {item.label}
                     </span>
                     <div className="flex items-center gap-2">
@@ -974,7 +974,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                         }
                         className="accent-[#FF5F00] w-24 cursor-pointer"
                       />
-                      <span className="text-xs text-white w-8 text-right font-bold">
+                      <span className="text-xs vol-t1 w-8 text-right font-bold">
                         {consensusWeights[item.key]}%
                       </span>
                     </div>
@@ -990,33 +990,33 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Recovery options console */}
-            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl bg-black/40 xl:col-span-2">
-              <div className="font-bold text-white uppercase border-b border-white/5 pb-2">
+            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-veil xl:col-span-2">
+              <div className="font-bold vol-t1 uppercase border-b vol-line pb-2">
                 Recovery Center Operations Console
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                 <button
                   onClick={handleUndoSession}
-                  className="px-3 py-2 bg-black border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
+                  className="px-3 py-2 vol-well border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
                 >
                   Undo Diagnostics Session
                 </button>
                 <button
                   onClick={handleRestoreBranch}
-                  className="px-3 py-2 bg-black border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
+                  className="px-3 py-2 vol-well border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
                 >
                   Restore Workspace Branch
                 </button>
                 <button
                   onClick={handleRestoreDatabase}
-                  className="px-3 py-2 bg-black border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
+                  className="px-3 py-2 vol-well border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
                 >
                   Restore Database Snapshots
                 </button>
                 <button
                   onClick={handleRestoreSettings}
-                  className="px-3 py-2 bg-black border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
+                  className="px-3 py-2 vol-well border border-red-500/30 text-red-400 hover:bg-red-500/10 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-colors"
                 >
                   Reset System Defaults
                 </button>
@@ -1024,11 +1024,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Rollback Checkpoint Browser */}
-            <div className="p-4 bg-black/40 border border-red-500/20 rounded-xl space-y-4 xl:col-span-2">
-              <div className="font-bold text-white uppercase border-b border-white/5 pb-2">
+            <div className="p-4 vol-veil border border-red-500/20 rounded-xl space-y-4 xl:col-span-2">
+              <div className="font-bold vol-t1 uppercase border-b vol-line pb-2">
                 Checkpoint Rollback Browser
               </div>
-              <p className="text-[10px] text-white/50">
+              <p className="text-[10px] vol-t2">
                 Select a local-cache or MongoDB-indexed checkpoint to rollback
                 changes across the file workspace.
               </p>
@@ -1037,7 +1037,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 <select
                   value={selectedCheckpointId}
                   onChange={(e) => setSelectedCheckpointId(e.target.value)}
-                  className="bg-black border border-red-500/30 px-3 py-2 text-white rounded text-xs focus:outline-none focus:border-red-500 cursor-pointer flex-1"
+                  className="vol-well border border-red-500/30 px-3 py-2 vol-t1 rounded text-xs focus:outline-none focus:border-red-500 cursor-pointer flex-1"
                 >
                   <option value="">-- Choose Checkpoint --</option>
                   {checkpoints.map((c) => (
@@ -1058,15 +1058,15 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
               </div>
 
               {/* Historical Checkpoint List Table */}
-              <div className="max-h-40 overflow-y-auto bg-black/50 border border-white/10 rounded-xl">
+              <div className="max-h-40 overflow-y-auto vol-veil border vol-line rounded-xl">
                 {checkpoints.length === 0 ? (
-                  <div className="text-center py-6 text-white/30 text-[10px]">
+                  <div className="text-center py-6 vol-t2 text-[10px]">
                     No historical checkpoints registered.
                   </div>
                 ) : (
                   <table className="w-full text-left text-[11px]">
                     <thead>
-                      <tr className="border-b border-white/10 text-white/40 uppercase tracking-wider text-[9px] select-none">
+                      <tr className="border-b vol-line vol-t2 uppercase tracking-wider text-[9px] select-none">
                         <th className="p-3">ID</th>
                         <th className="p-3">File Path</th>
                         <th className="p-3">Timestamp</th>
@@ -1077,9 +1077,9 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                       {checkpoints.map((c) => (
                         <tr
                           key={c.checkpointId}
-                          className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                          className="border-b vol-line hover:vol-wash transition-colors"
                         >
-                          <td className="p-3 font-bold text-[#FF5F00]">
+                          <td className="p-3 font-bold vol-accent">
                             {c.checkpointId}
                           </td>
                           <td
@@ -1119,12 +1119,12 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Secret Credentials Passcode Reset */}
-            <div className="p-4 bg-black/40 border border-red-500/20 rounded-xl space-y-3 xl:col-span-2">
-              <div className="font-bold text-white uppercase flex items-center gap-2">
+            <div className="p-4 vol-veil border border-red-500/20 rounded-xl space-y-3 xl:col-span-2">
+              <div className="font-bold vol-t1 uppercase flex items-center gap-2">
                 <Lock className="w-4 h-4 text-red-500" />
                 Change Admin Secret Access Key
               </div>
-              <p className="text-[10px] text-white/50">
+              <p className="text-[10px] vol-t2">
                 Modify the active secret passcode for accessing the hidden
                 operations panel.
               </p>
@@ -1133,7 +1133,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   type="password"
                   value={newSecretKey}
                   onChange={(e) => setNewSecretKey(e.target.value)}
-                  className="bg-black border border-red-500/30 px-3 py-2 text-white rounded text-xs focus:outline-none focus:border-red-500 cursor-text flex-1"
+                  className="vol-well border border-red-500/30 px-3 py-2 vol-t1 rounded text-xs focus:outline-none focus:border-red-500 cursor-text flex-1"
                   placeholder="Enter new administrator passcode"
                 />
                 <button
@@ -1149,21 +1149,21 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
       )}
 
       {activeAdminTab === "deployment" && (
-        <div className="space-y-6 font-mono text-white select-text">
-          <div className="p-6 bg-[#121212] border border-white/10 rounded-3xl space-y-4">
-            <h3 className="text-sm font-black uppercase tracking-wider text-[#FF5F00] flex items-center gap-2">
-              <GitBranch className="w-5 h-5 text-[#FF5F00]" />
+        <div className="space-y-6 font-mono vol-t1 select-text">
+          <div className="p-6 vol-elev border vol-line rounded-3xl space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-wider vol-accent flex items-center gap-2">
+              <GitBranch className="w-5 h-5 vol-accent" />
               Production Deployment Control Console
             </h3>
-            <p className="text-[11px] text-white/60 text-left">
+            <p className="text-[11px] vol-t2 text-left">
               Trigger staging and production edge compilations. The deployment
               engine will run syntax checks, tsc compilations, and verify
               telemetry tests.
             </p>
 
             <div className="flex gap-4 items-center flex-wrap pt-2">
-              <div className="flex items-center gap-2 bg-black/40 border border-white/10 px-4 py-2.5 rounded-xl">
-                <span className="text-[10px] uppercase font-bold text-white/50">
+              <div className="flex items-center gap-2 vol-veil border vol-line px-4 py-2.5 rounded-xl">
+                <span className="text-[10px] uppercase font-bold vol-t2">
                   TARGET:
                 </span>
                 <select
@@ -1173,17 +1173,17 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                       e.target.value as "STAGING" | "PRODUCTION",
                     )
                   }
-                  className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
+                  className="bg-transparent text-xs font-bold vol-t1 focus:outline-none cursor-pointer"
                 >
                   <option
                     value="STAGING"
-                    className="bg-[#121212] text-white font-bold"
+                    className="vol-elev vol-t1 font-bold"
                   >
                     STAGING ENVIRONMENT
                   </option>
                   <option
                     value="PRODUCTION"
-                    className="bg-[#121212] text-white font-bold"
+                    className="vol-elev vol-t1 font-bold"
                   >
                     PRODUCTION ENVIRONMENT
                   </option>
@@ -1193,7 +1193,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
               <button
                 onClick={handleDeploy}
                 disabled={isDeploying}
-                className="px-6 py-2.5 bg-[#FF5F00] hover:bg-[#FF7A00] text-black font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg active:scale-[0.985] disabled:opacity-50"
+                className="px-6 py-2.5 vol-acc-bg hover:vol-accbg-hi text-black font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg active:scale-[0.985] disabled:opacity-50"
               >
                 {isDeploying ? "BUILDING BUNDLE..." : "TRIGGER DEPLOYMENT"}
               </button>
@@ -1201,11 +1201,11 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
             {/* Build Log Outputs */}
             {deployLogs && (
-              <div className="mt-4 p-4 bg-black border border-white/15 rounded-2xl space-y-2">
-                <div className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+              <div className="mt-4 p-4 vol-well border vol-line rounded-2xl space-y-2">
+                <div className="text-[10px] font-black vol-t2 uppercase tracking-widest">
                   Build Output Logs
                 </div>
-                <pre className="text-[10px] text-green-400 overflow-x-auto max-h-60 leading-relaxed font-mono whitespace-pre-wrap select-text text-left selection:bg-green-700 selection:text-white">
+                <pre className="text-[10px] text-green-400 overflow-x-auto max-h-60 leading-relaxed font-mono whitespace-pre-wrap select-text text-left selection:bg-green-700 selection:vol-t1">
                   {deployLogs}
                 </pre>
               </div>
@@ -1213,21 +1213,21 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
           </div>
 
           {/* Deployment History Table */}
-          <div className="p-6 bg-[#121212] border border-white/10 rounded-3xl space-y-4">
-            <div className="font-black uppercase tracking-wider text-sm text-white flex items-center gap-2">
-              <Database className="w-5 h-5 text-white" />
+          <div className="p-6 vol-elev border vol-line rounded-3xl space-y-4">
+            <div className="font-black uppercase tracking-wider text-sm vol-t1 flex items-center gap-2">
+              <Database className="w-5 h-5 vol-t1" />
               Historical Deployment Registry
             </div>
 
-            <div className="overflow-x-auto bg-black/30 border border-white/10 rounded-2xl">
+            <div className="overflow-x-auto vol-wash border vol-line rounded-2xl">
               {deployments.length === 0 ? (
-                <div className="text-center py-8 text-white/30 text-xs">
+                <div className="text-center py-8 vol-t2 text-xs">
                   No deployments logged in this workspace environment.
                 </div>
               ) : (
                 <table className="w-full text-left text-xs font-mono">
                   <thead>
-                    <tr className="border-b border-white/10 text-white/40 uppercase tracking-wider text-[10px]">
+                    <tr className="border-b vol-line vol-t2 uppercase tracking-wider text-[10px]">
                       <th className="p-4">Target</th>
                       <th className="p-4">Status</th>
                       <th className="p-4">Commit SHA</th>
@@ -1239,7 +1239,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                     {deployments.map((d) => (
                       <tr
                         key={d._id}
-                        className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                        className="border-b vol-line hover:vol-wash transition-colors"
                       >
                         <td className="p-4 font-bold">
                           <span
@@ -1274,13 +1274,13 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                             {d.status}
                           </span>
                         </td>
-                        <td className="p-4 text-white/70 truncate max-w-[120px]">
+                        <td className="p-4 vol-t1 truncate max-w-[120px]">
                           {d.gitCommitSha}
                         </td>
-                        <td className="p-4 text-white/60">
+                        <td className="p-4 vol-t2">
                           {d.latency ? `${d.latency}ms` : "N/A"}
                         </td>
-                        <td className="p-4 text-white/50">
+                        <td className="p-4 vol-t2">
                           {new Date(d.createdAt).toLocaleString()}
                         </td>
                       </tr>
