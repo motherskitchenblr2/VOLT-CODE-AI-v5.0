@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 480" width="100%" height="auto">
+  <defs>
+    <linearGradient id="volt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff5f1f"/>
+      <stop offset="100%" stop-color="#ff9e5e"/>
+    </linearGradient>
+    <linearGradient id="voltDim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff5f1f" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ff5f1f" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#ff5f1f" flood-opacity="0.45"/>
+    </filter>
+    <style>
+      @keyframes hubPulse {
+        0%, 100% { opacity: 0.55; transform: scale(1); }
+        50%      { opacity: 1; transform: scale(1.06); }
+      }
+      @keyframes dashFlow {
+        0%   { stroke-dashoffset: 40; }
+        100% { stroke-dashoffset: 0; }
+      }
+      @keyframes nodeBreathe {
+        0%, 100% { opacity: 0.45; }
+        50%      { opacity: 0.95; }
+      }
+      @keyframes headerGlow {
+        0%, 100% { filter: drop-shadow(0 0 6px rgba(255,95,31,0.6)); }
+        50%      { filter: drop-shadow(0 0 18px rgba(255,95,31,0.95)); }
+      }
+      .hub   { transform-origin: 440px 250px; animation: hubPulse 3.2s ease-in-out infinite; }
+      .edge  { stroke-dasharray: 9 5; animation: dashFlow 1.4s linear infinite; }
+      .node1 { animation: nodeBreathe 2.4s ease-in-out infinite; }
+      .node2 { animation: nodeBreathe 2.4s ease-in-out infinite 0.3s; }
+      .node3 { animation: nodeBreathe 2.4s ease-in-out infinite 0.6s; }
+      .node4 { animation: nodeBreathe 2.4s ease-in-out infinite 0.9s; }
+      .node5 { animation: nodeBreathe 2.4s ease-in-out infinite 1.2s; }
+      .title { animation: headerGlow 4s ease-in-out infinite; }
+      .label { font-family: 'Segoe UI', system-ui, sans-serif; letter-spacing: 2px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#050505" rx="14"/>
+  <!-- subtle circuit grid -->
+  <g stroke="#ff5f1f" stroke-opacity="0.07" stroke-width="1">
+    <line x1="0" y1="120" x2="880" y2="120"/><line x1="0" y1="240" x2="880" y2="240"/>
+    <line x1="0" y1="360" x2="880" y2="360"/><line x1="220" y1="60" x2="220" y2="430"/>
+    <line x1="440" y1="60" x2="440" y2="430"/><line x1="660" y1="60" x2="660" y2="430"/>
+  </g>
+
+  <!-- title -->
+  <text x="440" y="72" text-anchor="middle" fill="#ffffff" font-size="44" font-weight="900" class="title label" font-family="Segoe UI, system-ui, sans-serif">VOLT CODE AI <tspan fill="#ff5f1f">v5</tspan></text>
+  <text x="440" y="102" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="15" class="label" font-family="Segoe UI, system-ui, sans-serif">MULTI-AGENT CODE WORKBENCH · IDE CANVAS · SWARM ORCHESTRATION</text>
+
+  <!-- edges from hub to agents -->
+  <g stroke="#ff5f1f" stroke-width="2" fill="none" class="edge">
+    <line x1="440" y1="250" x2="230" y2="180"/>
+    <line x1="440" y1="250" x2="650" y2="180"/>
+    <line x1="440" y1="250" x2="230" y2="330"/>
+    <line x1="440" y1="250" x2="650" y2="330"/>
+    <line x1="440" y1="250" x2="440" y2="380"/>
+  </g>
+
+  <!-- hub -->
+  <g class="hub">
+    <circle cx="440" cy="250" r="56" fill="#0a0a0a" stroke="url(#volt)" stroke-width="3" filter="url(#glow)"/>
+    <text x="440" y="245" text-anchor="middle" fill="#ff5f1f" font-size="13" class="label" font-family="Segoe UI, system-ui, sans-serif">VOLT</text>
+    <text x="440" y="264" text-anchor="middle" fill="rgba(255,255,255,0.75)" font-size="10" class="label" font-family="Segoe UI, system-ui, sans-serif">ORCHESTRATOR</text>
+  </g>
+
+  <!-- agent nodes -->
+  <g class="node1">
+    <circle cx="230" cy="180" r="34" fill="url(#voltDim)" stroke="#ff5f1f" stroke-width="2"/>
+    <text x="230" y="176" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">IDE</text>
+    <text x="230" y="190" text-anchor="middle" fill="#ff5f1f" font-size="9">CANVAS</text>
+  </g>
+  <g class="node2">
+    <circle cx="650" cy="180" r="34" fill="url(#voltDim)" stroke="#22c55e" stroke-width="2"/>
+    <text x="650" y="176" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">AGENT</text>
+    <text x="650" y="190" text-anchor="middle" fill="#22c55e" font-size="9">SWARM</text>
+  </g>
+  <g class="node3">
+    <circle cx="230" cy="330" r="34" fill="url(#voltDim)" stroke="#3b82f6" stroke-width="2"/>
+    <text x="230" y="326" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">PR</text>
+    <text x="230" y="340" text-anchor="middle" fill="#3b82f6" font-size="9">REVIEW</text>
+  </g>
+  <g class="node4">
+    <circle cx="650" cy="330" r="34" fill="url(#voltDim)" stroke="#f59e0b" stroke-width="2"/>
+    <text x="650" y="326" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">SENTINEL</text>
+    <text x="650" y="340" text-anchor="middle" fill="#f59e0b" font-size="9">GUARD</text>
+  </g>
+  <g class="node5">
+    <circle cx="440" cy="386" r="30" fill="url(#voltDim)" stroke="#a78bfa" stroke-width="2"/>
+    <text x="440" y="383" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">MEETING</text>
+    <text x="440" y="396" text-anchor="middle" fill="#a78bfa" font-size="9">PANEL</text>
+  </g>
+
+  <!-- footer chips -->
+  <g class="label" font-family="Segoe UI, system-ui, sans-serif">
+    <rect x="150" y="430" width="128" height="24" rx="12" fill="#0d0d0d" stroke="#ff5f1f" stroke-opacity="0.35"/>
+    <text x="214" y="446" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">CONSENSUS ENGINE</text>
+    <rect x="298" y="430" width="120" height="24" rx="12" fill="#0d0d0d" stroke="#ff5f1f" stroke-opacity="0.35"/>
+    <text x="358" y="446" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">SENTINEL WATCH</text>
+    <rect x="438" y="430" width="130" height="24" rx="12" fill="#0d0d0d" stroke="#ff5f1f" stroke-opacity="0.35"/>
+    <text x="503" y="446" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">OPENROUTER GATE</text>
+    <rect x="588" y="430" width="140" height="24" rx="12" fill="#0d0d0d" stroke="#ff5f1f" stroke-opacity="0.35"/>
+    <text x="658" y="446" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="10">VERCEL PRODUCTION</text>
+  </g>
+</svg>
