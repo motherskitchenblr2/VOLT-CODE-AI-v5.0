@@ -653,6 +653,63 @@ const App: React.FC = () => {
   // v0 dormant restore: IDE canvas + agent TODOs
   const [enableAgentSuggestions, setEnableAgentSuggestions] = useState(true);
   const [todos, setTodos] = useState<TodoItem[]>([]);
+  // UX upgrades: onboarding + workspace backup/restore
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !localStorage.getItem("volt_onboarded"),
+  );
+  const finishOnboarding = useCallback(() => {
+    localStorage.setItem("volt_onboarded", "1");
+    setShowOnboarding(false);
+  }, []);
+
+  /** Dump every localStorage entry as a downloadable backup JSON. */
+  const exportWorkspaceData = () => {
+    const data: Record<string, string | null> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) data[key] = localStorage.getItem(key);
+    }
+    const blob = new Blob(
+      [JSON.stringify({ source: "volt-workspace-backup", data }, null, 2)],
+      { type: "application/json" },
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `volt-workspace-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addLog("[BACKUP] Workspace data exported.", "success");
+  };
+
+  /** Merge a backup JSON back into localStorage, then reload. */
+  const importWorkspaceData = (file: File) => {
+    file
+      .text()
+      .then((raw) => {
+        const parsed: unknown = JSON.parse(raw);
+        const data =
+          parsed &&
+          typeof parsed === "object" &&
+          typeof (parsed as { data?: unknown }).data === "object"
+            ? (parsed as { data: Record<string, unknown> }).data
+            : (parsed as Record<string, unknown> | null);
+        if (!data || typeof data !== "object") {
+          addLog("[BACKUP] Invalid backup file.", "error");
+          return;
+        }
+        let count = 0;
+        for (const [key, value] of Object.entries(data)) {
+          if (typeof value === "string") {
+            localStorage.setItem(key, value);
+            count++;
+          }
+        }
+        addLog(`[BACKUP] Restored ${count} entries. Reloading...`, "success");
+        setTimeout(() => window.location.reload(), 800);
+      })
+      .catch(() => addLog("[BACKUP] Corrupt or unreadable backup file.", "error"));
+  };
 
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -2695,6 +2752,37 @@ const App: React.FC = () => {
           <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
             <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
+              <div className="text-lg font-bold mb-1">Workspace Backup</div>
+              <p className="text-[10px] text-white/40 mb-4">
+                Export or restore all sessions, todos, repo links and keys as a
+                single JSON file. Keep it safe — it contains your API keys.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={exportWorkspaceData}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FF5F00] text-black text-xs font-bold cursor-pointer"
+                >
+                  <Download className="w-4 h-4" />
+                  EXPORT BACKUP
+                </button>
+                <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black border border-[#FF5F00]/60 text-[#FF5F00] text-xs font-bold cursor-pointer hover:bg-[#FF5F00]/10">
+                  <RefreshCw className="w-4 h-4" />
+                  RESTORE BACKUP
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) importWorkspaceData(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="border border-[#FF5F00]/20 rounded-xl p-6 bg-black/40">
               <div className="text-lg font-bold mb-4">Default Model</div>
               <select
                 value={selectedModel.id}
@@ -3431,6 +3519,12 @@ const App: React.FC = () => {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
+              {isAnalyzing && (
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-[#FF5F00]/10 border-b border-[#FF5F00]/20 text-[10px] font-bold tracking-widest text-[#FF5F00]">
+                  <span className="w-2 h-2 rounded-full bg-[#FF5F00] animate-ping" />
+                  AGENT SCAN IN PROGRESS
+                </div>
+              )}
               <ProfessionalEditorCanvas
                 code={code}
                 onCodeChange={handleCodeChange}
@@ -3658,6 +3752,14 @@ const App: React.FC = () => {
               animate={{ width: `${scanProgress}%` }}
               className="absolute top-0 left-0 h-1 bg-[#FF5F00] z-10"
             />
+          )}
+
+          {/* Agent scan progress bar */}
+          {isAnalyzing && (
+            <div className="flex items-center gap-2 px-4 py-1.5 bg-[#FF5F00]/10 border-b border-[#FF5F00]/20 text-[10px] font-bold tracking-widest text-[#FF5F00] shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#FF5F00] animate-ping" />
+              AGENT SCAN IN PROGRESS — COMPILING DIAGNOSTICS
+            </div>
           )}
 
           <textarea
@@ -4382,6 +4484,59 @@ const App: React.FC = () => {
       className="min-h-screen bg-[#0A0A0A] text-white flex select-none"
       style={{ fontFamily: "Inter, system-ui, sans-serif" }}
     >
+      {/* First-run onboarding overlay */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-md w-full rounded-xl border border-[#FF5F00]/50 bg-[#050505] p-8"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <Zap className="w-6 h-6 text-[#FF5F00]" />
+              <h2 className="text-white font-bold text-lg tracking-wider">
+                WELCOME TO VOLT CODE AI v5
+              </h2>
+            </div>
+            <p className="text-white/60 text-xs mb-5">
+              Four things you need to know. Click any one to jump straight in.
+            </p>
+            <div className="space-y-2 mb-6">
+              {(
+                [
+                  ["editor", Sparkles, "IDE CANVAS", "Code with live agent suggestions"],
+                  ["boss", Bot, "VOLT HUB", "Chat with the AI core orchestrator"],
+                  ["meeting", Users, "MEETING PANEL", "Agent group chat + audio + execution"],
+                  ["github", GitBranch, "GITHUB WORKSPACE", "Work directly on your repos"],
+                ] as const
+              ).map(([view, Icon, title, desc]) => (
+                <button
+                  key={view}
+                  onClick={() => {
+                    setCurrentView(view);
+                    finishOnboarding();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-[#FF5F00]/15 border border-white/5 hover:border-[#FF5F00]/40 text-left cursor-pointer transition-all"
+                >
+                  <Icon className="w-5 h-5 text-[#FF5F00] shrink-0" />
+                  <span className="text-[11px] font-bold tracking-widest text-white">
+                    {title}
+                    <span className="block text-[10px] font-normal text-white/50 tracking-normal mt-0.5">
+                      {desc}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={finishOnboarding}
+              className="w-full py-2.5 rounded-xl bg-[#FF5F00] text-black text-xs font-bold cursor-pointer"
+            >
+              GET ME CODING
+            </button>
+          </motion.div>
+        </div>
+      )}
       <ResponsiveContainer
         sidebar={renderSidebar()}
         content={renderContent()}
