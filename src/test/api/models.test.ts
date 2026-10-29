@@ -93,7 +93,7 @@ describe('api/models live availability', () => {
 
   it('marks all Groq models as FREE (Groq serves a free tier)', async () => {
     stubFetch((url) => {
-      if (getHostname(url) === 'groq.com') {
+      if (getHostname(url) === 'api.groq.com') {
         return {
           ok: true,
           json: async () => ({
