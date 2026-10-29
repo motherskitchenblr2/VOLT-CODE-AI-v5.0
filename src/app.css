@@ -48,9 +48,20 @@ body {
   overflow-x: hidden;
 }
 
-/* ==========================================================================
-   2. Dashboard Layout & Sidebar
-   ========================================================================== */
+/* Touch-first rules for 9:16 phones — 44px hit targets, no iOS input zoom.
+   ponytail: global min-height flattens micro-chips; fine on touch, visual-only. */
+@media (pointer: coarse) and (max-width: 1023px) {
+  button,
+  [role="button"] {
+    min-height: 44px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* prevents iOS Safari zoom-on-focus */
+  }
+}
+
 .app-layout {
   display: flex;
   height: 100vh;
