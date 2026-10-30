@@ -23,8 +23,6 @@ import {
   Wrench,
   Sparkles,
   ChevronDown,
-  ChevronUp,
-  SlidersHorizontal,
   Bot,
   Search,
   HelpCircle,
@@ -387,12 +385,16 @@ const detectLanguage = (codeStr: string, filePath?: string): string => {
     codeStr.includes("<!DOCTYPE html>")
   )
     return "html";
-  // TS before JS: same keywords plus type syntax.
+
+  // TypeScript detection (interface/type declarations, TS syntax)
   if (
     /^\s*(interface|type)\s+\w+\s*[={]/m.test(codeStr) ||
-    /:\s*(string|number|boolean|any|unknown|void)\b/.test(codeStr)
+    /:\s*(string|number|boolean|any|unknown|void)\b/.test(codeStr) ||
+    /\s*as\s+\w+/m.test(codeStr)
   )
     return "typescript";
+
+  // JavaScript detection (ES6+, includes arrow functions)
   if (
     codeStr.includes("const ") ||
     codeStr.includes("let ") ||
@@ -401,11 +403,11 @@ const detectLanguage = (codeStr: string, filePath?: string): string => {
     codeStr.includes("=>")
   )
     return "javascript";
-  // CSS runs LAST among the brace languages. It used to be checked before JS
-  // on nothing but "{ } :", so any JS object literal or ternary was reported
-  // as CSS — that is why the DETECTED badge contradicted the editor content.
-  if (/(^|\n)\s*[-\w.#:>\[\]()=,"' ]+\s*\{[^}]*[-\w]+\s*:[^;{}]+;/.test(codeStr))
+
+  // CSS detection (look for CSS-specific patterns, not just braces)
+  if (/(^|\n)\s*[.#]?\w+\s*{[^}]*:\s*[^;{}]+;/.test(codeStr))
     return "css";
+
   return "unknown";
 };
 
@@ -420,14 +422,6 @@ const App: React.FC = () => {
   );
   const [language, setLanguage] = useState("javascript");
   const [detectedLanguage, setDetectedLanguage] = useState("javascript");
-  // Config stack defaults collapsed below 768px so the code area owns the
-  // phone viewport (feedback: >65% of the screen was stacked chrome).
-  // ponytail: matchMedia read at mount only — orientation changes need a listener.
-  const [configOpen, setConfigOpen] = useState<boolean>(() =>
-    typeof window === "undefined"
-      ? true
-      : window.matchMedia("(min-width: 768px)").matches,
-  );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -1891,8 +1885,6 @@ const App: React.FC = () => {
     { value: "html", label: "HTML" },
     { value: "css", label: "CSS" },
     { value: "yaml", label: "YAML" },
-    // detectLanguage can emit "unknown"; without this option the selector
-    // fell back to "Auto Detect" while the badge said UNKNOWN.
     { value: "unknown", label: "Plain Text" },
   ];
 
@@ -3802,24 +3794,21 @@ const App: React.FC = () => {
     // Default Editor View
     return (
       <div className="flex flex-col h-full overflow-hidden">
-        {/* Editor Toolbar Header — identity + one-line status strip + CONFIG
-            toggle. Everything else is collapsible so the editor owns the
-            viewport on phones. */}
-        <div className="border-b vol-ring px-3 py-2 sm:p-6 shrink-0 vol-surface">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="min-w-0">
-              <div className="text-sm sm:text-2xl font-bold leading-tight truncate">
+        {/* Editor Toolbar Header */}
+        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
+          <div className="mb-1 flex justify-between items-start">
+            <div>
+              <div className="text-lg sm:text-2xl font-bold leading-tight">
                 MULTI-LANGUAGE EDITOR
               </div>
-              <div className="hidden sm:block text-xs vol-accent-soft font-semibold tracking-wide truncate">
+              <div className="text-[10px] sm:text-xs vol-accent-soft font-semibold tracking-wide">
                 AI Bug Finder, Agent Runner & Telemetrist
               </div>
             </div>
-            <div className="ml-auto flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setSplitView((v) => !v)}
-                aria-pressed={splitView}
-                className={`px-2.5 py-2 sm:px-3 sm:py-1.5 rounded-lg border vol-ring text-[10px] sm:text-xs font-black cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg border vol-ring text-xs font-black cursor-pointer ${
                   splitView ? "vol-acc-bg text-black" : "hover:vol-wash vol-t2"
                 }`}
               >
@@ -3827,121 +3816,82 @@ const App: React.FC = () => {
               </button>
               <button
                 onClick={() => setShowShortcutsCheatSheet(true)}
-                aria-label="Keyboard shortcuts"
-                title="Keyboard shortcuts"
-                className="px-2.5 py-2 sm:px-3 sm:py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
+                className="px-3 py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
               >
-                <HelpCircle className="w-4 h-4 sm:hidden" />
-                <span className="hidden sm:inline">SHORTCUTS [?]</span>
-              </button>
-              <button
-                onClick={() => setConfigOpen((v) => !v)}
-                aria-expanded={configOpen}
-                aria-controls="editor-config"
-                title="Engine, plugin, skill, mode and language settings"
-                className={`flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-1.5 rounded-lg border text-[10px] sm:text-xs font-black tracking-wider cursor-pointer ${
-                  configOpen
-                    ? "vol-ring-strong vol-acc-wash vol-accent"
-                    : "vol-line vol-t2 hover:vol-wash hover:vol-t1"
-                }`}
-              >
-                <SlidersHorizontal className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">CONFIG</span>
-                {configOpen ? (
-                  <ChevronUp className="w-3.5 h-3.5 shrink-0" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5 shrink-0" />
-                )}
+                SHORTCUTS [?]
               </button>
             </div>
           </div>
 
-          {/* Status strip: the old standalone ACTIVE ENGINE card reduced to one
-              line. DETECTED only renders when it adds information. */}
-          <div className="mt-2 flex items-center gap-2 min-w-0 overflow-hidden select-none">
-            <span
-              className="inline-flex items-center gap-1.5 min-w-0 shrink px-2 py-1 rounded-lg vol-acc-wash text-[10px] font-bold"
-              title={`${selectedModel.provider} • ${selectedModel.tag} • ${selectedModel.ctx}`}
-            >
-              <Zap className="w-3 h-3 shrink-0 vol-accent" />
-              <span className="truncate vol-accent">{selectedModel.name}</span>
-            </span>
-            <span
-              className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-black tracking-wider uppercase ${
-                selectedTier === "FREE"
-                  ? "bg-green-600 text-black"
-                  : "vol-well vol-t2"
-              }`}
-            >
-              {selectedTier === "FREE" ? "★ Free" : "Paid"}
-            </span>
-            {(language === "auto" || detectedLanguage !== language) && (
-              <span
-                className="min-w-0 shrink truncate px-2 py-0.5 rounded vol-well vol-t2 text-[9px] font-bold tracking-wider"
-                title={
-                  language === "auto"
-                    ? `Detected from editor content: ${detectedLanguage}`
-                    : `Content looks like ${detectedLanguage}; you set ${language}`
-                }
+          <div className="flex flex-col gap-2 mt-3">
+            {renderModelSelect()}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-3">
+              {renderSelect(
+                "Plugin",
+                selectedPlugin,
+                setSelectedPlugin,
+                pluginOptions,
+              )}
+              {renderSelect(
+                "Skill",
+                selectedSkill,
+                setSelectedSkill,
+                skillOptions,
+              )}
+              {renderSelect(
+                "Mode",
+                agentMode,
+                (v) => setAgentMode(v as AgentMode),
+                modeOptions,
+              )}
+
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
               >
-                {language === "auto"
-                  ? `DETECTED: ${detectedLanguage.toUpperCase()}`
-                  : `DETECTED: ${detectedLanguage.toUpperCase()} · USING ${language.toUpperCase()}`}
-              </span>
-            )}
+                {languages.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+
+              <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
+                DETECTED: {detectedLanguage.toUpperCase()}
+              </div>
+            </div>
           </div>
 
-          {configOpen && (
-            <div id="editor-config" className="mt-3 flex flex-col gap-2">
-              {renderModelSelect()}
-              {/* Plugin / Skill / Mode / Language share one shell so they get
-                  equal width per row, equal height and equal padding. */}
-              <div className="flex flex-wrap items-stretch gap-2 sm:gap-3">
-                {renderSelect(
-                  "Plugin",
-                  selectedPlugin,
-                  setSelectedPlugin,
-                  pluginOptions,
-                )}
-                {renderSelect(
-                  "Skill",
-                  selectedSkill,
-                  setSelectedSkill,
-                  skillOptions,
-                )}
-                {renderSelect(
-                  "Mode",
-                  agentMode,
-                  (v) => setAgentMode(v as AgentMode),
-                  modeOptions,
-                )}
-
-                <label className="flex flex-1 min-w-[45%] sm:flex-none sm:min-w-[170px] items-center gap-2 sm:gap-3 border vol-ring-strong rounded-xl px-3 py-2 vol-panel">
-                  <span className="vol-accent-soft text-[10px] sm:text-xs tracking-wider shrink-0">
-                    Language
-                  </span>
-                  <ChevronDown className="w-4 h-4 vol-accent-soft shrink-0" />
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    className="bg-transparent vol-t1 outline-none min-w-0 w-full truncate text-xs font-semibold cursor-pointer focus:vol-ring-hi"
-                  >
-                    {languages.map((l) => (
-                      <option key={l.value} value={l.value}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+          <div className="mt-4 flex flex-wrap gap-4 items-center">
+            <div className="px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl border vol-ring-strong vol-panel inline-flex items-center gap-2 sm:gap-3 select-none">
+              <Zap className="w-4 h-4 vol-accent animate-pulse" />
+              <div className="flex flex-col">
+                <div className="vol-accent text-[9px] tracking-widest font-bold uppercase">
+                  Active Engine
+                </div>
+                <div className="font-extrabold text-sm vol-t1">
+                  {selectedModel.name}
+                </div>
               </div>
-
-              {/* engine detail carried over from the removed ACTIVE ENGINE card */}
-              <div className="text-[10px] vol-t2 uppercase font-semibold truncate">
-                {selectedModel.provider} • {selectedModel.tag} •{" "}
-                {selectedModel.ctx}
+              <div className="h-6 w-px hidden sm:block vol-line"></div>
+              <div className="hidden sm:flex flex-col items-start">
+                <div className="text-[10px] vol-t2 uppercase font-semibold">
+                  {selectedModel.provider} • {selectedModel.tag} •{" "}
+                  {selectedModel.ctx}
+                </div>
+                <span
+                  className={
+                    selectedTier === "FREE"
+                      ? "mt-0.5 w-fit rounded px-1.5 py-0.5 bg-green-600 text-black text-[9px] font-black tracking-wider uppercase"
+                      : "mt-0.5 w-fit rounded px-1.5 py-0.5 vol-acc-wash vol-accent text-[9px] font-black tracking-wider uppercase"
+                  }
+                >
+                  {selectedTier === "FREE" ? "★ Free Tier" : "Paid"}
+                </span>
               </div>
+            </div>
 
-              <div className="mt-1 flex flex-wrap gap-2 sm:gap-4 items-center">
             <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
               <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                 Operation Mode
