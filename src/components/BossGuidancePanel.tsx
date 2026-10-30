@@ -46,7 +46,7 @@ const getRiskBadgeColor = (level: string) => {
     case "low":
       return "bg-blue-900/50 text-blue-200 border-blue-500/50";
     default:
-      return "bg-gray-900/50 text-gray-200 border-gray-500/50";
+      return "vol-elev/50 text-gray-200 border-gray-500/50";
   }
 };
 
@@ -106,7 +106,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="fixed bottom-6 right-6 w-96 max-h-96 bg-gradient-to-br from-slate-950 to-black rounded-2xl border vol-line shadow-2xl overflow-hidden z-50"
+        className="fixed bottom-6 right-6 w-96 max-h-96 bg-gradient-to-br from-[var(--grad-a)] to-[var(--grad-b)] rounded-2xl border vol-line shadow-2xl overflow-hidden z-50"
       >
         {/* Header */}
         <div

@@ -57,6 +57,30 @@ const scan = () =>
           small.push({ h: Math.round(r.height), text: (el.textContent || el.getAttribute("aria-label") || "").trim().slice(0, 20) });
       });
     }
+    // DAY-THEME BLEED: count dark computed backgrounds (evidence-based theming check)
+    const darkBleed = [];
+    const isDay = document.documentElement.dataset.theme !== "dark";
+    if (isDay) {
+      document.querySelectorAll("section *, aside *, header *, nav *").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width < 8 || r.height < 8) return;
+        const bg = getComputedStyle(el).backgroundColor;
+        const m = bg.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
+        if (!m) return;
+        const alpha = m[4] === undefined ? 1 : parseFloat(m[4]);
+        if (alpha < 0.35) return; // transparent/translucent — inherits from parent
+        const [rr, gg, bb] = [+m[1], +m[2], +m[3]];
+        const lum = 0.2126 * rr + 0.7152 * gg + 0.0722 * bb;
+        if (lum < 70 && !String(el.className).includes("vol-code-well")) {
+          darkBleed.push({
+            tag: el.tagName.toLowerCase(),
+            cls: String(el.className || "").slice(0, 55),
+            bg: bg,
+            text: (el.textContent || "").trim().slice(0, 22),
+          });
+        }
+      });
+    }
     return {
       vw,
       scrollW: document.documentElement.scrollWidth,
@@ -68,6 +92,8 @@ const scan = () =>
       smallSample: small.slice(0, 5),
       shadowed,
       shadowSample,
+      darkBleed: darkBleed.length,
+      darkSample: darkBleed.slice(0, 5),
     };
   })();
 
@@ -112,13 +138,52 @@ for (const vp of VIEWPORTS) {
     const r = await page.evaluate(scan);
     const file = `${SHOTS}/${vp.name}--${name.replace(/\s+/g, "_")}.png`;
     await page.screenshot({ path: file });
-    out.push({ vp: vp.name, view: name, clicked, ...r, file });
-  }
+    out.push({ vp: vp.name, view: name, clicked, ...r, file });  }
   await ctx.close();
 }
 await browser.close();
 fs.writeFileSync("/tmp/opencode/audit.json", JSON.stringify(out, null, 1));
 for (const r of out) {
   const worst = Math.max(r.hOverflow, r.maskedOverflow);
-  console.log(`${r.vp.padEnd(12)} ${r.view.padEnd(12)} ${worst > 0 ? "OVERFLOW" : "ok      "} mask=${r.maskedOverflow} doc=${r.hOverflow} off=${r.offenders} small=${r.smallTargets} shadows=${r.shadowed} click=${r.clicked}`);
+  console.log(`${r.vp.padEnd(12)} ${r.view.padEnd(12)} ${worst > 0 ? "OVERFLOW" : "ok      "} mask=${r.maskedOverflow} doc=${r.hOverflow} off=${r.offenders} small=${r.smallTargets} shadows=${r.shadowed} dark=${r.darkBleed} click=${r.clicked}`);
 }
+
+// ── emit global audit artifacts (consumable by any AI/agent) ──
+const bad = out.filter((r) => Math.max(r.hOverflow, r.maskedOverflow) > 0 || r.offenders > 0 || r.smallTargets > 0 || r.darkBleed > 0);
+const rows = out.map((r) => `| ${r.vp} | ${r.view} | ${r.offenders} | ${r.maskedOverflow} | ${r.smallTargets} | ${r.darkBleed} | ${r.shadowed} |`).join("\n");
+const now = new Date().toISOString();
+const report = `# VOLT Browser Audit Report — ${now.slice(0, 16)} UTC
+Scope: 8 views × 3 viewports (phone 390 / tablet 834 / laptop 1440) · ${out.length} checks
+
+## Result: ${bad.length ? `❌ ${bad.length} failing checks` : "✅ ALL GREEN"}
+| Viewport | View | Overflow | Masked | SmallTouch | DarkBleed | Shadows |
+|---|---|---|---|---|---|---|
+${rows}
+
+## Failing checks detail
+${bad.length ? bad.map((b) => `- **${b.vp} / ${b.view}**: off=${b.offenders} mask=${b.maskedOverflow} small=${b.smallTargets} dark=${b.darkBleed}\n  ${JSON.stringify(b.darkSample)}`).join("\n") : "None."}
+
+## Acceptance
+- \`node scripts/theme-lint.mjs\` exit 0
+- \`node audit.mjs\` → 0 failing checks above
+- \`npm run build\` clean · tests 153/153
+`;
+const fixPrompt = `# VOLT Auto-Fix Prompt — browser audit ${now.slice(0, 16)} UTC
+Target branch: \`${process.env.VOLT_BRANCH || "fix/auto"}\`
+
+## Task for any AI/agent
+1. Checkout/create the target branch.
+2. Fix every failing check listed in the report (file evidence inside
+   \`AUDIT_REPORT.md\`; run \`node audit.mjs\` locally against \`npm run build\`
+   output via \`npx vite preview\` to reproduce).
+3. Re-audit until 0 failures; run \`node scripts/theme-lint.mjs\` too.
+4. Commit, push, open a PR with \`AUDIT_REPORT.md\` as the body.
+5. Reject-loop: if a human deleted one of your PRs, read \`AGENT_LESSONS.md\`,
+   append the reason, never repeat it.
+
+## Current failures
+${bad.length ? bad.map((b) => `- ${b.vp} / ${b.view}: offenders=${b.offenders}, masked=${b.maskedOverflow}, smallTouch=${b.smallTargets}, darkBleed=${b.darkBleed}`).join("\n") : "None — clean."}
+`;
+fs.writeFileSync("AUDIT_REPORT.md", report);
+fs.writeFileSync("FIX_PROMPT.md", fixPrompt);
+console.log(`→ AUDIT_REPORT.md + FIX_PROMPT.md written (${bad.length} failing)`);

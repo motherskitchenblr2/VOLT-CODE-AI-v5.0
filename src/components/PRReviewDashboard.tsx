@@ -116,7 +116,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
       case "ignored":
         return "bg-red-900/50 text-red-200 border-red-500/50";
       default:
-        return "bg-gray-900/50 text-gray-200 border-gray-500/50";
+        return "vol-elev/50 text-gray-200 border-gray-500/50";
     }
   };
 
@@ -136,7 +136,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 rounded-3xl border vol-line overflow-hidden flex flex-col">
+    <div className="w-full h-full bg-gradient-to-br from-[var(--grad-a)] via-[var(--grad-a)] to-[var(--grad-b)] rounded-3xl border vol-line overflow-hidden flex flex-col">
       {/* Header */}
       <div className="px-6 py-4 border-b vol-line vol-panel backdrop-blur-lg">
         <div className="flex items-center justify-between mb-4">

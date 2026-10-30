@@ -143,7 +143,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
                   r="26"
                   fill={active ? `rgba(255,95,0,${0.1 + (n.score / 100) * 0.35})` : "var(--node-fill)"}
                   stroke={
-                    active && n.score >= 70 ? "#22c55e" : active ? "#f59e0b" : "#3a3a3a"
+                    active && n.score >= 70 ? "#22c55e" : active ? "#f59e0b" : "var(--node-fill)"
                   }
                   strokeWidth="2"
                   animate={isAnalyzing ? { opacity: [0.5, 1, 0.5] } : { opacity: 1 }}

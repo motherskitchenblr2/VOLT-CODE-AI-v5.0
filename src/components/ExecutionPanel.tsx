@@ -86,12 +86,12 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
       case "low":
         return "bg-blue-900 text-blue-200";
       default:
-        return "bg-gray-900 text-gray-200";
+        return "vol-elev text-gray-200";
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-b from-[var(--grad-a)] to-[var(--grad-b)] rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b vol-line vol-panel backdrop-blur-lg flex items-center justify-between">
         <div className="flex items-center gap-2">

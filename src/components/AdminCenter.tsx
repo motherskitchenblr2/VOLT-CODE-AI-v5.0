@@ -783,7 +783,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {mockUnusedCssRules.map((rule, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-zinc-900/60 border border-zinc-700/30 rounded-xl text-xs text-zinc-400 flex items-center justify-between"
+                    className="p-3 vol-elev/60 border border-zinc-700/30 rounded-xl text-xs text-zinc-400 flex items-center justify-between"
                   >
                     <span className="font-mono">{rule}</span>
                     <span className="px-2 py-0.5 rounded text-[8px] bg-red-600/10 text-red-500 font-bold uppercase">

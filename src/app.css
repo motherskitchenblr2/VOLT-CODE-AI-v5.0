@@ -337,6 +337,8 @@ a {
   --t2: #505c6e;
   --node-fill: #dfe5ee;
   --node-text: #1f2937;
+  --grad-a: #eef2f8;
+  --grad-b: #dde3ec;
   --neo-out: 8px 8px 18px rgba(174, 181, 196, 0.7), -8px -8px 18px #ffffff;
   --neo-in: inset 5px 5px 11px rgba(174, 181, 196, 0.6), inset -5px -5px 11px #ffffff;
 }
@@ -359,6 +361,8 @@ html[data-theme="dark"] {
   --t2: #9aa3b1;
   --node-fill: #0a0a0a;
   --node-text: #ffffff;
+  --grad-a: #1a1a1a;
+  --grad-b: #0a0a0a;
   --neo-out: none;
   --neo-in: none;
 }

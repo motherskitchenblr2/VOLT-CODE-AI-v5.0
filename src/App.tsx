@@ -3365,7 +3365,7 @@ const pushToast = useToast();
 
     if (currentView === "boss") {
       return (
-        <div className="p-4 md:p-8 flex flex-col h-full overflow-hidden bg-gradient-to-br from-[#0F0F10] to-[#050505] select-text">
+        <div className="p-4 md:p-8 flex flex-col h-full overflow-hidden bg-gradient-to-br from-[var(--grad-a)] to-[var(--grad-b)] select-text">
           <div className="flex justify-between items-center border-b vol-ring pb-4 mb-4 select-none shrink-0">
             <div>
               <div className="text-xl md:text-2xl font-black flex items-center gap-3 vol-t1 tracking-widest">

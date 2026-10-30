@@ -231,7 +231,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 p-6 overflow-hidden">
+    <div className="w-full h-full bg-gradient-to-br from-[var(--grad-a)] via-[var(--grad-a)] to-[var(--grad-b)] p-6 overflow-hidden">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">

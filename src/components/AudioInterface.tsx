@@ -136,7 +136,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
 
   if (!isSupported) {
     return (
-      <div className="h-full flex items-center justify-center bg-gradient-to-b from-slate-950 to-black rounded-3xl border border-red-500/50 p-6">
+      <div className="h-full flex items-center justify-center bg-gradient-to-b from-[var(--grad-a)] to-[var(--grad-b)] rounded-3xl border border-red-500/50 p-6">
         <div className="text-center">
           <div className="text-3xl mb-3">🔊</div>
           <p className="text-red-400 font-medium">
@@ -150,7 +150,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-b from-[var(--grad-a)] to-[var(--grad-b)] rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b vol-line vol-panel backdrop-blur-lg">
         <div className="flex items-center gap-2">
