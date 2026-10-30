@@ -211,7 +211,7 @@ describe('api/utils/security', () => {
   describe('requireAuth', () => {
     it('sets req.locals.username and returns true for a valid session', async () => {
       const token = await createSession('bob');
-      const req = { headers: { cookie: `volt_session=${token}` }, locals: {} as { username: string } }; // eslint-disable-line @typescript-eslint/no-unused-vars
+      const req = { headers: { cookie: `volt_session=${token}` }, locals: {} as { username: string } };  
       const res = makeRes();
       expect(await requireAuth(req, res)).toBe(true);
       expect(req.locals).toEqual({ username: 'bob' });

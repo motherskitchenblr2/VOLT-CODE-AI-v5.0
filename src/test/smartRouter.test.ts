@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { classifyTask, smartRoute, type SmartModel } from "../lib/smartRouter";
+import { classifyTask, smartRoute } from "../lib/smartRouter";
 
 const OR = {
   provider: "OpenRouter",
