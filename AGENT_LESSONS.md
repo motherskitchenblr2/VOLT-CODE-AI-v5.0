@@ -35,7 +35,8 @@ before pushing a fix and never repeat a recorded mistake.
 
 7. **Luminance checks count `rgba(0,0,0,0)` (transparent) as black** — a
    "0 dark bleed" gate produced 100+ false positives. Lesson: gate on alpha
-   >= 0.35 before judging darkness.
+
+   > = 0.35 before judging darkness.
 
 8. **Vitest per-test timeout is the THIRD argument** (`it(name, fn, timeout)`)
    — the second-arg form is ignored and tests still die at the default 5s.
@@ -50,5 +51,6 @@ before pushing a fix and never repeat a recorded mistake.
     message after the change.
 
 ## Workflow contract
+
 - Fixes ship on a NEW branch → PR → human merges to `main`.
 - A deleted/rejected PR = a lesson. Record it here. No repeats.

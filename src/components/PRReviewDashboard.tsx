@@ -260,9 +260,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                       <h3 className="font-bold vol-t1 text-sm truncate">
                         {pr.title}
                       </h3>
-                      <span className="text-xs vol-t2">
-                        #{pr.prNumber}
-                      </span>
+                      <span className="text-xs vol-t2">#{pr.prNumber}</span>
                     </div>
                     <p className="text-xs vol-t2 truncate mb-2">
                       {pr.description?.substring(0, 100)}...

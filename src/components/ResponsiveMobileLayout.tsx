@@ -164,9 +164,7 @@ export function ResponsiveMobileLayout({
 
             {activeTab === "compare" && (
               <div className="space-y-2">
-                <div className="text-[10px] vol-t2 font-bold">
-                  Original
-                </div>
+                <div className="text-[10px] vol-t2 font-bold">Original</div>
                 <div className="vol-panel border vol-line rounded-lg p-2 font-mono text-[10px] vol-t2 max-h-20 overflow-auto">
                   {code.slice(0, 150)}...
                 </div>

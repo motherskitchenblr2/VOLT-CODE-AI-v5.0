@@ -141,13 +141,27 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
                   cx={p.x}
                   cy={p.y}
                   r="26"
-                  fill={active ? `rgba(255,95,0,${0.1 + (n.score / 100) * 0.35})` : "var(--node-fill)"}
+                  fill={
+                    active
+                      ? `rgba(255,95,0,${0.1 + (n.score / 100) * 0.35})`
+                      : "var(--node-fill)"
+                  }
                   stroke={
-                    active && n.score >= 70 ? "#22c55e" : active ? "#f59e0b" : "var(--node-fill)"
+                    active && n.score >= 70
+                      ? "#22c55e"
+                      : active
+                        ? "#f59e0b"
+                        : "var(--node-fill)"
                   }
                   strokeWidth="2"
-                  animate={isAnalyzing ? { opacity: [0.5, 1, 0.5] } : { opacity: 1 }}
-                  transition={{ duration: 1.6, repeat: isAnalyzing ? Infinity : 0, delay: i * 0.2 }}
+                  animate={
+                    isAnalyzing ? { opacity: [0.5, 1, 0.5] } : { opacity: 1 }
+                  }
+                  transition={{
+                    duration: 1.6,
+                    repeat: isAnalyzing ? Infinity : 0,
+                    delay: i * 0.2,
+                  }}
                 />
                 <text
                   x={p.x}
@@ -184,7 +198,8 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
                 : "bg-red-500/15 text-red-400"
             }`}
           >
-            CONSENSUS: {consensusScore}/100 {consensusPassed ? "PASSED" : "REJECTED"}
+            CONSENSUS: {consensusScore}/100{" "}
+            {consensusPassed ? "PASSED" : "REJECTED"}
           </span>
         ) : (
           <span className="vol-t2">

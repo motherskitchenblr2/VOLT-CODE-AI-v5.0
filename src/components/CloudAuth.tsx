@@ -234,9 +234,7 @@ export const CloudAuth: React.FC = () => {
               <div className="text-xs font-bold truncate">
                 {st.name || st.email}
               </div>
-              <div className="text-[10px] vol-t2 truncate">
-                {st.email}
-              </div>
+              <div className="text-[10px] vol-t2 truncate">{st.email}</div>
             </div>
             {st.services.length > 0 && (
               <div className="ml-auto text-[9px] vol-t2 uppercase tracking-wider">

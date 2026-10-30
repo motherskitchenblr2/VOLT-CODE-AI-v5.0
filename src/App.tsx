@@ -510,7 +510,10 @@ const App: React.FC = () => {
     modelOptionsAll.find((m) => m.id === selectedModel.id)?.tier || "FREE";
 
   useEffect(() => {
-    if (modelOptionsAll.length && !modelOptionsAll.some((m) => m.id === selectedModel.id)) {
+    if (
+      modelOptionsAll.length &&
+      !modelOptionsAll.some((m) => m.id === selectedModel.id)
+    ) {
       const preferred = modelOptionsAll.find((m) => m.tier === "FREE");
       setSelectedModel(preferred || modelOptionsAll[0]);
     }
@@ -628,13 +631,10 @@ const App: React.FC = () => {
     [],
   );
 
-const pushToast = useToast();
+  const pushToast = useToast();
   const showToast = useCallback(
     (message: string, type: "success" | "error" | "info" | "warn" = "info") => {
-      pushToast(
-        type === "warn" ? "info" : type,
-        message,
-      );
+      pushToast(type === "warn" ? "info" : type, message);
     },
     [pushToast],
   );
@@ -1270,18 +1270,27 @@ const pushToast = useToast();
           } catch {
             /* no body */
           }
-          if (serverMsg.startsWith("NO_KEY") || serverMsg.includes("Missing API Key")) {
+          if (
+            serverMsg.startsWith("NO_KEY") ||
+            serverMsg.includes("Missing API Key")
+          ) {
             showToast(
               `API key needed (${serverMsg.replace("NO_KEY:", "") || "provider"}). Add it in Settings → AI Providers.`,
               "error",
             );
-            addLog(`Missing API key for AI provider (status ${res.status})`, "error");
+            addLog(
+              `Missing API key for AI provider (status ${res.status})`,
+              "error",
+            );
           } else {
             showToast(
               `AI service error (${res.status})${serverMsg ? " — " + serverMsg.slice(0, 90) : ""}`,
               "error",
             );
-            addLog(`OpenRouter error status ${res.status}${serverMsg ? ": " + serverMsg : ""}`, "error");
+            addLog(
+              `OpenRouter error status ${res.status}${serverMsg ? ": " + serverMsg : ""}`,
+              "error",
+            );
           }
         }
         setIsAnalyzing(false);
@@ -1868,7 +1877,9 @@ const pushToast = useToast();
 
   const renderModelSelect = () => (
     <div className="flex shrink-0 flex-wrap items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
-      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">ENGINE</div>
+      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+        ENGINE
+      </div>
       <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
         id="model-select-dropdown"
@@ -1917,7 +1928,9 @@ const pushToast = useToast();
     options: string[],
   ) => (
     <div className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
-      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">{label}</div>
+      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+        {label}
+      </div>
       <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
         value={value}
@@ -1928,11 +1941,7 @@ const pushToast = useToast();
         className="bg-transparent vol-t1 outline-none min-w-[130px] text-xs cursor-pointer"
       >
         {options.map((option) => (
-          <option
-            key={option}
-            value={option}
-            className="vol-elev vol-t1"
-          >
+          <option key={option} value={option} className="vol-elev vol-t1">
             {option}
           </option>
         ))}
@@ -2696,7 +2705,6 @@ const pushToast = useToast();
             SENTINEL
           </div>
 
-
           <div
             onClick={() => setCurrentView("meeting")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
@@ -3033,7 +3041,8 @@ const pushToast = useToast();
               {liveProviderUpdated && (
                 <p className="text-[10px] vol-t2 mb-3 font-mono">
                   Last checked:{" "}
-                  {new Date(liveProviderUpdated).toLocaleTimeString()} · auto-refresh 30 min
+                  {new Date(liveProviderUpdated).toLocaleTimeString()} ·
+                  auto-refresh 30 min
                 </p>
               )}
 
@@ -3051,36 +3060,36 @@ const pushToast = useToast();
                         b.freeCount - a.freeCount,
                     )
                     .map((provider) => (
-                    <div
-                      key={provider.provider}
-                      className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            provider.connected
-                              ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
-                              : "bg-red-500"
-                          }`}
-                        />
-                        <span className="text-sm font-bold vol-t1">
-                          {provider.label}
-                        </span>
-                        {provider.connected ? (
-                          <span className="text-[10px] text-green-400 font-semibold uppercase">
-                            Connected
+                      <div
+                        key={provider.provider}
+                        className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              provider.connected
+                                ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
+                                : "bg-red-500"
+                            }`}
+                          />
+                          <span className="text-sm font-bold vol-t1">
+                            {provider.label}
                           </span>
-                        ) : (
-                          <span className="text-[10px] text-red-400 font-semibold uppercase">
-                            Offline
-                          </span>
-                        )}
+                          {provider.connected ? (
+                            <span className="text-[10px] text-green-400 font-semibold uppercase">
+                              Connected
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-red-400 font-semibold uppercase">
+                              Offline
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] vol-t2 font-mono">
+                          {provider.freeCount} free / {provider.paidCount} paid
+                        </div>
                       </div>
-                      <div className="text-[10px] vol-t2 font-mono">
-                        {provider.freeCount} free / {provider.paidCount} paid
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>
@@ -3583,7 +3592,9 @@ const pushToast = useToast();
         <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-elev">
           <div className="mb-1 flex justify-between items-start">
             <div>
-              <div className="text-lg sm:text-2xl font-bold leading-tight">MULTI-LANGUAGE EDITOR</div>
+              <div className="text-lg sm:text-2xl font-bold leading-tight">
+                MULTI-LANGUAGE EDITOR
+              </div>
               <div className="text-[10px] sm:text-xs vol-accent-soft font-semibold tracking-wide">
                 AI Bug Finder, Agent Runner & Telemetrist
               </div>
@@ -3599,40 +3610,40 @@ const pushToast = useToast();
           <div className="flex flex-col gap-2 mt-3">
             {renderModelSelect()}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-3">
-            {renderSelect(
-              "Plugin",
-              selectedPlugin,
-              setSelectedPlugin,
-              pluginOptions,
-            )}
-            {renderSelect(
-              "Skill",
-              selectedSkill,
-              setSelectedSkill,
-              skillOptions,
-            )}
-            {renderSelect(
-              "Mode",
-              agentMode,
-              (v) => setAgentMode(v as AgentMode),
-              modeOptions,
-            )}
+              {renderSelect(
+                "Plugin",
+                selectedPlugin,
+                setSelectedPlugin,
+                pluginOptions,
+              )}
+              {renderSelect(
+                "Skill",
+                selectedSkill,
+                setSelectedSkill,
+                skillOptions,
+              )}
+              {renderSelect(
+                "Mode",
+                agentMode,
+                (v) => setAgentMode(v as AgentMode),
+                modeOptions,
+              )}
 
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
-            >
-              {languages.map((l) => (
-                <option key={l.value} value={l.value}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
+              >
+                {languages.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
 
-            <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
-              DETECTED: {detectedLanguage.toUpperCase()}
-            </div>
+              <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
+                DETECTED: {detectedLanguage.toUpperCase()}
+              </div>
             </div>
           </div>
 
@@ -3650,7 +3661,8 @@ const pushToast = useToast();
               <div className="h-6 w-px hidden sm:block vol-line"></div>
               <div className="hidden sm:flex flex-col items-start">
                 <div className="text-[10px] vol-t2 uppercase font-semibold">
-                  {selectedModel.provider} • {selectedModel.tag} • {selectedModel.ctx}
+                  {selectedModel.provider} • {selectedModel.tag} •{" "}
+                  {selectedModel.ctx}
                 </div>
                 <span
                   className={
@@ -3709,9 +3721,7 @@ const pushToast = useToast();
                   </div>
                   <div className="vol-t1 font-extrabold text-lg">
                     {tokensUsed}{" "}
-                    <span className="text-xs vol-t2 font-normal">
-                      tokens
-                    </span>
+                    <span className="text-xs vol-t2 font-normal">tokens</span>
                   </div>
                 </div>
                 <div className="h-8 w-px vol-wash"></div>
@@ -3768,7 +3778,7 @@ const pushToast = useToast();
               </button>
 
               <button
-    onClick={() => setCurrentView("meeting")}
+                onClick={() => setCurrentView("meeting")}
                 className="flex items-center justify-center gap-2 py-3 rounded-xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
               >
                 <Crown className="w-4 h-4" />
@@ -3871,7 +3881,7 @@ const pushToast = useToast();
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-  onClick={() => setCurrentView("meeting")}
+              onClick={() => setCurrentView("meeting")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border vol-ring-strong vol-accent font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
@@ -4105,9 +4115,7 @@ const pushToast = useToast();
               >
                 <div>
                   <div className="font-bold vol-t1">{agent.name}</div>
-                  <div className="text-[9px] vol-t2 mt-0.5">
-                    {agent.role}
-                  </div>
+                  <div className="text-[9px] vol-t2 mt-0.5">{agent.role}</div>
                 </div>
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
               </div>
@@ -4228,9 +4236,7 @@ const pushToast = useToast();
                         {issue.severity}
                       </div>
                     </div>
-                    <div className="vol-accent mb-3">
-                      {issue.description}
-                    </div>
+                    <div className="vol-accent mb-3">{issue.description}</div>
                     <div className="text-sm opacity-75 leading-snug mb-4">
                       {issue.explanation}
                     </div>

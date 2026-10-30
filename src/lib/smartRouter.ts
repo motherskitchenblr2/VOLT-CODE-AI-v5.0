@@ -10,9 +10,17 @@ export type TaskKind = "code" | "reasoning" | "chat" | "review";
 
 export function classifyTask(agentMode: string, skill: string): TaskKind {
   const s = `${agentMode} ${skill}`.toLowerCase();
-  if (s.includes("reason") || s.includes("logic") || s.includes("architect")) return "reasoning";
-  if (s.includes("review") || s.includes("security") || s.includes("audit") || s.includes("lint")) return "review";
-  if (s.includes("chat") || s.includes("explain") || s.includes("meet")) return "chat";
+  if (s.includes("reason") || s.includes("logic") || s.includes("architect"))
+    return "reasoning";
+  if (
+    s.includes("review") ||
+    s.includes("security") ||
+    s.includes("audit") ||
+    s.includes("lint")
+  )
+    return "review";
+  if (s.includes("chat") || s.includes("explain") || s.includes("meet"))
+    return "chat";
   return "code";
 }
 
@@ -59,7 +67,11 @@ export function smartRoute(
     if (scored.length) return { provider: p.provider, model: scored[0], kind };
   }
   const anyFree = connected
-    .flatMap((p) => p.models.filter((m) => m.tier === "FREE").map((m) => ({ provider: p.provider, model: m })))
+    .flatMap((p) =>
+      p.models
+        .filter((m) => m.tier === "FREE")
+        .map((m) => ({ provider: p.provider, model: m })),
+    )
     .sort((a, b) => b.model.context - a.model.context);
   return anyFree.length ? { ...anyFree[0], kind } : null;
 }

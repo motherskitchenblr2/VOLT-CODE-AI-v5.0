@@ -70,9 +70,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
       <div className="border-b vol-ring pb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold vol-t1 mb-2">
-              {meeting.title}
-            </h1>
+            <h1 className="text-2xl font-bold vol-t1 mb-2">{meeting.title}</h1>
             <div className="flex items-center gap-4 text-sm vol-t2">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 vol-accent" />
@@ -274,15 +272,11 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
               <div className="flex items-start gap-3">
                 <CheckCircle
                   className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                    item.status === "completed"
-                      ? "text-green-400"
-                      : "vol-t2"
+                    item.status === "completed" ? "text-green-400" : "vol-t2"
                   }`}
                 />
                 <div className="flex-1">
-                  <div className="font-semibold vol-t1">
-                    {item.description}
-                  </div>
+                  <div className="font-semibold vol-t1">{item.description}</div>
                   <div className="flex items-center gap-3 mt-2 text-xs vol-t2">
                     <span>Assigned: {item.assignedTo}</span>
                     <span>Due: {item.dueDate.toLocaleDateString()}</span>

@@ -757,8 +757,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   >
                     <Eye className="w-4 h-4 shrink-0 mt-0.5 vol-t2" />
                     <span>
-                      Unused import:{" "}
-                      <strong className="vol-t1">{imp}</strong>
+                      Unused import: <strong className="vol-t1">{imp}</strong>
                     </span>
                   </div>
                 ))}
@@ -860,9 +859,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {/* Threads */}
                 <div className="flex justify-between items-center">
                   <div>
-                    <span className="vol-t1">
-                      Max Junior Workers Threads:
-                    </span>
+                    <span className="vol-t1">Max Junior Workers Threads:</span>
                     <div className="text-[9px] vol-t2">
                       Number of parallel repair subagents
                     </div>
@@ -1175,10 +1172,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   }
                   className="bg-transparent text-xs font-bold vol-t1 focus:outline-none cursor-pointer"
                 >
-                  <option
-                    value="STAGING"
-                    className="vol-elev vol-t1 font-bold"
-                  >
+                  <option value="STAGING" className="vol-elev vol-t1 font-bold">
                     STAGING ENVIRONMENT
                   </option>
                   <option

@@ -256,9 +256,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             <button
               onClick={() => setLanguage("en")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
-                language === "en"
-                  ? "bg-blue-600 vol-t1"
-                  : "vol-t2 hover:vol-t1"
+                language === "en" ? "bg-blue-600 vol-t1" : "vol-t2 hover:vol-t1"
               }`}
             >
               EN
@@ -266,9 +264,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             <button
               onClick={() => setLanguage("hi")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
-                language === "hi"
-                  ? "bg-blue-600 vol-t1"
-                  : "vol-t2 hover:vol-t1"
+                language === "hi" ? "bg-blue-600 vol-t1" : "vol-t2 hover:vol-t1"
               }`}
             >
               HI

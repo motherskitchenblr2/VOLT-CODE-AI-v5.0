@@ -152,9 +152,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
               <span className="w-2 h-2 rounded-full bg-yellow-400" />
               {language === "en" ? "Boss Concern" : "बॉस की चिंता"}
             </p>
-            <p className="text-sm vol-t1 leading-relaxed">
-              {guidance.reason}
-            </p>
+            <p className="text-sm vol-t1 leading-relaxed">{guidance.reason}</p>
           </div>
 
           {/* Recommendation */}

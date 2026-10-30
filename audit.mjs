@@ -30,55 +30,68 @@ const scan = () =>
     const bad = [];
     let shadowed = 0;
     const shadowSample = [];
-    document.querySelectorAll("section *, aside *, header *, nav *, footer *").forEach((el) => {
-      const r = el.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) return;
-      if (r.right > vw + 2) {
-        bad.push({
-          tag: el.tagName.toLowerCase(),
-          cls: String(el.className || "").slice(0, 60),
-          right: Math.round(r.right),
-          w: Math.round(r.width),
-          text: (el.textContent || "").trim().slice(0, 24),
-        });
-      }
-      const sh = getComputedStyle(el).boxShadow;
-      if (sh && sh !== "none") {
-        shadowed++;
-        if (shadowSample.length < 4 && r.width > 60 && r.height > 30) shadowSample.push({ cls: String(el.className || "").slice(0, 40), sh: sh.slice(0, 46) });
-      }
-    });
+    document
+      .querySelectorAll("section *, aside *, header *, nav *, footer *")
+      .forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width <= 0 || r.height <= 0) return;
+        if (r.right > vw + 2) {
+          bad.push({
+            tag: el.tagName.toLowerCase(),
+            cls: String(el.className || "").slice(0, 60),
+            right: Math.round(r.right),
+            w: Math.round(r.width),
+            text: (el.textContent || "").trim().slice(0, 24),
+          });
+        }
+        const sh = getComputedStyle(el).boxShadow;
+        if (sh && sh !== "none") {
+          shadowed++;
+          if (shadowSample.length < 4 && r.width > 60 && r.height > 30)
+            shadowSample.push({
+              cls: String(el.className || "").slice(0, 40),
+              sh: sh.slice(0, 46),
+            });
+        }
+      });
     const small = [];
     if (vw <= 900) {
       document.querySelectorAll("button, [role=button]").forEach((el) => {
         const r = el.getBoundingClientRect();
         if (r.width > 0 && r.height > 0 && r.height < 40)
-          small.push({ h: Math.round(r.height), text: (el.textContent || el.getAttribute("aria-label") || "").trim().slice(0, 20) });
+          small.push({
+            h: Math.round(r.height),
+            text: (el.textContent || el.getAttribute("aria-label") || "")
+              .trim()
+              .slice(0, 20),
+          });
       });
     }
     // DAY-THEME BLEED: count dark computed backgrounds (evidence-based theming check)
     const darkBleed = [];
     const isDay = document.documentElement.dataset.theme !== "dark";
     if (isDay) {
-      document.querySelectorAll("section *, aside *, header *, nav *").forEach((el) => {
-        const r = el.getBoundingClientRect();
-        if (r.width < 8 || r.height < 8) return;
-        const bg = getComputedStyle(el).backgroundColor;
-        const m = bg.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
-        if (!m) return;
-        const alpha = m[4] === undefined ? 1 : parseFloat(m[4]);
-        if (alpha < 0.35) return; // transparent/translucent — inherits from parent
-        const [rr, gg, bb] = [+m[1], +m[2], +m[3]];
-        const lum = 0.2126 * rr + 0.7152 * gg + 0.0722 * bb;
-        if (lum < 70 && !String(el.className).includes("vol-code-well")) {
-          darkBleed.push({
-            tag: el.tagName.toLowerCase(),
-            cls: String(el.className || "").slice(0, 55),
-            bg: bg,
-            text: (el.textContent || "").trim().slice(0, 22),
-          });
-        }
-      });
+      document
+        .querySelectorAll("section *, aside *, header *, nav *")
+        .forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.width < 8 || r.height < 8) return;
+          const bg = getComputedStyle(el).backgroundColor;
+          const m = bg.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
+          if (!m) return;
+          const alpha = m[4] === undefined ? 1 : parseFloat(m[4]);
+          if (alpha < 0.35) return; // transparent/translucent — inherits from parent
+          const [rr, gg, bb] = [+m[1], +m[2], +m[3]];
+          const lum = 0.2126 * rr + 0.7152 * gg + 0.0722 * bb;
+          if (lum < 70 && !String(el.className).includes("vol-code-well")) {
+            darkBleed.push({
+              tag: el.tagName.toLowerCase(),
+              cls: String(el.className || "").slice(0, 55),
+              bg: bg,
+              text: (el.textContent || "").trim().slice(0, 22),
+            });
+          }
+        });
     }
     return {
       vw,
@@ -117,7 +130,11 @@ async function clickView(page, candidates) {
       await more.click().catch(() => {});
       await page.waitForTimeout(250);
       const all2 = await loc.all();
-      for (const h of all2) if (await h.isVisible().catch(() => false)) { await h.click({ timeout: 1500 }).catch(() => {}); return label; }
+      for (const h of all2)
+        if (await h.isVisible().catch(() => false)) {
+          await h.click({ timeout: 1500 }).catch(() => {});
+          return label;
+        }
     }
   }
   return false;
@@ -126,7 +143,11 @@ async function clickView(page, candidates) {
 const out = [];
 const browser = await chromium.launch();
 for (const vp of VIEWPORTS) {
-  const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, isMobile: vp.mobile, hasTouch: vp.mobile });
+  const ctx = await browser.newContext({
+    viewport: { width: vp.w, height: vp.h },
+    isMobile: vp.mobile,
+    hasTouch: vp.mobile,
+  });
   await ctx.addInitScript(() => localStorage.setItem("volt_onboarded", "1"));
   const page = await ctx.newPage();
   await page.goto(BASE, { waitUntil: "domcontentloaded", timeout: 60000 });
@@ -137,19 +158,33 @@ for (const vp of VIEWPORTS) {
     const r = await page.evaluate(scan);
     const file = `${SHOTS}/${vp.name}--${name.replace(/\s+/g, "_")}.png`;
     await page.screenshot({ path: file });
-    out.push({ vp: vp.name, view: name, clicked, ...r, file });  }
+    out.push({ vp: vp.name, view: name, clicked, ...r, file });
+  }
   await ctx.close();
 }
 await browser.close();
 fs.writeFileSync("/tmp/opencode/audit.json", JSON.stringify(out, null, 1));
 for (const r of out) {
   const worst = Math.max(r.hOverflow, r.maskedOverflow);
-  console.log(`${r.vp.padEnd(12)} ${r.view.padEnd(12)} ${worst > 0 ? "OVERFLOW" : "ok      "} mask=${r.maskedOverflow} doc=${r.hOverflow} off=${r.offenders} small=${r.smallTargets} shadows=${r.shadowed} dark=${r.darkBleed} click=${r.clicked}`);
+  console.log(
+    `${r.vp.padEnd(12)} ${r.view.padEnd(12)} ${worst > 0 ? "OVERFLOW" : "ok      "} mask=${r.maskedOverflow} doc=${r.hOverflow} off=${r.offenders} small=${r.smallTargets} shadows=${r.shadowed} dark=${r.darkBleed} click=${r.clicked}`,
+  );
 }
 
 // ── emit global audit artifacts (consumable by any AI/agent) ──
-const bad = out.filter((r) => Math.max(r.hOverflow, r.maskedOverflow) > 0 || r.offenders > 0 || r.smallTargets > 0 || r.darkBleed > 0);
-const rows = out.map((r) => `| ${r.vp} | ${r.view} | ${r.offenders} | ${r.maskedOverflow} | ${r.smallTargets} | ${r.darkBleed} | ${r.shadowed} |`).join("\n");
+const bad = out.filter(
+  (r) =>
+    Math.max(r.hOverflow, r.maskedOverflow) > 0 ||
+    r.offenders > 0 ||
+    r.smallTargets > 0 ||
+    r.darkBleed > 0,
+);
+const rows = out
+  .map(
+    (r) =>
+      `| ${r.vp} | ${r.view} | ${r.offenders} | ${r.maskedOverflow} | ${r.smallTargets} | ${r.darkBleed} | ${r.shadowed} |`,
+  )
+  .join("\n");
 const now = new Date().toISOString();
 const report = `# VOLT Browser Audit Report — ${now.slice(0, 16)} UTC
 Scope: 8 views × 3 viewports (phone 390 / tablet 834 / laptop 1440) · ${out.length} checks
@@ -185,4 +220,6 @@ ${bad.length ? bad.map((b) => `- ${b.vp} / ${b.view}: offenders=${b.offenders}, 
 `;
 fs.writeFileSync("AUDIT_REPORT.md", report);
 fs.writeFileSync("FIX_PROMPT.md", fixPrompt);
-console.log(`→ AUDIT_REPORT.md + FIX_PROMPT.md written (${bad.length} failing)`);
+console.log(
+  `→ AUDIT_REPORT.md + FIX_PROMPT.md written (${bad.length} failing)`,
+);
