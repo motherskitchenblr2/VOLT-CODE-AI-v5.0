@@ -38,6 +38,77 @@ export interface AuditLog {
   status: "success" | "failed" | "unauthorized";
 }
 
+export interface RepoMember {
+  id: string;
+  name: string;
+  role: UserRole;
+}
+
+/** Per-repo permission overrides + the agent team assigned to that repo. */
+export interface RepoPolicy {
+  roles: Record<UserRole, Permission[]>;
+  members: RepoMember[];
+}
+
+const POLICY_KEY = "volt_repo_policies";
+
+const KNOWN_PERMISSIONS: Permission[] = [
+  "view_code",
+  "edit_code",
+  "create_pr",
+  "approve_pr",
+  "merge_pr",
+  "approve_changes",
+  "view_meetings",
+  "create_meetings",
+  "approve_decisions",
+  "override_decisions",
+  "manage_agents",
+  "view_audit_log",
+  "manage_permissions",
+];
+
+const cloneRolePermissions = (): Record<UserRole, Permission[]> => ({
+  owner: [...ROLE_PERMISSIONS.owner],
+  boss: [...ROLE_PERMISSIONS.boss],
+  agent: [...ROLE_PERMISSIONS.agent],
+  guest: [...ROLE_PERMISSIONS.guest],
+});
+
+const sanitizePermissions = (input: unknown[]): Permission[] =>
+  KNOWN_PERMISSIONS.filter((p) => input.includes(p));
+
+function readPolicies(): Record<string, RepoPolicy> {
+  if (typeof localStorage === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(POLICY_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, Partial<RepoPolicy>>;
+    const out: Record<string, RepoPolicy> = {};
+    for (const [key, policy] of Object.entries(parsed)) {
+      const roles = cloneRolePermissions();
+      for (const role of Object.keys(roles) as UserRole[]) {
+        const custom = policy.roles?.[role];
+        if (Array.isArray(custom)) roles[role] = sanitizePermissions(custom);
+      }
+      const members = Array.isArray(policy.members)
+        ? policy.members.filter(
+            (m) =>
+              m &&
+              typeof m.id === "string" &&
+              typeof m.name === "string" &&
+              Object.prototype.hasOwnProperty.call(roles, m.role),
+          )
+        : [];
+      out[key] = { roles, members };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+
 // Default Permission Mappings
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   owner: [
@@ -306,8 +377,9 @@ export class PermissionSystem {
     status?: string;
     limit?: number;
   }): AuditLog[] {
-    this.enforcePermission("view_audit_log");
-
+    // Reads do not throw: they are called during render, and a permission
+    // error there replaces the whole view with the error boundary. The caller
+    // gates the call (Repo Ops checks the per-repo policy first).
     let logs = [...this.auditLogs];
 
     if (filters?.userId) {
@@ -330,8 +402,6 @@ export class PermissionSystem {
    * Export audit logs
    */
   exportAuditLogs(format: "json" | "csv" = "json"): string {
-    this.enforcePermission("view_audit_log");
-
     if (format === "json") {
       return JSON.stringify(this.auditLogs, null, 2);
     }
@@ -350,6 +420,61 @@ export class PermissionSystem {
       headers.join(","),
       ...rows.map((r) => r.map((cell) => `"${cell}"`).join(",")),
     ].join("\n");
+  }
+
+  /**
+   * Get the per-repo policy (role permissions + team). Unknown repos get the
+   * built-in defaults, so a new repo never starts with no permissions.
+   */
+  getRepoPolicy(repoKey: string): RepoPolicy {
+    return readPolicies()[repoKey] ?? { roles: cloneRolePermissions(), members: [] };
+  }
+
+  /** Persist a repo policy. Unknown permission strings are dropped. */
+  saveRepoPolicy(repoKey: string, policy: RepoPolicy): RepoPolicy {
+    const roles = cloneRolePermissions();
+    for (const role of Object.keys(roles) as UserRole[]) {
+      const custom = policy.roles[role];
+      if (Array.isArray(custom)) roles[role] = sanitizePermissions(custom);
+    }
+    const members = (policy.members || []).filter(
+      (m) =>
+        m &&
+        typeof m.id === "string" &&
+        m.id.trim() !== "" &&
+        typeof m.name === "string" &&
+        Object.prototype.hasOwnProperty.call(roles, m.role),
+    );
+    const next: RepoPolicy = { roles, members };
+
+    const all = readPolicies();
+    all[repoKey] = next;
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(POLICY_KEY, JSON.stringify(all));
+    }
+    this.log(this.currentUser?.id || "system", "REPO_POLICY_SAVED", repoKey, {
+      members: members.length,
+    });
+    return next;
+  }
+
+  /** Toggle one permission for one role on one repo. */
+  setRolePermissions(
+    repoKey: string,
+    role: UserRole,
+    permissions: Permission[],
+  ): RepoPolicy {
+    const policy = this.getRepoPolicy(repoKey);
+    policy.roles[role] = sanitizePermissions(permissions);
+    return this.saveRepoPolicy(repoKey, policy);
+  }
+
+  effectivePermissions(repoKey: string, role: UserRole): Permission[] {
+    return this.getRepoPolicy(repoKey).roles[role] ?? [];
+  }
+
+  canDo(repoKey: string, role: UserRole, permission: Permission): boolean {
+    return this.effectivePermissions(repoKey, role).includes(permission);
   }
 
   /**

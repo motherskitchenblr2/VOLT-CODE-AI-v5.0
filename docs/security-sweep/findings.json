@@ -1,0 +1,170 @@
+[
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/codeql.yml",
+    "line": 60,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/codeql.yml",
+    "line": 70,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"github/codeql-action/init@v4.37.6\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/codeql.yml",
+    "line": 99,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"github/codeql-action/analyze@v4.37.6\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/dependabot-auto-merge.yml",
+    "line": 4,
+    "rule": "wf-pr-target",
+    "severity": "low",
+    "message": "pull_request_target grants write permissions and secrets to a workflow triggered by forks. Confirm no untrusted code runs."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/dependabot-auto-merge.yml",
+    "line": 16,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/generator-generic-ossf-slsa3-publish.yml",
+    "line": 19,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/generator-generic-ossf-slsa3-publish.yml",
+    "line": 40,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/generator-generic-ossf-slsa3-publish.yml",
+    "line": 50,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"peter-evans/repository-dispatch@v4\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 23,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 29,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/setup-node@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 68,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/github-script@v9\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 93,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 96,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"snyk/actions/node@master\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 111,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 114,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/setup-python@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/main.yaml",
+    "line": 126,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/github-script@v9\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/pr-security.yml",
+    "line": 19,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/pr-security.yml",
+    "line": 22,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/setup-node@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/pr-security.yml",
+    "line": 44,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"github/codeql-action/upload-sarif@v4.37.6\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/pr-security.yml",
+    "line": 50,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"aquasecurity/trivy-action@master\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/pr-security.yml",
+    "line": 61,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"github/codeql-action/upload-sarif@v4.37.6\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/webpack.yml",
+    "line": 16,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/checkout@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/webpack.yml",
+    "line": 19,
+    "rule": "wf-unpinned-action",
+    "severity": "medium",
+    "message": "Action \"actions/setup-node@v7\" is pinned to a mutable ref. A compromised maintainer can repoint it; pin the full commit SHA."
+  },
+  {
+    "file": "motherskitchenblr2/VOLT-CODE-AI-v5.0/.github/workflows/webpack.yml",
+    "line": 1,
+    "rule": "wf-missing-permissions",
+    "severity": "low",
+    "message": "No permissions block: the job inherits the repository default, which is often read/write. Declare it explicitly."
+  }
+]
