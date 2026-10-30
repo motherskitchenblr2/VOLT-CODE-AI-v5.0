@@ -532,8 +532,8 @@ html[data-theme="day"] footer {
   section {
     padding: 10px;
   }
-  section .vol-panel,
-  section .vol-elev {
+  html[data-theme="day"] section .vol-panel,
+  html[data-theme="day"] section .vol-elev {
     border-radius: 18px;
     box-shadow: 10px 10px 22px rgba(174, 181, 196, 0.8), -8px -8px 18px #ffffff;
   }
@@ -554,11 +554,11 @@ html[data-theme="day"] footer {
   }
 }
 @media (max-width: 767px) {
-  .vol-bottomnav {
+  html[data-theme="day"] .vol-bottomnav {
     background: var(--s-elev);
     box-shadow: 0 -10px 24px rgba(174, 181, 196, 0.6), inset 0 1px 0 #ffffff;
   }
-  .vol-bottomnav .neo-active {
+  html[data-theme="day"] .vol-bottomnav .neo-active {
     background: var(--s-well);
     box-shadow: var(--neo-in);
     border-radius: 14px;
