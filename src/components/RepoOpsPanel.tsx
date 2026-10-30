@@ -36,18 +36,25 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
     const saved = localStorage.getItem("volt_github_repo") || "";
     return saved.includes("/") ? saved.split("/")[1] : saved;
   });
-  const [branch, setBranch] = useState(() => localStorage.getItem("volt_github_branch") || "main");
-  const [token, setToken] = useState(() => localStorage.getItem("volt_github_token") || "");
+  const [branch, setBranch] = useState(
+    () => localStorage.getItem("volt_github_branch") || "main",
+  );
+  const [token, setToken] = useState(
+    () => localStorage.getItem("volt_github_token") || "",
+  );
   const [showConfig, setShowConfig] = useState(false);
 
   const [role, setRole] = useState<UserRole>("owner");
-  const [log, setLog] = useState<Array<{ t: string; msg: string; status: string }>>([]);
+  const [log, setLog] = useState<
+    Array<{ t: string; msg: string; status: string }>
+  >([]);
   const [prs, setPrs] = useState<Record<string, unknown>[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
 
   const permissions = useMemo(() => new PermissionSystem(), []);
   const manager = useMemo(
-    () => (owner && repo ? new GitHubManager({ owner, repo, token, branch }) : null),
+    () =>
+      owner && repo ? new GitHubManager({ owner, repo, token, branch }) : null,
     [owner, repo, token, branch],
   );
 
@@ -58,7 +65,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
   }, [permissions]);
 
   const note = useCallback(
-    (msg: string, status: "success" | "failed" | "unauthorized" = "success") => {
+    (
+      msg: string,
+      status: "success" | "failed" | "unauthorized" = "success",
+    ) => {
       setLog((prev) => [
         { t: new Date().toLocaleTimeString(), msg, status },
         ...prev.slice(0, 24),
@@ -82,7 +92,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       setPrs(list);
       note(`Loaded ${list.length} open PR(s)`);
     } catch (e) {
-      note(`Failed to load PRs: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Failed to load PRs: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -91,7 +104,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
   const mergePr = async (prNumber: number) => {
     if (!manager) return;
     if (!permissions.canMergePR()) {
-      return note(`Merge blocked for role ${role.toUpperCase()} (no merge_pr)`, "unauthorized");
+      return note(
+        `Merge blocked for role ${role.toUpperCase()} (no merge_pr)`,
+        "unauthorized",
+      );
     }
     setBusy(`merge-${prNumber}`);
     try {
@@ -99,7 +115,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       note(`Merged PR #${prNumber}`);
       await refreshPrs();
     } catch (e) {
-      note(`Merge failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Merge failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -113,7 +132,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       note(`Closed PR #${prNumber}`);
       await refreshPrs();
     } catch (e) {
-      note(`Close failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Close failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -127,7 +149,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       await manager.createBranch(name);
       note(`Branch created: ${name}`);
     } catch (e) {
-      note(`Branch failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Branch failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -135,7 +160,9 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
   const exportAudit = (format: "json" | "csv") => {
     const data = permissions.exportAuditLogs(format);
-    const blob = new Blob([data], { type: format === "csv" ? "text/csv" : "application/json" });
+    const blob = new Blob([data], {
+      type: format === "csv" ? "text/csv" : "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -152,7 +179,9 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-black tracking-widest vol-t1">REPO OPS</h1>
+          <h1 className="text-xl font-black tracking-widest vol-t1">
+            REPO OPS
+          </h1>
           <p className="text-[11px] vol-accent-soft font-semibold">
             Maintain repos · review PRs · fix conflicts · audit every action
           </p>
@@ -213,13 +242,17 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       {/* Permission strip */}
       <div className="p-3 rounded-2xl vol-panel border vol-ring flex flex-wrap items-center gap-2">
         <ShieldCheck className="w-4 h-4 vol-accent" />
-        <span className="text-[10px] font-black tracking-wider vol-t2 uppercase">Acting as</span>
+        <span className="text-[10px] font-black tracking-wider vol-t2 uppercase">
+          Acting as
+        </span>
         {ROLES.map((r) => (
           <button
             key={r}
             onClick={() => changeRole(r)}
             className={`px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase cursor-pointer ${
-              role === r ? "vol-acc-bg text-black" : "vol-well vol-t2 hover:vol-accent"
+              role === r
+                ? "vol-acc-bg text-black"
+                : "vol-well vol-t2 hover:vol-accent"
             }`}
           >
             {r}
@@ -241,7 +274,9 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
           disabled={busy === "prs"}
           className="flex items-center gap-2 px-3 py-2.5 rounded-xl vol-well border vol-ring vol-accent text-xs font-bold cursor-pointer disabled:opacity-60"
         >
-          <RefreshCw className={`w-4 h-4 ${busy === "prs" ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-4 h-4 ${busy === "prs" ? "animate-spin" : ""}`}
+          />
           REFRESH PRs
         </button>
         <button
@@ -317,10 +352,13 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       {/* Activity + audit */}
       <div className="p-3 rounded-2xl vol-panel border vol-ring">
         <div className="text-[10px] font-black tracking-wider vol-t2 uppercase mb-2">
-          Action log ({log.length}) · audit trail {auditLogs.length ? `(${auditLogs.length})` : ""}
+          Action log ({log.length}) · audit trail{" "}
+          {auditLogs.length ? `(${auditLogs.length})` : ""}
         </div>
         <div className="space-y-1 max-h-56 overflow-y-auto">
-          {log.length === 0 && <p className="text-xs vol-t2">No actions yet.</p>}
+          {log.length === 0 && (
+            <p className="text-xs vol-t2">No actions yet.</p>
+          )}
           {log.map((l, i) => (
             <div key={i} className="text-[11px] font-mono flex gap-2">
               <span className="vol-t2">{l.t}</span>
