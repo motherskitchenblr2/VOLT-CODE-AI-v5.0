@@ -25,7 +25,12 @@ const token = process.env.GITHUB_TOKEN || "";
 const owner = argOf("owner", "");
 const repoArg = argOf("repo", "");
 const limit = Number(argOf("limit", "25"));
-const outDir = path.resolve(import.meta.dirname, "..", "docs", "security-sweep");
+const outDir = path.resolve(
+  import.meta.dirname,
+  "..",
+  "docs",
+  "security-sweep",
+);
 
 if (!token) {
   console.error(
@@ -49,7 +54,9 @@ async function gh(pathname) {
   const res = await fetch(`${API}${pathname}`, { headers });
   if (res.status === 404) return null;
   if (!res.ok) {
-    throw new Error(`GitHub ${res.status} on ${pathname}: ${(await res.text()).slice(0, 200)}`);
+    throw new Error(
+      `GitHub ${res.status} on ${pathname}: ${(await res.text()).slice(0, 200)}`,
+    );
   }
   return res.json();
 }
@@ -57,18 +64,29 @@ async function gh(pathname) {
 async function listRepos(login) {
   const org = await gh(`/orgs/${login}/repos?per_page=${limit}&sort=updated`);
   if (org) return org;
-  return (await gh(`/users/${login}/repos?per_page=${limit}&sort=updated`)) || [];
+  return (
+    (await gh(`/users/${login}/repos?per_page=${limit}&sort=updated`)) || []
+  );
 }
 
 async function workflowsOf(fullName, ref) {
-  const listing = await gh(`/repos/${fullName}/contents/.github/workflows?ref=${ref}`);
+  const listing = await gh(
+    `/repos/${fullName}/contents/.github/workflows?ref=${ref}`,
+  );
   if (!Array.isArray(listing)) return [];
-  const files = listing.filter((e) => e.type === "file" && /\.ya?ml$/.test(e.name));
+  const files = listing.filter(
+    (e) => e.type === "file" && /\.ya?ml$/.test(e.name),
+  );
   const out = [];
   for (const file of files) {
-    const data = await gh(`/repos/${fullName}/contents/${file.path}?ref=${ref}`);
+    const data = await gh(
+      `/repos/${fullName}/contents/${file.path}?ref=${ref}`,
+    );
     if (data?.content) {
-      out.push({ path: file.path, content: Buffer.from(data.content, "base64").toString("utf8") });
+      out.push({
+        path: file.path,
+        content: Buffer.from(data.content, "base64").toString("utf8"),
+      });
     }
   }
   return out;
@@ -81,7 +99,10 @@ const targets = repoArg.includes("/")
 const results = [];
 for (const repo of targets) {
   const [login, name] = repo.full_name.split("/");
-  const ref = repo.default_branch || (await gh(`/repos/${login}/${name}`))?.default_branch || "main";
+  const ref =
+    repo.default_branch ||
+    (await gh(`/repos/${login}/${name}`))?.default_branch ||
+    "main";
   let workflows = [];
   try {
     workflows = await workflowsOf(repo.full_name, ref);
@@ -95,8 +116,15 @@ for (const repo of targets) {
     });
     continue;
   }
-  const findings = workflows.flatMap((w) => scanWorkflow(`${repo.full_name}/${w.path}`, w.content));
-  results.push({ repo: repo.full_name, ref, workflows: workflows.length, findings });
+  const findings = workflows.flatMap((w) =>
+    scanWorkflow(`${repo.full_name}/${w.path}`, w.content),
+  );
+  results.push({
+    repo: repo.full_name,
+    ref,
+    workflows: workflows.length,
+    findings,
+  });
   const s = summarize(findings);
   console.log(
     `${repo.full_name} (${ref}): ${workflows.length} workflow(s) → ${s.critical} critical, ${s.high} high, ${s.medium} medium [${s.verdict}]`,
@@ -107,7 +135,10 @@ const findings = results.flatMap((r) => r.findings);
 const totals = summarize(findings);
 
 fs.mkdirSync(outDir, { recursive: true });
-fs.writeFileSync(path.join(outDir, "findings.json"), JSON.stringify(findings, null, 2));
+fs.writeFileSync(
+  path.join(outDir, "findings.json"),
+  JSON.stringify(findings, null, 2),
+);
 
 const lines = [
   "# Workflow Security Sweep",
@@ -116,14 +147,17 @@ const lines = [
   `Repos: ${results.length} · Workflows: ${results.reduce((n, r) => n + r.workflows, 0)}`,
   `Findings: ${totals.total} (${totals.critical} critical, ${totals.high} high, ${totals.medium} medium, ${totals.low} low)`,
   "",
-  totals.critical > 0 ? "**Verdict: FAIL — critical findings need a fix.**" : "**Verdict: no critical finding.**",
+  totals.critical > 0
+    ? "**Verdict: FAIL — critical findings need a fix.**"
+    : "**Verdict: no critical finding.**",
   "",
   "## Per repo",
   "",
   "| Repo | Ref | Workflows | Findings | Verdict |",
   "| --- | --- | --- | --- | --- |",
   ...results.map(
-    (r) => `| ${r.repo} | ${r.ref} | ${r.workflows} | ${r.findings.length} | ${summarize(r.findings).verdict} |`,
+    (r) =>
+      `| ${r.repo} | ${r.ref} | ${r.workflows} | ${r.findings.length} | ${summarize(r.findings).verdict} |`,
   ),
   "",
   "## Findings",
@@ -133,7 +167,8 @@ const lines = [
     : "| Severity | Rule | Location | What to do |",
   ...(findings.length === 0 ? [] : ["| --- | --- | --- | --- |"]),
   ...findings.map(
-    (f) => `| ${f.severity} | ${f.rule} | \`${f.file}${f.line ? `:${f.line}` : ""}\` | ${f.message} |`,
+    (f) =>
+      `| ${f.severity} | ${f.rule} | \`${f.file}${f.line ? `:${f.line}` : ""}\` | ${f.message} |`,
   ),
   "",
   "## Limits (read this)",
@@ -146,5 +181,7 @@ const lines = [
 ];
 fs.writeFileSync(path.join(outDir, "REPORT.md"), lines.join("\n"));
 
-console.log(`\nWrote ${path.relative(process.cwd(), outDir)}/findings.json + REPORT.md`);
+console.log(
+  `\nWrote ${path.relative(process.cwd(), outDir)}/findings.json + REPORT.md`,
+);
 process.exit(totals.critical > 0 ? 1 : 0);
