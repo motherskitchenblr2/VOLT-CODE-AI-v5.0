@@ -68,6 +68,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   const railItem = ([view, label, icon]: NavItem) => (
     <button
       key={view}
+      data-view={view}
       onClick={() => setCurrentView(view)}
       className={`group flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-left transition-all cursor-pointer ${
         currentView === view
@@ -158,6 +159,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             ).map(([view, label, icon]) => (
               <button
                 key={view}
+                data-view={view}
                 onClick={() => setCurrentView(view)}
                 className={`flex-1 min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer ${
                   currentView === view ? "vol-accent vol-acc-wash" : "vol-t2"
@@ -232,6 +234,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               {NAV.map(([view, label, icon]) => (
                 <button
                   key={view}
+                  data-view={view}
                   onClick={() => {
                     setCurrentView(view);
                     setNavOpen(false);

@@ -5,7 +5,7 @@ import fs from "fs";
  * VOLT dual-theme browser audit (regression gate).
  *   AUDIT_URL=http://localhost:4173 node audit.mjs   (local build)
  *   AUDIT_URL=https://volt-code-ai-v5-0.vercel.app node audit.mjs  (prod)
- * Scans 7 views × 3 viewports × 2 themes (42 checks). Emits AUDIT_REPORT.md + FIX_PROMPT.md.
+ * Scans 8 views × 3 viewports × 2 themes (48 checks). Emits AUDIT_REPORT.md + FIX_PROMPT.md.
  */
 const BASE = process.env.AUDIT_URL || "http://localhost:4173";
 const SHOTS = "/tmp/opencode/shots";
@@ -17,14 +17,18 @@ const VIEWPORTS = [
   { name: "tab-834", w: 834, h: 1112, mobile: true },
   { name: "laptop-1440", w: 1440, h: 900, mobile: false },
 ];
+// [label, text fallbacks, anchor selector, data-view id]
+// data-view is on every nav item; a text-only click can land on an inert
+// wrapper and silently audit the previous view.
 const VIEWS = [
-  ["Editor", ["Editor", "NEW ANALYSIS"]],
-  ["IDE Canvas", ["IDE Canvas", "IDE CANVAS"]],
-  ["Agent Swarm", ["Agent Swarm", "AGENT SWARM"]],
-  ["Agents", ["Agents", "MEETING PANEL"]],
-  ["Sentinel", ["Sentinel", "SENTINEL"]],
-  ["GitHub", ["GitHub", "GITHUB WORKSPACE"]],
-  ["Settings", ["Settings", "SETTINGS"]],
+  ["Editor", ["Editor", "NEW ANALYSIS"], null, "editor"],
+  ["IDE Canvas", ["IDE Canvas", "IDE CANVAS"], null, "ide"],
+  ["Agent Swarm", ["Agent Swarm", "AGENT SWARM"], null, "swarm"],
+  ["Agents", ["Agents", "MEETING PANEL"], null, "meeting"],
+  ["Sentinel", ["Sentinel", "SENTINEL"], null, "sentinel"],
+  ["GitHub", ["GitHub", "GITHUB WORKSPACE"], null, "github"],
+  ["Settings", ["Settings", "SETTINGS"], null, "settings"],
+  ["Repo Ops", ["Repo Ops", "REPO OPS"], "h1:has-text('REPO OPS')", "repo-ops"],
 ];
 
 const scan = (theme) =>
@@ -79,46 +83,99 @@ const scan = (theme) =>
     return { vw, theme, hOverflow: Math.max(0, document.documentElement.scrollWidth - vw), maskedOverflow: masked, offenders: bad.length, sample: bad.slice(0, 5), smallTargets: small.length, smallSample: small.slice(0, 4), shadowed, darkBleed: darkBleed.length, darkSample: darkBleed.slice(0, 4), whiteGlow: whiteGlow.length, whiteGlowSample: whiteGlow.slice(0, 4), lightBleed: lightBleed.length, lightBleedSample: lightBleed.slice(0, 4) };
   })();
 
-async function clickView(page, candidates) {
-  for (const label of candidates) {
-    const cands = [];
-    for (const h of await page.locator(`:is(button,div,a):has-text("${label}")`).all()) {
+async function clickView(page, candidates, anchor, viewId) {
+  const visibleAnchor = async () =>
+    anchor ? await page.locator(anchor).first().isVisible().catch(() => false) : true;
+  const elementsFor = async (label) => {
+    const found = [];
+    for (const h of await page.locator(`:is(button,[role=button],div,a):has-text("${label}")`).all()) {
       if (!(await h.isVisible().catch(() => false))) continue;
       const b = await h.boundingBox().catch(() => null);
-      if (b) cands.push({ h, area: b.width * b.height });
+      if (b) found.push({ h, area: b.width * b.height });
     }
-    cands.sort((a, b) => a.area - b.area);
-    if (cands[0]) { await cands[0].h.click({ timeout: 2000 }).catch(() => {}); return label; }
+    found.sort((a, b) => a.area - b.area);
+    return found.map((f) => f.h);
+  };
+
+  const direct = () => (viewId ? page.locator(`[data-view="${viewId}"]`).first() : null);
+  const openDrawer = async () => {
     const more = page.locator('button:has-text("MORE")').first();
-    if (await more.isVisible().catch(() => false)) {
-      await more.click().catch(() => {});
-      await page.waitForTimeout(250);
-      for (const h of await page.locator(`:is(button,div,a):has-text("${label}")`).all()) {
-        if (await h.isVisible().catch(() => false)) { await h.click({ timeout: 1500 }).catch(() => {}); return label; }
+    if (!(await more.isVisible().catch(() => false))) return false;
+    await more.click().catch(() => {});
+    return true;
+  };
+
+  // 1. Deterministic path: the nav item is tagged with data-view.
+  if (viewId) {
+    let el = direct();
+    if (!(await el.isVisible().catch(() => false))) {
+      if (await openDrawer()) {
+        for (let i = 0; i < 10; i++) {
+          await page.waitForTimeout(300);
+          if (await el.isVisible().catch(() => false)) break;
+        }
       }
+    }
+    if (await el.isVisible().catch(() => false)) {
+      await el.click({ timeout: 2000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      if (await visibleAnchor()) return candidates[0];
+    }
+  }
+
+  // 2. Legacy text fallback.
+  let openedMore = false;
+  for (const label of candidates) {
+    let els = (await elementsFor(label)).slice(0, 3);
+    if (els.length === 0 && !openedMore) {
+      const more = page.locator('button:has-text("MORE")').first();
+      if (await more.isVisible().catch(() => false)) {
+        await more.click().catch(() => {});
+        openedMore = true;
+        for (let i = 0; i < 10 && els.length === 0; i++) {
+          await page.waitForTimeout(300);
+          els = (await elementsFor(label)).slice(0, 3);
+        }
+      }
+    }
+    // Click and verify: the smallest element containing the label can be an
+    // inert wrapper. If the view did not change, try the next candidate.
+    for (const el of els) {
+      await el.click({ timeout: 1500 }).catch(() => {});
+      await page.waitForTimeout(500);
+      if (await visibleAnchor()) return label;
     }
   }
   return false;
 }
 
 const out = [];
-const browser = await chromium.launch();
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
 for (const vp of VIEWPORTS) {
   const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, isMobile: vp.mobile, hasTouch: vp.mobile });
   await ctx.addInitScript(() => localStorage.setItem("volt_onboarded", "1"));
   const page = await ctx.newPage();
   await page.goto(BASE, { waitUntil: "domcontentloaded", timeout: 60000 });
   await page.waitForTimeout(3000);
-  for (const [name, cands] of VIEWS) {
-    const clicked = await clickView(page, cands);
+  for (const [name, cands, anchor, viewId] of VIEWS) {
+    const clicked = await clickView(page, cands, anchor, viewId);
     await page.waitForTimeout(900);
+    // A click helper can silently land on the wrong view and every metric then
+    // looks green for a view that was never opened. Anchor-assert when given.
+    const navFail = anchor
+      ? !(await page.locator(anchor).first().waitFor({ state: "visible", timeout: 5000 }).then(() => true).catch(() => false))
+      : false;
+    if (navFail) console.log(`  ! ${name}: navigation anchor not found (${anchor}) — this row is invalid`);
     const day = await page.evaluate(scan, "day");
     await page.screenshot({ path: `${SHOTS}/${vp.name}--${name.replace(/\s+/g, "_")}--day.png` });
     await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
-    await page.waitForTimeout(250);
+    // Long enough for box-shadow transitions to finish; at 250ms the scan caught
+    // mid-transition shadows (near-zero offsets + white inset) and called them
+    // white glows.
+    await page.waitForTimeout(700);
     const dark = await page.evaluate(scan, "dark");
     await page.evaluate(() => { document.documentElement.dataset.theme = "day"; });
-    out.push({ vp: vp.name, view: name, clicked, day, dark });
+    out.push({ vp: vp.name, view: name, clicked, navFail, day, dark });
   }
   await ctx.close();
 }
@@ -128,26 +185,27 @@ fs.writeFileSync("/tmp/opencode/audit.json", JSON.stringify(out, null, 1));
 function isFail(r) {
   return Math.max(r.hOverflow, r.maskedOverflow, r.offenders, r.smallTargets) > 0 || r.darkBleed > 0 || r.whiteGlow > 0 || r.lightBleed > 0;
 }
-const fails = out.filter((o) => isFail(o.day) || isFail(o.dark));
+const fails = out.filter((o) => o.navFail || isFail(o.day) || isFail(o.dark));
 for (const o of out) {
   const f = (t) => (isFail(t) ? "FAIL" : "ok");
-  console.log(`${o.vp.padEnd(12)} ${o.view.padEnd(12)} day=${f(o.day)}(off=${o.day.offenders},dark=${o.day.darkBleed},shadow=${o.day.shadowed}) dark=${f(o.dark)}(glow=${o.dark.whiteGlow},light=${o.dark.lightBleed},off=${o.dark.offenders})`);
+  console.log(`${o.vp.padEnd(12)} ${o.view.padEnd(12)} ${o.navFail ? "NAV-FAIL " : "nav-ok   "} day=${f(o.day)}(off=${o.day.offenders},dark=${o.day.darkBleed},shadow=${o.day.shadowed}) dark=${f(o.dark)}(glow=${o.dark.whiteGlow},light=${o.dark.lightBleed},off=${o.dark.offenders})`);
 }
 for (const o of fails) {
+  if (o.navFail) console.log(`  ✗ ${o.vp}/${o.view} navigation anchor missing — row cannot be trusted`);
   if (o.dark.whiteGlow > 0) console.log(`  ✗ ${o.vp}/${o.view} DARK white-glow: ${JSON.stringify(o.dark.whiteGlowSample)}`);
   if (o.dark.lightBleed > 0) console.log(`  ✗ ${o.vp}/${o.view} DARK light-bleed: ${JSON.stringify(o.dark.lightBleedSample)}`);
   if (o.day.darkBleed > 0) console.log(`  ✗ ${o.vp}/${o.view} DAY dark-bleed: ${JSON.stringify(o.day.darkSample)}`);
   if (o.day.offenders > 0) console.log(`  ✗ ${o.vp}/${o.view} DAY overflow: ${JSON.stringify(o.day.sample)}`);
 }
 const now = new Date().toISOString();
-const rows = out.map((o) => `| ${o.vp} | ${o.view} | ${o.day.offenders} | ${o.day.darkBleed} | ${o.day.smallTargets} | ${o.dark.whiteGlow} | ${o.dark.lightBleed} | ${o.dark.offenders} |`).join("\n");
+const rows = out.map((o) => `| ${o.vp} | ${o.view} | ${o.navFail ? "yes" : "no"} | ${o.day.offenders} | ${o.day.darkBleed} | ${o.day.smallTargets} | ${o.dark.whiteGlow} | ${o.dark.lightBleed} | ${o.dark.offenders} |`).join("\n");
 const report = `# VOLT Dual-Theme Audit Report — ${now.slice(0, 16)} UTC
-Scope: 7 views × 3 viewports × 2 themes = 42 checks.
+Scope: 8 views × 3 viewports × 2 themes = 48 checks.
 
 ## Result: ${fails.length ? `❌ ${fails.length} failing check(s)` : "✅ ALL GREEN"}
 
-| Viewport | View | DayOff | DayDark | DaySmall | DarkGlow | DarkLight | DarkOff |
-|---|---|---|---|---|---|---|---|
+| Viewport | View | NavFail | DayOff | DayDark | DaySmall | DarkGlow | DarkLight | DarkOff |
+|---|---|---|---|---|---|---|---|---|
 ${rows}
 `;
 const fixPrompt = `# VOLT Auto-Fix Prompt — dual-theme audit ${now.slice(0, 16)} UTC

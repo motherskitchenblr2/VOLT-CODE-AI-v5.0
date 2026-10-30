@@ -32,6 +32,11 @@ export class GitHubManager {
     this.config = config;
   }
 
+  /** Base branch this manager was configured with. */
+  get branchName(): string {
+    return this.config.branch;
+  }
+
   // Get authorization header
   private getHeaders(): Record<string, string> {
     return {
@@ -363,6 +368,173 @@ export class GitHubManager {
       console.error("[GitHubManager] Failed to get PRs:", error);
       throw error;
     }
+  }
+
+  /**
+   * One fetch wrapper for the read-side API (PRs, files, compare).
+   * Errors keep GitHub's own message + status so the UI can tell "no token"
+   * apart from "not found" and "rate limited".
+   */
+  private async gh<T>(
+    path: string,
+    init?: { method?: string; body?: unknown },
+  ): Promise<T> {
+    const response = await fetch(`${this.baseURL}${path}`, {
+      method: init?.method || "GET",
+      headers: this.getHeaders(),
+      body: init?.body === undefined ? undefined : JSON.stringify(init.body),
+    });
+    if (!response.ok) {
+      let detail = "";
+      try {
+        const body = (await response.json()) as { message?: string };
+        detail = body?.message ? `: ${body.message}` : "";
+      } catch {
+        // non-JSON error body — status is all we have
+      }
+      const hint =
+        response.status === 401 || response.status === 403
+          ? " (check the token scope / rate limit)"
+          : response.status === 404
+            ? " (repo, PR or path not found — check owner/repo)"
+            : "";
+      throw new Error(`GitHub ${response.status}${detail}${hint}`);
+    }
+    return (await response.json()) as T;
+  }
+
+  /** Files in a PR, with patches. Used by the review agent. */
+  async getPullRequestFiles(prNumber: number): Promise<Record<string, unknown>[]> {
+    return this.gh<Record<string, unknown>[]>(
+      `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/files?per_page=100`,
+    );
+  }
+
+  /** Post a real GitHub review (not a local log line). */
+  async createReview(
+    prNumber: number,
+    event: "APPROVE" | "REQUEST_CHANGES" | "COMMENT",
+    body: string,
+  ): Promise<{ id: number; html_url: string }> {
+    if (!body.trim()) throw new Error("Review body is empty — nothing to post.");
+    return this.gh<{ id: number; html_url: string }>(
+      `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/reviews`,
+      { method: "POST", body: { event, body } },
+    );
+  }
+
+  /** Compare two refs: used to find the merge base and conflict candidates. */
+  async getCompare(
+    base: string,
+    head: string,
+  ): Promise<{
+    mergeBase: string;
+    files: Array<{ filename: string; status: string }>;
+  }> {
+    const data = await this.gh<{
+      merge_base_commit?: { sha?: string };
+      files?: Array<{ filename: string; status: string }>;
+    }>(
+      `/repos/${this.config.owner}/${this.config.repo}/compare/${encodeURIComponent(base)}...${encodeURIComponent(head)}`,
+    );
+    return {
+      mergeBase: data.merge_base_commit?.sha || "",
+      files: data.files || [],
+    };
+  }
+
+  /** File content at a ref, or null when the file does not exist there. */
+  async getFileContent(
+    path: string,
+    ref: string,
+  ): Promise<{ content: string; sha: string } | null> {
+    try {
+      const data = await this.gh<{
+        content?: string;
+        encoding?: string;
+        sha: string;
+      }>(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${path}?ref=${encodeURIComponent(ref)}`,
+      );
+      const raw = data.content || "";
+      // atob exists in browsers and in Node >= 16, so one path covers both.
+      const content =
+        data.encoding === "base64" ? atob(raw.replace(/\s/g, "")) : raw;
+      return { content, sha: data.sha };
+    } catch (error) {
+      if (error instanceof Error && /GitHub 404/.test(error.message)) return null;
+      throw error;
+    }
+  }
+
+  /** Directory listing (names only) at a ref; empty when it does not exist. */
+  async getDirectory(
+    path: string,
+    ref: string,
+  ): Promise<Array<{ name: string; path: string }>> {
+    try {
+      const data = await this.gh<
+        Array<{ name: string; path: string; type: string }>
+      >(
+        `/repos/${this.config.owner}/${this.config.repo}/contents/${path}?ref=${encodeURIComponent(ref)}`,
+      );
+      return Array.isArray(data)
+        ? data.filter((e) => e.type === "file").map((e) => ({ name: e.name, path: e.path }))
+        : [];
+    } catch (error) {
+      if (error instanceof Error && /GitHub 404/.test(error.message)) return [];
+      throw error;
+    }
+  }
+
+  /** Workflow files on a branch — the input for the injection sweep. */
+  async getWorkflows(ref: string): Promise<Array<{ path: string; content: string }>> {
+    const entries = await this.getDirectory(".github/workflows", ref);
+    const out: Array<{ path: string; content: string }> = [];
+    for (const entry of entries) {
+      if (!/\.ya?ml$/.test(entry.name)) continue;
+      const file = await this.getFileContent(entry.path, ref);
+      if (file) out.push({ path: entry.path, content: file.content });
+    }
+    return out;
+  }
+
+  /** Repos the token can see for an owner (user or org), for the multi-repo sweep. */
+  static async listRepos(
+    token: string,
+    owner: string,
+  ): Promise<Array<{ full_name: string; private: boolean; default_branch: string }>> {
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    };
+    const tryFetch = async (url: string) => {
+      const res = await fetch(url, { headers });
+      if (!res.ok) return null;
+      return (await res.json()) as Array<{
+        full_name: string;
+        private: boolean;
+        default_branch: string;
+        owner?: { login?: string };
+      }>;
+    };
+    const fromOrg = await tryFetch(
+      `https://api.github.com/orgs/${owner}/repos?per_page=100&sort=updated`,
+    );
+    const repos =
+      fromOrg ??
+      (await tryFetch(
+        `https://api.github.com/users/${owner}/repos?per_page=100&sort=updated`,
+      )) ??
+      [];
+    return repos
+      .filter((r) => (r.owner?.login || "").toLowerCase() === owner.toLowerCase() || !r.owner)
+      .map((r) => ({
+        full_name: r.full_name,
+        private: r.private,
+        default_branch: r.default_branch || "main",
+      }));
   }
 
   // Delete branch

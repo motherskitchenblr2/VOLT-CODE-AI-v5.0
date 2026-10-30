@@ -2650,6 +2650,7 @@ const App: React.FC = () => {
         <div className="mt-12 space-y-1 select-none">
           <div
             onClick={() => setCurrentView("editor")}
+            data-view="editor"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "editor"
                 ? "vol-acc-bg text-black font-bold"
@@ -2662,6 +2663,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("ide")}
+            data-view="ide"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "ide"
                 ? "vol-acc-bg text-black font-bold"
@@ -2674,6 +2676,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("swarm")}
+            data-view="swarm"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "swarm"
                 ? "vol-acc-bg text-black font-bold"
@@ -2686,6 +2689,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("history")}
+            data-view="history"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "history"
                 ? "vol-acc-bg text-black font-bold"
@@ -2698,6 +2702,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("sentinel")}
+            data-view="sentinel"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "sentinel"
                 ? "vol-acc-bg text-black font-bold"
@@ -2710,6 +2715,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("meeting")}
+            data-view="meeting"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "meeting"
                 ? "bg-blue-600 vol-t1 font-bold"
@@ -2722,6 +2728,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("pr-review")}
+            data-view="pr-review"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "pr-review"
                 ? "bg-orange-600 vol-t1 font-bold"
@@ -2734,6 +2741,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("settings")}
+            data-view="settings"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "settings"
                 ? "vol-acc-bg text-black font-bold"
@@ -2746,6 +2754,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("repo-ops")}
+            data-view="repo-ops"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "repo-ops"
                 ? "vol-acc-bg text-black font-bold"
@@ -2758,6 +2767,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("github")}
+            data-view="github"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "github"
                 ? "vol-acc-bg text-black font-bold"
@@ -2770,6 +2780,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("admin")}
+            data-view="admin"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "admin"
                 ? "vol-acc-bg text-black font-bold"
@@ -2782,6 +2793,7 @@ const App: React.FC = () => {
 
           <div
             onClick={() => setCurrentView("about")}
+            data-view="about"
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
               currentView === "about"
                 ? "vol-acc-bg text-black font-bold"

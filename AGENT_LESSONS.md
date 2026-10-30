@@ -56,3 +56,20 @@ before pushing a fix and never repeat a recorded mistake.
 - A deleted/rejected PR = a lesson. Record it here. No repeats.
 
 11. **Never `git reset --hard` with uncommitted work** — PR #119 shipped EMPTY because a reset wiped wave-1 edits before staging. Always `git stash` or verify `git diff --stat` is non-empty before commit.
+
+12. **A permission check that throws during render takes the whole view down** —
+    `getAuditLogs()` enforced `view_audit_log`, so Repo Ops died inside the error
+    boundary. Lesson: read methods return data; the caller gates. Only mutations throw.
+
+13. **An audit can go green on the wrong view** — the click helper clicked an inert
+    wrapper div, the page never changed, and every metric "passed" for a view that was
+    never opened. Lesson: tag nav items with `data-view` and assert a per-view anchor.
+    Also wait for box-shadow transitions (~700ms) or mid-transition shadows look like
+    white glows in dark theme.
+
+14. **`Buffer` is not available in the app's DOM tsconfig** — use `atob`, it exists in
+    browsers and Node ≥16, so one code path serves the UI and the CLI.
+
+15. **Never gate UI on `PermissionSystem.currentUser` when it is set in an effect** —
+    the first render answers "denied" and nothing re-renders, so the strip stayed
+    "merge blocked" while acting as owner. Derive capability from role + repo policy.

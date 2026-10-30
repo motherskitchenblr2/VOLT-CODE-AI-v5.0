@@ -1,4 +1,4 @@
-# VOLT Auto-Fix Prompt — dual-theme audit 2026-10-30T09:33 UTC
+# VOLT Auto-Fix Prompt — dual-theme audit 2026-10-30T16:19 UTC
 Branch: `fix/auto`
 
 ## Task for any AI/agent
