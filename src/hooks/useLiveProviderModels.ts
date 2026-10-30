@@ -64,18 +64,24 @@ export function useLiveProviderModels(keys: ProviderKeys, username?: string) {
     if (username) {
       query.append("username", username);
     }
-    for (const { key } of PROVIDER_KEY_MAP) {
+    // SECURITY: provider keys travel in a request header, never in the URL —
+    // query strings are recorded in access logs and proxies.
+    const keyMap: Record<string, string> = {};
+    for (const { provider, key } of PROVIDER_KEY_MAP) {
       const value = currentKeys[key];
-      if (value) {
-        query.append("key", value);
-      }
+      if (value) keyMap[provider] = value;
     }
+    const headers: Record<string, string> =
+      Object.keys(keyMap).length > 0
+        ? { "x-volt-provider-keys": JSON.stringify(keyMap) }
+        : {};
 
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`/api/models?${query.toString()}`, {
+        headers,
         signal: controller.signal,
       });
       if (!response.ok) {
