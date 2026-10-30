@@ -33,8 +33,8 @@ graph TD
         B["Meeting Panel · PR Review · Vault Hub"]:::zTop
     end
     subgraph CORE [⚙️ Orchestration Core]
-        C1["MultiAgentOrchestrator (Triage → Worker DAG → Self-correction)"):::zMid
-        C2["ConsensusEngine (Senior Security / QA / UI / Architect)"):::zMid
+        C1["MultiAgentOrchestrator (Triage → Worker DAG → Self-correction)"]:::zMid
+        C2["ConsensusEngine (Senior Security / QA / UI / Architect)"]:::zMid
         C3["SentinelWatcher · RepairPlanner · RecoveryCenter"]:::zMid
     end
     subgraph GATE [🚀 Serverless Gateway]
