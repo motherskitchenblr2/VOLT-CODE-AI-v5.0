@@ -66,7 +66,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
         </span>
       </div>
 
-      <div className="rounded-2xl border vol-ring vol-surface p-2">
+      <div className="rounded-2xl border vol-ring vol-panel p-2">
         <svg
           viewBox="0 0 500 320"
           className="w-full h-auto"
@@ -106,7 +106,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
             cx={CX}
             cy={CY}
             r="34"
-            fill="#0a0a0a"
+            fill="var(--node-fill)"
             stroke="#FF5F00"
             strokeWidth="2"
           />
@@ -124,7 +124,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
             x={CX}
             y={CY + 12}
             textAnchor="middle"
-            fill="#fff"
+            fill="var(--node-text)"
             fontSize="12"
             fontWeight="bold"
           >
@@ -141,7 +141,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
                   cx={p.x}
                   cy={p.y}
                   r="26"
-                  fill={active ? `rgba(255,95,0,${0.1 + (n.score / 100) * 0.35})` : "#0a0a0a"}
+                  fill={active ? `rgba(255,95,0,${0.1 + (n.score / 100) * 0.35})` : "var(--node-fill)"}
                   stroke={
                     active && n.score >= 70 ? "#22c55e" : active ? "#f59e0b" : "#3a3a3a"
                   }
@@ -153,7 +153,7 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
                   x={p.x}
                   y={p.y + 4}
                   textAnchor="middle"
-                  fill="#fff"
+                  fill="var(--node-text)"
                   fontSize="10"
                   fontWeight="bold"
                 >

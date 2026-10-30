@@ -152,7 +152,7 @@ export const AudioInterface: React.FC<AudioInterfaceProps> = ({
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b vol-line vol-veil backdrop-blur-lg">
+      <div className="px-4 py-3 border-b vol-line vol-panel backdrop-blur-lg">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
             <Mic className="w-4 h-4 vol-t1" />

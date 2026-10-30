@@ -25,7 +25,7 @@ export const ThemeToggle: React.FC<{ compact?: boolean }> = ({ compact }) => {
       onClick={toggle}
       aria-label={isDay ? "Switch to dark theme" : "Switch to day theme"}
       className={`flex items-center justify-center rounded-xl border vol-ring transition-all cursor-pointer ${
-        compact ? "w-8 h-8" : "h-9 w-9"
+        compact ? "h-10 w-10" : "h-10 w-10"
       }`}
     >
       {isDay ? <Moon className="w-4 h-4 vol-accent" /> : <Sun className="w-4 h-4 vol-accent" />}

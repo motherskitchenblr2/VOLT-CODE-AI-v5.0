@@ -122,7 +122,7 @@ export function SplitEditorLayout({
               <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4">
                 Live Preview
               </div>
-              <div className="vol-veil border vol-line rounded-lg p-4 text-sm vol-t1 font-mono">
+              <div className="vol-panel border vol-line rounded-lg p-4 text-sm vol-t1 font-mono">
                 <pre>{code.slice(0, 500)}</pre>
                 {code.length > 500 && (
                   <div className="vol-t2 text-xs mt-2">
@@ -139,7 +139,7 @@ export function SplitEditorLayout({
                 Code Comparison
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div className="border vol-line rounded-lg p-3 vol-veil">
+                <div className="border vol-line rounded-lg p-3 vol-panel">
                   <div className="text-[10px] vol-t2 mb-2">Original</div>
                   <pre className="text-[11px] vol-t2 max-h-48 overflow-auto">
                     {code.slice(0, 250)}
@@ -164,7 +164,7 @@ export function SplitEditorLayout({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add notes, TODOs, or observations..."
-                className="w-full h-64 vol-veil border vol-line rounded-lg p-3 text-sm vol-t1 focus:vol-ring-hi outline-none resize-none"
+                className="w-full h-64 vol-panel border vol-line rounded-lg p-3 text-sm vol-t1 focus:vol-ring-hi outline-none resize-none"
               />
             </div>
           )}

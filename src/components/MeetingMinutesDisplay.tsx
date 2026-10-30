@@ -106,7 +106,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
 
       {/* Agenda */}
       {meeting.agenda.length > 0 && (
-        <div className="border vol-line rounded-xl p-6 vol-veil">
+        <div className="border vol-line rounded-xl p-6 vol-panel">
           <h2 className="text-lg font-bold vol-accent mb-4 uppercase tracking-wider">
             Agenda
           </h2>
@@ -131,7 +131,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
           placeholder="Search decisions..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 vol-veil border vol-line rounded-lg vol-t1 text-sm focus:vol-ring-hi outline-none"
+          className="w-full pl-10 pr-4 py-2 vol-panel border vol-line rounded-lg vol-t1 text-sm focus:vol-ring-hi outline-none"
         />
       </div>
 
@@ -147,7 +147,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05 }}
-            className="border vol-ring rounded-xl overflow-hidden vol-veil hover:vol-veil transition-colors"
+            className="border vol-ring rounded-xl overflow-hidden vol-panel hover:vol-panel transition-colors"
           >
             <button
               onClick={() =>
@@ -204,7 +204,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
                             {getVotePercentage(decision, vote)}%
                           </span>
                         </div>
-                        <div className="h-2 vol-veil rounded-full overflow-hidden border vol-line">
+                        <div className="h-2 vol-panel rounded-full overflow-hidden border vol-line">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{
@@ -268,7 +268,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
               className={`p-4 rounded-lg border ${
                 item.status === "completed"
                   ? "bg-green-500/5 border-green-500/20"
-                  : "vol-veil vol-ring"
+                  : "vol-panel vol-ring"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -309,7 +309,7 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
 
       {/* Notes */}
       {meeting.notes && (
-        <div className="border vol-line rounded-xl p-6 vol-veil">
+        <div className="border vol-line rounded-xl p-6 vol-panel">
           <h2 className="text-lg font-bold vol-accent mb-4 uppercase tracking-wider">
             Additional Notes
           </h2>

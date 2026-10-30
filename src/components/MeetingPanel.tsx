@@ -324,7 +324,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
                 <select
                   value={selectedAgent || ""}
                   onChange={(e) => setSelectedAgent(e.target.value)}
-                  className="w-full vol-veil border vol-line rounded-lg px-3 py-2 vol-t1 text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full vol-panel border vol-line rounded-lg px-3 py-2 vol-t1 text-sm focus:outline-none focus:border-blue-500"
                 >
                   {Array.from(agentsMap.values()).map((agent) => (
                     <option key={agent.id} value={agent.id}>

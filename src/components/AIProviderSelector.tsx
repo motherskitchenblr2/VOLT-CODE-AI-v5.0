@@ -190,7 +190,7 @@ export function AIProviderSelector({
       <div className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between p-3 vol-veil border vol-ring rounded-xl text-left hover:vol-ring-hi transition-all"
+          className="w-full flex items-center justify-between p-3 vol-panel border vol-ring rounded-xl text-left hover:vol-ring-hi transition-all"
         >
           <div>
             <div className="text-xs vol-t2 uppercase font-bold tracking-wide">
@@ -262,7 +262,7 @@ export function AIProviderSelector({
                 className={`p-3 rounded-lg text-left text-xs transition-all border ${
                   selectedModel?.id === model.id
                     ? "vol-acc-wash vol-ring-strong vol-accent"
-                    : "vol-veil vol-line vol-t1 hover:vol-line"
+                    : "vol-panel vol-line vol-t1 hover:vol-line"
                 }`}
               >
                 <div className="font-semibold">{model.name}</div>
@@ -285,7 +285,7 @@ export function AIProviderSelector({
 
       {/* Cost Calculator */}
       {selectedModel && (
-        <div className="p-3 vol-veil border border-green-500/20 rounded-lg">
+        <div className="p-3 vol-panel border border-green-500/20 rounded-lg">
           <div className="text-xs font-bold text-green-400 mb-2">
             Cost Estimate
           </div>

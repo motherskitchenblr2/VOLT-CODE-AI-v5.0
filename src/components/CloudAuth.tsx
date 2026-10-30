@@ -171,7 +171,7 @@ export const CloudAuth: React.FC = () => {
     return (
       <div
         key={provider}
-        className="border vol-line vol-veil rounded-2xl p-5 space-y-4"
+        className="border vol-line vol-panel rounded-2xl p-5 space-y-4"
       >
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export const CloudAuth: React.FC = () => {
     if (!st?.connected) return null;
 
     return (
-      <div className="border vol-ring vol-veil rounded-2xl p-5 space-y-4">
+      <div className="border vol-ring vol-panel rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
             {providerMeta[activeProvider].label} Cloud Access

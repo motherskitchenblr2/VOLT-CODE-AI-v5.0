@@ -117,7 +117,7 @@ export function TODOListWidget({
         </div>
 
         {/* Progress Bar */}
-        <div className="h-1.5 vol-veil rounded-full overflow-hidden">
+        <div className="h-1.5 vol-panel rounded-full overflow-hidden">
           <motion.div
             animate={{
               width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%`,
@@ -141,7 +141,7 @@ export function TODOListWidget({
           ].map((stat) => (
             <div
               key={stat.label}
-              className="p-2 vol-veil border vol-line rounded-lg text-center"
+              className="p-2 vol-panel border vol-line rounded-lg text-center"
             >
               <div className={`text-lg font-bold ${stat.color}`}>
                 {stat.value}
@@ -155,7 +155,7 @@ export function TODOListWidget({
       </div>
 
       {/* Add New Todo */}
-      <div className="space-y-3 p-4 vol-veil border vol-ring rounded-xl">
+      <div className="space-y-3 p-4 vol-panel border vol-ring rounded-xl">
         <div className="flex gap-2">
           <input
             type="text"
@@ -223,7 +223,7 @@ export function TODOListWidget({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ delay: idx * 0.05 }}
-                className="border vol-line rounded-lg p-3 vol-veil hover:vol-veil transition-all cursor-pointer group"
+                className="border vol-line rounded-lg p-3 vol-panel hover:vol-panel transition-all cursor-pointer group"
                 onClick={() =>
                   setExpandedId(expandedId === todo.id ? null : todo.id)
                 }

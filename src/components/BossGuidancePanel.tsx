@@ -192,7 +192,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
             <p className="text-xs font-bold mb-2">
               {language === "en" ? "Risk Level" : "जोखिम स्तर"}
             </p>
-            <div className="w-full vol-veil rounded-full h-2 overflow-hidden">
+            <div className="w-full vol-panel rounded-full h-2 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{
@@ -226,7 +226,7 @@ export const BossGuidancePanel: React.FC<BossGuidancePanelProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="p-4 border-t vol-line vol-veil grid grid-cols-2 gap-3">
+        <div className="p-4 border-t vol-line vol-panel grid grid-cols-2 gap-3">
           <button
             onClick={() => {
               onAccept?.(guidance.id);

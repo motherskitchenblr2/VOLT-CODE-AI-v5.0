@@ -618,7 +618,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                     {p.models.map((m) => (
                       <div
                         key={m.id}
-                        className="p-2.5 vol-veil border vol-line rounded-xl text-xs space-y-1.5"
+                        className="p-2.5 vol-panel border vol-line rounded-xl text-xs space-y-1.5"
                       >
                         <div className="flex justify-between font-bold vol-t1 text-[11px]">
                           <span>{m.name}</span>
@@ -694,7 +694,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                   ([comp, count]) => (
                     <div
                       key={comp}
-                      className="flex justify-between items-center text-xs p-2 vol-veil border vol-line rounded-xl"
+                      className="flex justify-between items-center text-xs p-2 vol-panel border vol-line rounded-xl"
                     >
                       <span className="font-semibold vol-t1">
                         {comp} Component
@@ -753,7 +753,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
                 {optimizerReport.unusedImports.map((imp, idx) => (
                   <div
                     key={idx}
-                    className="p-3 vol-veil border vol-line rounded-xl text-xs vol-t2 flex items-start gap-2"
+                    className="p-3 vol-panel border vol-line rounded-xl text-xs vol-t2 flex items-start gap-2"
                   >
                     <Eye className="w-4 h-4 shrink-0 mt-0.5 vol-t2" />
                     <span>
@@ -813,7 +813,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </button>
           </div>
 
-          <div className="h-[350px] overflow-y-auto vol-veil rounded-xl p-4 font-mono text-[11px] leading-relaxed space-y-1.5 border vol-line select-text">
+          <div className="h-[350px] overflow-y-auto vol-panel rounded-xl p-4 font-mono text-[11px] leading-relaxed space-y-1.5 border vol-line select-text">
             {auditLogs.map((log, index) => (
               <div
                 key={index}
@@ -851,7 +851,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 text-xs font-mono">
             {/* Thread and Sentinel Control */}
-            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-veil">
+            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-panel">
               <div className="font-bold vol-t1 uppercase border-b vol-line pb-2">
                 Agent Workforce Control
               </div>
@@ -927,7 +927,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Consensus weights configuration */}
-            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-veil">
+            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-panel">
               <div className="flex justify-between items-center border-b vol-line pb-2">
                 <span className="font-bold vol-t1 uppercase">
                   Consensus Matrix Weights
@@ -990,7 +990,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Recovery options console */}
-            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-veil xl:col-span-2">
+            <div className="space-y-4 border border-red-500/20 p-4 rounded-xl vol-panel xl:col-span-2">
               <div className="font-bold vol-t1 uppercase border-b vol-line pb-2">
                 Recovery Center Operations Console
               </div>
@@ -1024,7 +1024,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Rollback Checkpoint Browser */}
-            <div className="p-4 vol-veil border border-red-500/20 rounded-xl space-y-4 xl:col-span-2">
+            <div className="p-4 vol-panel border border-red-500/20 rounded-xl space-y-4 xl:col-span-2">
               <div className="font-bold vol-t1 uppercase border-b vol-line pb-2">
                 Checkpoint Rollback Browser
               </div>
@@ -1058,7 +1058,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
               </div>
 
               {/* Historical Checkpoint List Table */}
-              <div className="max-h-40 overflow-y-auto vol-veil border vol-line rounded-xl">
+              <div className="max-h-40 overflow-y-auto vol-panel border vol-line rounded-xl">
                 {checkpoints.length === 0 ? (
                   <div className="text-center py-6 vol-t2 text-[10px]">
                     No historical checkpoints registered.
@@ -1119,7 +1119,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </div>
 
             {/* Secret Credentials Passcode Reset */}
-            <div className="p-4 vol-veil border border-red-500/20 rounded-xl space-y-3 xl:col-span-2">
+            <div className="p-4 vol-panel border border-red-500/20 rounded-xl space-y-3 xl:col-span-2">
               <div className="font-bold vol-t1 uppercase flex items-center gap-2">
                 <Lock className="w-4 h-4 text-red-500" />
                 Change Admin Secret Access Key
@@ -1162,7 +1162,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
             </p>
 
             <div className="flex gap-4 items-center flex-wrap pt-2">
-              <div className="flex items-center gap-2 vol-veil border vol-line px-4 py-2.5 rounded-xl">
+              <div className="flex items-center gap-2 vol-panel border vol-line px-4 py-2.5 rounded-xl">
                 <span className="text-[10px] uppercase font-bold vol-t2">
                   TARGET:
                 </span>

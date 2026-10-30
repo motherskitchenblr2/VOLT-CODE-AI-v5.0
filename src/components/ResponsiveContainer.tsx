@@ -102,7 +102,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               className="w-5 h-5 vol-accent mr-0 cursor-pointer"
               onClick={() => setNavOpen(true)}
             />
-            <span className="font-black tracking-widest vol-t1 text-sm min-w-0 max-w-[120px] sm:max-w-none">
+            <span className="font-black tracking-widest vol-t1 text-sm min-w-0 max-w-[45%] sm:max-w-none truncate">
               {title.toUpperCase()}
             </span>
           </div>
@@ -111,14 +111,14 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             <button
               onClick={() => setSheet(sheet === "diagnostics" ? "none" : "diagnostics")}
               aria-label="Open diagnostics"
-              className="cursor-pointer"
+              className="cursor-pointer w-10 h-10 flex items-center justify-center rounded-xl hover:vol-wash"
             >
               <Activity className="w-5 h-5" />
             </button>
             <button
               onClick={() => setSheet(sheet === "terminal" ? "none" : "terminal")}
               aria-label="Open terminal"
-              className="cursor-pointer"
+              className="cursor-pointer w-10 h-10 flex items-center justify-center rounded-xl hover:vol-wash"
             >
               <Terminal className="w-5 h-5" />
             </button>

@@ -138,7 +138,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
   return (
     <div className="w-full h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 rounded-3xl border vol-line overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-6 py-4 border-b vol-line vol-veil backdrop-blur-lg">
+      <div className="px-6 py-4 border-b vol-line vol-panel backdrop-blur-lg">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-lg bg-gradient-to-br from-orange-500 to-red-500">
@@ -303,7 +303,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                       className="mt-4 pt-4 border-t vol-line space-y-3"
                     >
                       {/* Description */}
-                      <div className="vol-veil rounded-lg p-3">
+                      <div className="vol-panel rounded-lg p-3">
                         <p className="text-xs font-semibold vol-t1 mb-2">
                           {language === "en" ? "Description" : "विवरण"}
                         </p>

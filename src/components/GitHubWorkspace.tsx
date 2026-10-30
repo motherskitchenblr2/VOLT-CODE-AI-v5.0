@@ -56,7 +56,7 @@ export const GitHubWorkspace: React.FC<GitHubWorkspaceProps> = ({
         </div>
 
         {/* Repository health score telemetry */}
-        <div className="flex items-center gap-2 vol-veil border vol-ring px-3 py-1 rounded-xl">
+        <div className="flex items-center gap-2 vol-panel border vol-ring px-3 py-1 rounded-xl">
           <span className="text-[10px] vol-t2 uppercase font-black">
             REPO HEALTH:
           </span>
@@ -108,7 +108,7 @@ export const GitHubWorkspace: React.FC<GitHubWorkspaceProps> = ({
 
         {activeSubTab === "branches" && (
           <div className="space-y-3 p-2 text-xs font-mono vol-t2">
-            <div className="p-3 vol-veil border vol-line rounded-xl flex justify-between items-center">
+            <div className="p-3 vol-panel border vol-line rounded-xl flex justify-between items-center">
               <div>
                 <div className="font-bold vol-t1 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>

@@ -93,7 +93,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b vol-line vol-veil backdrop-blur-lg flex items-center justify-between">
+      <div className="px-4 py-3 border-b vol-line vol-panel backdrop-blur-lg flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500">
             <CheckSquare className="w-4 h-4 vol-t1" />
@@ -231,7 +231,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
                 {task.gitBranch && (
                   <div className="flex items-center gap-2 text-xs">
                     <GitBranch className="w-3 h-3 vol-t2" />
-                    <code className="font-mono vol-t1 vol-veil px-2 py-0.5 rounded truncate">
+                    <code className="font-mono vol-t1 vol-panel px-2 py-0.5 rounded truncate">
                       {task.gitBranch}
                     </code>
                   </div>
@@ -254,11 +254,11 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
 
                 {/* Execution Changes Preview */}
                 {task.executionChanges && (
-                  <div className="mt-2 p-2 rounded-lg vol-veil border vol-line">
+                  <div className="mt-2 p-2 rounded-lg vol-panel border vol-line">
                     <p className="text-xs font-semibold vol-t1 mb-1">
                       {language === "en" ? "Changes:" : "परिवर्तन:"}
                     </p>
-                    <pre className="text-xs vol-t2 overflow-x-auto whitespace-pre-wrap break-words max-h-24 vol-veil p-2 rounded">
+                    <pre className="text-xs vol-t2 overflow-x-auto whitespace-pre-wrap break-words max-h-24 vol-panel p-2 rounded">
                       {task.executionChanges.substring(0, 200)}...
                     </pre>
                   </div>
@@ -298,7 +298,7 @@ export const ExecutionPanel: React.FC<ExecutionPanelProps> = ({
 
       {/* Summary Footer */}
       {tasks.length > 0 && (
-        <div className="px-4 py-3 border-t vol-line vol-veil backdrop-blur-lg grid grid-cols-2 gap-2 text-xs">
+        <div className="px-4 py-3 border-t vol-line vol-panel backdrop-blur-lg grid grid-cols-2 gap-2 text-xs">
           <div className="flex items-center justify-center gap-1">
             <span className="vol-t2">
               {language === "en" ? "Completed:" : "पूरा:"}

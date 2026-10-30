@@ -57,7 +57,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
               initial={{ opacity: 0, y: 16, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              className="flex items-center gap-2.5 px-4 py-3 rounded-xl vol-veil border vol-ring shadow-[0_0_20px_rgba(255,95,0,0.2)] pointer-events-auto max-w-sm"
+              className="flex items-center gap-2.5 px-4 py-3 rounded-xl vol-panel border vol-ring shadow-[0_0_20px_rgba(255,95,0,0.2)] pointer-events-auto max-w-sm"
               style={{ background: "var(--toast-bg)" }}
             >
               {ICONS[t.kind]}

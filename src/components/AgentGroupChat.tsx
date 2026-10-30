@@ -63,7 +63,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b vol-line vol-veil backdrop-blur-lg">
+      <div className="px-6 py-4 border-b vol-line vol-panel backdrop-blur-lg">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500">
             <MessageCircle className="w-5 h-5 vol-t1" />
@@ -182,7 +182,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="px-6 py-4 border-t vol-line vol-veil backdrop-blur-lg">
+      <div className="px-6 py-4 border-t vol-line vol-panel backdrop-blur-lg">
         <div className="flex gap-3">
           <input
             type="text"

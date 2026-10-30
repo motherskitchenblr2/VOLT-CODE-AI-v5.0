@@ -60,6 +60,9 @@ body {
   section [class*="grid-cols-"] {
     grid-template-columns: minmax(0, 1fr) !important; /* stat panels stack instead of pushing */
   }
+  section button {
+    min-height: 40px; /* ponytail: verified against overflow audit; 44px broke dense rows */
+  }
 }
 #root {
   overflow-x: hidden;
@@ -320,6 +323,7 @@ a {
   --bg: #e6ebf2;
   --s-elev: #edf1f7;
   --s-well: #e0e6ee;
+  --panel: #e6ebf2;
   --veil: rgba(15, 23, 42, 0.35);
   --wash: rgba(15, 23, 42, 0.05);
   --acc: #ff5f00;
@@ -331,6 +335,8 @@ a {
   --line: rgba(15, 23, 42, 0.1);
   --t1: #1f2937;
   --t2: #505c6e;
+  --node-fill: #dfe5ee;
+  --node-text: #1f2937;
   --neo-out: 8px 8px 18px rgba(174, 181, 196, 0.7), -8px -8px 18px #ffffff;
   --neo-in: inset 5px 5px 11px rgba(174, 181, 196, 0.6), inset -5px -5px 11px #ffffff;
 }
@@ -339,6 +345,7 @@ html[data-theme="dark"] {
   --bg: #0a0a0b;
   --s-elev: #161616;
   --s-well: #070707;
+  --panel: rgba(18, 18, 18, 0.55);
   --veil: rgba(0, 0, 0, 0.55);
   --wash: rgba(255, 255, 255, 0.06);
   --acc: #ff5f00;
@@ -350,6 +357,8 @@ html[data-theme="dark"] {
   --line: rgba(255, 255, 255, 0.08);
   --t1: #ffffff;
   --t2: #9aa3b1;
+  --node-fill: #0a0a0a;
+  --node-text: #ffffff;
   --neo-out: none;
   --neo-in: none;
 }
@@ -440,4 +449,57 @@ body {
 }
 .focus\:vol-ring-hi:focus {
   border-color: var(--ring-hi);
+}
+
+/* ---- Neumorphic depth layer (day theme) — real embossed UI, not flat ---- */
+.vol-panel {
+  background: var(--panel);
+}
+html[data-theme="day"] .vol-panel,
+html[data-theme="day"] .vol-elev {
+  background: var(--panel);
+  box-shadow: var(--neo-out);
+}
+html[data-theme="day"] .vol-panel:active,
+html[data-theme="day"] .vol-elev:active {
+  box-shadow: var(--neo-in);
+}
+html[data-theme="day"] .vol-well {
+  background: var(--s-well);
+  box-shadow: var(--neo-in);
+}
+/* inputs deboss into the canvas */
+html[data-theme="day"] input,
+html[data-theme="day"] select,
+html[data-theme="day"] textarea {
+  background: var(--s-well);
+  box-shadow: var(--neo-in);
+}
+/* primary actions raise + press in */
+html[data-theme="day"] button.vol-acc-bg,
+html[data-theme="day"] .vol-acc-bg {
+  box-shadow: 5px 5px 14px rgba(174, 181, 196, 0.8), -4px -4px 10px #ffffff;
+}
+html[data-theme="day"] button.vol-acc-bg:active {
+  box-shadow: var(--neo-in);
+  transform: scale(0.98);
+}
+/* chrome: header/bottom bar/tiles get a soft float */
+html[data-theme="day"] header,
+html[data-theme="day"] nav,
+html[data-theme="day"] footer {
+  box-shadow: 0 4px 18px rgba(174, 181, 196, 0.55);
+}
+
+/* ---- Phone hardening: nothing may push past the viewport ---- */
+@media (max-width: 1023px) {
+  section * {
+    min-width: 0;
+  }
+  section [class*="whitespace-nowrap"] {
+    white-space: normal;
+  }
+  section .flex:not([class*="flex-col"]):not([class*="flex-row-reverse"]) {
+    flex-wrap: wrap;
+  }
 }

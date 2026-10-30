@@ -146,7 +146,7 @@ export function ResponsiveMobileLayout({
                 value={code}
                 onChange={(e) => onCodeChange(e.target.value)}
                 spellCheck={false}
-                className="w-full h-48 vol-veil border vol-line rounded-lg p-3 font-mono text-xs vol-t1 caret-[#FF5F00] focus:vol-ring-hi outline-none resize-none"
+                className="w-full h-48 vol-panel border vol-line rounded-lg p-3 font-mono text-xs vol-t1 caret-[#FF5F00] focus:vol-ring-hi outline-none resize-none"
                 style={{
                   fontFamily:
                     "ui-monospace, Menlo, Monaco, Consolas, monospace",
@@ -155,7 +155,7 @@ export function ResponsiveMobileLayout({
             )}
 
             {activeTab === "preview" && (
-              <div className="vol-veil border vol-line rounded-lg p-3 text-xs vol-t1 max-h-48 overflow-auto">
+              <div className="vol-panel border vol-line rounded-lg p-3 text-xs vol-t1 max-h-48 overflow-auto">
                 <pre className="font-mono whitespace-pre-wrap break-words">
                   {code.slice(0, 300)}
                 </pre>
@@ -167,7 +167,7 @@ export function ResponsiveMobileLayout({
                 <div className="text-[10px] vol-t2 font-bold">
                   Original
                 </div>
-                <div className="vol-veil border vol-line rounded-lg p-2 font-mono text-[10px] vol-t2 max-h-20 overflow-auto">
+                <div className="vol-panel border vol-line rounded-lg p-2 font-mono text-[10px] vol-t2 max-h-20 overflow-auto">
                   {code.slice(0, 150)}...
                 </div>
               </div>
@@ -178,7 +178,7 @@ export function ResponsiveMobileLayout({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Quick notes..."
-                className="w-full h-32 vol-veil border vol-line rounded-lg p-3 text-xs vol-t1 focus:vol-ring-hi outline-none resize-none"
+                className="w-full h-32 vol-panel border vol-line rounded-lg p-3 text-xs vol-t1 focus:vol-ring-hi outline-none resize-none"
               />
             )}
           </div>
@@ -203,7 +203,7 @@ export function ResponsiveMobileLayout({
           ].map((stat) => (
             <div
               key={stat.label}
-              className="p-3 vol-veil border vol-line rounded-lg text-center"
+              className="p-3 vol-panel border vol-line rounded-lg text-center"
             >
               <div className={`text-lg font-bold ${stat.color}`}>
                 {stat.value}
@@ -230,7 +230,7 @@ export function ResponsiveMobileLayout({
               <input
                 type="text"
                 placeholder="New task..."
-                className="flex-1 vol-veil border vol-line px-3 py-2 rounded-lg text-xs vol-t1 focus:vol-ring-hi outline-none"
+                className="flex-1 vol-panel border vol-line px-3 py-2 rounded-lg text-xs vol-t1 focus:vol-ring-hi outline-none"
               />
               <button className="px-3 py-2 vol-acc-bg text-black text-xs font-bold rounded-lg">
                 Add
@@ -242,7 +242,7 @@ export function ResponsiveMobileLayout({
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 p-2 vol-veil rounded-lg"
+                className="flex items-center gap-2 p-2 vol-panel rounded-lg"
               >
                 <CheckCircle2 className="w-4 h-4 text-green-400" />
                 <div className="flex-1 text-xs vol-t1">Task {i}</div>

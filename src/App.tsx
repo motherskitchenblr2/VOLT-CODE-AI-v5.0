@@ -1787,7 +1787,7 @@ const pushToast = useToast();
   );
 
   const renderModelSelect = () => (
-    <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-veil">
+    <div className="flex flex-wrap items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-panel">
       <div className="vol-accent-soft text-xs tracking-wider">ENGINE</div>
       <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
@@ -1798,7 +1798,7 @@ const pushToast = useToast();
           setSelectedModel(model);
           addLog(`Selected execution model: ${model.name}`, "info");
         }}
-        className="bg-transparent vol-t1 outline-none min-w-[180px] font-semibold text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none min-w-0 w-full sm:w-auto sm:min-w-[180px] font-semibold text-xs cursor-pointer"
       >
         {FREE_MODELS.map((model) => (
           <option
@@ -1819,7 +1819,7 @@ const pushToast = useToast();
     onChange: (value: string) => void,
     options: string[],
   ) => (
-    <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-veil">
+    <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-panel">
       <div className="vol-accent-soft text-xs tracking-wider">{label}</div>
       <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
@@ -2328,7 +2328,7 @@ const pushToast = useToast();
             <h1 className="text-3xl font-extrabold">SENTINEL OPERATIONS</h1>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border vol-ring vol-veil text-sm">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border vol-ring vol-panel text-sm">
               <span
                 className={`w-2 h-2 rounded-full ${enableSentinel ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
               ></span>
@@ -2336,7 +2336,7 @@ const pushToast = useToast();
                 MONITOR: {enableSentinel ? "ACTIVE" : "STANDBY"}
               </span>
             </div>
-            <div className="px-4 py-2 rounded-xl border vol-ring vol-veil text-sm vol-accent">
+            <div className="px-4 py-2 rounded-xl border vol-ring vol-panel text-sm vol-accent">
               Last Watch-Scan: {lastSentinelScan}
             </div>
           </div>
@@ -2380,7 +2380,7 @@ const pushToast = useToast();
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 border vol-ring vol-veil p-6 rounded-3xl space-y-5">
+          <div className="lg:col-span-2 border vol-ring vol-panel p-6 rounded-3xl space-y-5">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Shield className="w-5 h-5 vol-accent" />
               Watchdog Diagnostic Heatmap
@@ -2464,7 +2464,7 @@ const pushToast = useToast();
             </div>
           </div>
 
-          <div className="border vol-ring vol-veil p-6 rounded-3xl space-y-4">
+          <div className="border vol-ring vol-panel p-6 rounded-3xl space-y-4">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Sparkles className="w-5 h-5 vol-accent" />
               Passive Scan Feed
@@ -2722,7 +2722,7 @@ const pushToast = useToast();
                 <div
                   key={idx}
                   onClick={() => loadSession(session)}
-                  className="p-5 border vol-ring hover:vol-ring-hi rounded-2xl cursor-pointer group vol-veil transition-all"
+                  className="p-5 border vol-ring hover:vol-ring-hi rounded-2xl cursor-pointer group vol-panel transition-all"
                 >
                   <div className="flex justify-between mb-4">
                     <div className="font-mono text-sm vol-accent">
@@ -2760,7 +2760,7 @@ const pushToast = useToast();
         <div className="p-8 max-w-2xl overflow-y-auto h-full pb-20">
           <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-1">Workspace Backup</div>
               <p className="text-[10px] vol-t2 mb-4">
                 Export or restore all sessions, todos, repo links and keys as a
@@ -2791,7 +2791,7 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-4">Default Model</div>
               <select
                 value={selectedModel.id}
@@ -2827,7 +2827,7 @@ const pushToast = useToast();
               </select>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil space-y-4">
+            <div className="border vol-ring rounded-xl p-6 vol-panel space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-lg font-bold">Provider API Keys</div>
                 <div className="flex items-center gap-2">
@@ -2927,7 +2927,7 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-bold">
                   Live Provider Availability
@@ -2961,7 +2961,7 @@ const pushToast = useToast();
                   {liveProviderAvailability.map((provider) => (
                     <div
                       key={provider.provider}
-                      className="p-3 vol-veil border vol-line rounded-xl flex items-center justify-between"
+                      className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -2993,7 +2993,7 @@ const pushToast = useToast();
               )}
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-4">Agent Mode Default</div>
               <select
                 value={agentMode}
@@ -3008,7 +3008,7 @@ const pushToast = useToast();
               </select>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-2">
                 Sentinel Debounce Delay
               </div>
@@ -3027,7 +3027,7 @@ const pushToast = useToast();
               />
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">Auto-Apply Fixes</div>
@@ -3050,7 +3050,7 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">
@@ -3075,7 +3075,7 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-lg font-bold">
@@ -3100,7 +3100,7 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="border vol-ring rounded-xl p-6 vol-veil">
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-2">Theme</div>
               <div className="vol-accent-soft font-semibold">
                 Charcoal Black + Neon Orange (locked)
@@ -3192,7 +3192,7 @@ const pushToast = useToast();
 
             {/* Git config form & log */}
             <div className="xl:col-span-2 space-y-6">
-              <div className="border vol-ring vol-veil rounded-2xl p-6 space-y-4">
+              <div className="border vol-ring vol-panel rounded-2xl p-6 space-y-4">
                 <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
                   Repository Synchronization Settings
                 </h3>
@@ -3287,7 +3287,7 @@ const pushToast = useToast();
               )}
 
               {/* Issues list */}
-              <div className="border vol-ring vol-veil rounded-2xl p-6 space-y-4">
+              <div className="border vol-ring vol-panel rounded-2xl p-6 space-y-4">
                 <h3 className="font-bold text-sm vol-accent uppercase tracking-wider flex items-center gap-2">
                   <AlertCircle className="w-4 h-4" />
                   Active Repo Issues ({githubIssues.length})
@@ -3297,7 +3297,7 @@ const pushToast = useToast();
                     <div
                       key={issue.id}
                       onClick={() => handleLoadIssue(issue)}
-                      className="p-4 vol-veil border vol-line hover:vol-ring-hi hover:vol-acc-wash rounded-xl cursor-pointer transition-all text-xs space-y-2"
+                      className="p-4 vol-panel border vol-line hover:vol-ring-hi hover:vol-acc-wash rounded-xl cursor-pointer transition-all text-xs space-y-2"
                     >
                       <div className="flex justify-between items-start gap-2">
                         <span className="font-bold vol-t1 hover:vol-accent truncate">
@@ -3384,7 +3384,7 @@ const pushToast = useToast();
 
           <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
             {/* Chat column */}
-            <div className="flex-1 flex flex-col h-full vol-veil rounded-2xl border vol-ring overflow-hidden shadow-2xl relative">
+            <div className="flex-1 flex flex-col h-full vol-panel rounded-2xl border vol-ring overflow-hidden shadow-2xl relative">
               {/* Chat Feed */}
               <div className="flex-1 p-6 overflow-y-auto space-y-4">
                 {bossMessages.map((msg, idx) => (
@@ -3492,7 +3492,7 @@ const pushToast = useToast();
                   ].map((m) => (
                     <div
                       key={m.name}
-                      className={`p-3 vol-veil rounded-xl space-y-1.5 ${m.color}`}
+                      className={`p-3 vol-panel rounded-xl space-y-1.5 ${m.color}`}
                     >
                       <div className="text-xs font-extrabold vol-t1">
                         {m.name}
@@ -3560,7 +3560,7 @@ const pushToast = useToast();
             </div>
           </div>
 
-          <div className="w-full md:w-80 shrink-0 border-l vol-ring vol-veil overflow-y-auto">
+          <div className="w-full md:w-80 shrink-0 border-l vol-ring vol-panel overflow-y-auto">
             <TODOListWidget
               todos={todos}
               onAddTodo={(t) => setTodos((prev) => [...prev, t])}
@@ -3639,7 +3639,7 @@ const pushToast = useToast();
         <div className="border-b vol-ring p-6 shrink-0 vol-elev">
           <div className="mb-1 flex justify-between items-start">
             <div>
-              <div className="text-2xl font-bold">MULTI-LANGUAGE EDITOR</div>
+              <div className="text-xl sm:text-2xl font-bold">MULTI-LANGUAGE EDITOR</div>
               <div className="text-xs vol-accent-soft font-semibold tracking-wide">
                 AI Bug Finder, Agent Runner & Telemetrist
               </div>
@@ -3691,7 +3691,7 @@ const pushToast = useToast();
           </div>
 
           <div className="mt-4 flex flex-wrap gap-4 items-center">
-            <div className="px-4 py-2.5 rounded-xl border vol-ring-strong vol-veil inline-flex items-center gap-3 select-none">
+            <div className="px-4 py-2.5 rounded-xl border vol-ring-strong vol-panel inline-flex items-center gap-3 select-none">
               <Zap className="w-4 h-4 vol-accent animate-pulse" />
               <div className="flex flex-col">
                 <div className="vol-accent text-[9px] tracking-widest font-bold uppercase">
@@ -3707,11 +3707,11 @@ const pushToast = useToast();
               </div>
             </div>
 
-            <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-1.5 vol-veil select-none">
+            <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-1.5 vol-panel select-none">
               <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                 Operation Mode
               </div>
-              <div className="flex items-center gap-1.5 vol-veil rounded-lg p-0.5 border vol-line">
+              <div className="flex items-center gap-1.5 vol-panel rounded-lg p-0.5 border vol-line">
                 <button
                   onClick={() => {
                     setAgentMode("manual");
@@ -3745,7 +3745,7 @@ const pushToast = useToast();
             </div>
 
             {showTokenUsage && tokensUsed > 0 && (
-              <div className="p-3 rounded-xl border vol-ring vol-veil flex items-center gap-6">
+              <div className="p-3 rounded-xl border vol-ring vol-panel flex items-center gap-6">
                 <div>
                   <div className="vol-accent text-[10px] tracking-wider font-bold">
                     TOTAL CONSUMPTION
@@ -3835,7 +3835,7 @@ const pushToast = useToast();
           {/* Agent Chat HUD (v0 restore — shares VOLT HUB chat pipeline) */}
           <div className="hidden md:block absolute left-6 bottom-6 z-50 select-none">
             {showAgentChat ? (
-              <div className="w-96 flex flex-col rounded-xl vol-veil border vol-ring-strong shadow-[0_0_25px_rgba(255,95,0,0.25)] overflow-hidden">
+              <div className="w-96 flex flex-col rounded-xl vol-panel border vol-ring-strong shadow-[0_0_25px_rgba(255,95,0,0.25)] overflow-hidden">
                 <div className="flex items-center justify-between px-3 py-2 border-b vol-ring">
                   <span className="text-[10px] font-bold tracking-widest vol-accent flex items-center gap-2">
                     <Bot className="w-3.5 h-3.5" />
@@ -3892,7 +3892,7 @@ const pushToast = useToast();
             ) : (
               <button
                 onClick={() => setShowAgentChat(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-veil border vol-ring-strong vol-accent text-xs font-bold hover:vol-well cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-panel border vol-ring-strong vol-accent text-xs font-bold hover:vol-well cursor-pointer"
               >
                 <Bot className="w-4 h-4" />
                 AGENT CHAT
@@ -4112,7 +4112,7 @@ const pushToast = useToast();
                     {group.list.map((iss, idx) => (
                       <div
                         key={idx}
-                        className="p-2 vol-veil border vol-line rounded-lg text-[10px] vol-t1"
+                        className="p-2 vol-panel border vol-line rounded-lg text-[10px] vol-t1"
                       >
                         {iss.description}
                       </div>
@@ -4144,7 +4144,7 @@ const pushToast = useToast();
             ].map((agent) => (
               <div
                 key={agent.name}
-                className="flex justify-between items-center text-[10px] p-2 vol-veil border vol-line rounded-xl"
+                className="flex justify-between items-center text-[10px] p-2 vol-panel border vol-line rounded-xl"
               >
                 <div>
                   <div className="font-bold vol-t1">{agent.name}</div>
@@ -4194,7 +4194,7 @@ const pushToast = useToast();
                 />
               </div>
 
-              <div className="p-8 flex justify-between items-center vol-veil border-t vol-ring select-none">
+              <div className="p-8 flex justify-between items-center vol-panel border-t vol-ring select-none">
                 <button
                   onClick={() => copyToClipboard(fixedCode)}
                   className="px-6 py-3 rounded-xl border vol-ring-strong hover:vol-wash vol-accent font-bold text-xs flex items-center gap-2 cursor-pointer"
@@ -4573,7 +4573,7 @@ const pushToast = useToast();
             </div>
             <button
               onClick={finishOnboarding}
-              className="w-full py-2.5 rounded-xl vol-acc-bg text-black text-xs font-bold cursor-pointer"
+              className="w-full py-3.5 rounded-xl vol-acc-bg text-black text-xs font-bold cursor-pointer"
             >
               GET ME CODING
             </button>
