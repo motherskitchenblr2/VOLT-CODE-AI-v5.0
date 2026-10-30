@@ -3757,7 +3757,7 @@ const App: React.FC = () => {
             onChange={(e) => handleCodeChange(e.target.value)}
             spellCheck={false}
             autoCorrect="off"
-            className="w-full flex-1 resize-none bg-transparent p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
+            className="w-full flex-1 resize-none bg-transparent p-4 sm:p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
             style={{
               fontFamily:
                 "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
@@ -3771,7 +3771,7 @@ const App: React.FC = () => {
               <button
                 onClick={analyzeCode}
                 disabled={isAnalyzing || isSystemHalted}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl vol-well border vol-ring-strong vol-accent text-xs font-bold disabled:opacity-60 transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl vol-acc-bg text-black text-xs font-black tracking-wide disabled:opacity-60 transition-all cursor-pointer shadow-none"
               >
                 <Bug className="w-4 h-4" />
                 {isAnalyzing ? "ANALYZING..." : "RUN AI"}
@@ -3779,10 +3779,10 @@ const App: React.FC = () => {
 
               <button
                 onClick={() => setCurrentView("meeting")}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
               >
-                <Crown className="w-4 h-4" />
-                VOLT HUB
+                <Users className="w-4 h-4" />
+                AGENT CHAT
               </button>
             </div>
 

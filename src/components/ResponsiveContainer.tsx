@@ -171,7 +171,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             ))}
             <button
               onClick={() => setNavOpen(true)}
-              className="min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer vol-t2"
+              className="min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer vol-t2 transition-all hover:vol-wash"
             >
               <Menu className="w-5 h-5" />
               <span className="text-[9px] font-bold tracking-wider">MORE</span>

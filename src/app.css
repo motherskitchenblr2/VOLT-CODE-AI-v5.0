@@ -522,3 +522,45 @@ html[data-theme="day"] footer {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE NEOMORPHIC REBUILD LAYER (phones <768px)
+   Deeper emboss, breathing room, pill controls, raised bottom
+   bar with inset pressed active tab. Desktop untouched.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  section {
+    padding: 10px;
+  }
+  section .vol-panel,
+  section .vol-elev {
+    border-radius: 18px;
+    box-shadow: 10px 10px 22px rgba(174, 181, 196, 0.8), -8px -8px 18px #ffffff;
+  }
+  section .vol-well,
+  section input,
+  section select,
+  section textarea {
+    border-radius: 14px;
+  }
+  section .rounded-xl {
+    border-radius: 16px;
+  }
+  section .rounded-2xl {
+    border-radius: 20px;
+  }
+  section button {
+    border-radius: 14px;
+  }
+}
+@media (max-width: 767px) {
+  .vol-bottomnav {
+    background: var(--s-elev);
+    box-shadow: 0 -10px 24px rgba(174, 181, 196, 0.6), inset 0 1px 0 #ffffff;
+  }
+  .vol-bottomnav .neo-active {
+    background: var(--s-well);
+    box-shadow: var(--neo-in);
+    border-radius: 14px;
+  }
+}
