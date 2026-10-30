@@ -103,8 +103,24 @@ export function useLiveProviderModels(keys: ProviderKeys, username?: string) {
     const timer = setTimeout(() => {
       refresh();
     }, 300);
+    // Auto-refresh: every 30 minutes + on tab focus, so the catalog tracks
+    // provider changes without the user pressing Refresh.
+    const isTest = typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let onVisible: (() => void) | undefined;
+    if (!isTest) {
+      interval = setInterval(() => {
+        refresh();
+      }, 30 * 60 * 1000);
+      onVisible = () => {
+        if (!document.hidden) refresh();
+      };
+      document.addEventListener("visibilitychange", onVisible);
+    }
     return () => {
       clearTimeout(timer);
+      if (interval) clearInterval(interval);
+      if (onVisible) document.removeEventListener("visibilitychange", onVisible);
       if (abortRef.current) {
         abortRef.current.abort();
       }

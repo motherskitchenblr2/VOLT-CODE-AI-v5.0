@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { classifyTask, smartRoute } from "./lib/smartRouter";
 import {
   Play,
   History,
@@ -134,7 +135,8 @@ type AgentMode =
 export interface ModelConfig {
   id: string;
   name: string;
-  tag: "BALANCED" | "CODING" | "REASONING" | "FAST" | "LIVE";
+  tag: "BALANCED" | "CODING" | "REASONING" | "FAST" | "LIVE" | "PAID" | "FREE";
+  tier?: "FREE" | "PAID";
   ctx: string;
   color: string;
   provider: "Groq" | "OpenRouter" | "NVIDIA" | "HuggingFace";
@@ -484,6 +486,36 @@ const App: React.FC = () => {
     }));
   const modelOptions: ModelConfig[] =
     liveModelOptions.length > 0 ? liveModelOptions : FREE_MODELS;
+
+  // Full catalog (free + paid) grouped by provider for the single dropdown.
+  const liveModelsAll: ModelConfig[] = (liveProviderAvailability || [])
+    .flatMap((p) => p.models || [])
+    .map((m) => ({
+      id: m.id,
+      name: m.name,
+      tag: m.tier === "FREE" ? "FREE" : "PAID",
+      ctx: `${Math.round((m.context || 128000) / 1000)}K`,
+      color: "#F97316",
+      provider: m.provider,
+      tier: m.tier,
+    }));
+  const modelOptionsAll: ModelConfig[] =
+    liveModelsAll.length > 0
+      ? liveModelsAll
+      : FREE_MODELS.map((m) => ({ ...m, tier: "FREE" as const }));
+  const modelGroups: Array<[string, ModelConfig[]]> = [
+    ...new Set(modelOptionsAll.map((m) => m.provider)),
+  ].map((prov) => [prov, modelOptionsAll.filter((m) => m.provider === prov)]);
+  const selectedTier =
+    modelOptionsAll.find((m) => m.id === selectedModel.id)?.tier || "FREE";
+
+  useEffect(() => {
+    if (modelOptionsAll.length && !modelOptionsAll.some((m) => m.id === selectedModel.id)) {
+      const preferred = modelOptionsAll.find((m) => m.tier === "FREE");
+      setSelectedModel(preferred || modelOptionsAll[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modelOptionsAll]);
 
   // Secure vault: which secrets are stored encrypted in MongoDB
   const [vaultStored, setVaultStored] = useState(false);
@@ -1189,13 +1221,28 @@ const pushToast = useToast();
         `Sending fetch payload to OpenRouter Gateway for evaluation...`,
         "info",
       );
+      // Smart Router: understand the task, prefer free-tier models, pick the
+      // best provider+model from the live catalog (OpenRouter breadth first
+      // for code/reasoning, Groq for speed on chat). Falls back to the user's
+      // manual selection when no live catalog is available.
+      const taskKind = classifyTask(agentMode, activeSkill);
+      const route = smartRoute(taskKind, liveProviderAvailability || []);
+      const useModelId = route ? route.model.id : selectedModel.id;
+      const useProvider = route ? route.provider : selectedModel.provider;
+      if (route) {
+        addLog(
+          `Smart Router → ${route.provider} ${route.model.id} (${taskKind}, FREE)`,
+          "info",
+        );
+      }
       const res = await fetch("/api/openrouter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code,
           language: activeLanguage,
-          model: selectedModel.id,
+          model: useModelId,
+          provider: useProvider,
           agentMode,
           skill: activeSkill,
           plugin: selectedPlugin,
@@ -1827,20 +1874,37 @@ const pushToast = useToast();
         id="model-select-dropdown"
         value={selectedModel.id}
         onChange={(e) => {
-          const model = FREE_MODELS.find((m) => m.id === e.target.value)!;
-          setSelectedModel(model);
-          addLog(`Selected execution model: ${model.name}`, "info");
+          const model = modelOptionsAll.find((m) => m.id === e.target.value);
+          if (model) {
+            setSelectedModel(model);
+            addLog(
+              `Selected execution model: ${model.name} (${model.provider}${model.tier === "FREE" ? " · FREE" : ""})`,
+              "info",
+            );
+          }
         }}
-        className="bg-transparent vol-t1 outline-none min-w-0 w-full sm:w-auto sm:min-w-[180px] font-semibold text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none min-w-0 w-full sm:w-auto sm:min-w-[200px] font-semibold text-xs cursor-pointer"
       >
-        {modelOptions.map((model) => (
-          <option
-            key={model.id}
-            value={model.id}
-            className="vol-elev vol-t1"
+        {modelGroups.map(([provider, models]) => (
+          <optgroup
+            key={provider}
+            label={`${provider}${models.some((m) => m.tier === "FREE") ? " — free tier available" : ""}`}
           >
-            {model.name} ({model.tag} • {model.ctx})
-          </option>
+            {models.map((model) => (
+              <option
+                key={model.id}
+                value={model.id}
+                className={
+                  model.tier === "FREE"
+                    ? "bg-green-600 text-black font-bold"
+                    : "vol-elev vol-t1"
+                }
+              >
+                {model.tier === "FREE" ? "★ " : ""}
+                {model.name} ({model.tag} • {model.ctx}) — {model.provider}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
     </div>
@@ -2969,7 +3033,7 @@ const pushToast = useToast();
               {liveProviderUpdated && (
                 <p className="text-[10px] vol-t2 mb-3 font-mono">
                   Last checked:{" "}
-                  {new Date(liveProviderUpdated).toLocaleTimeString()}
+                  {new Date(liveProviderUpdated).toLocaleTimeString()} · auto-refresh 30 min
                 </p>
               )}
 
@@ -2980,7 +3044,13 @@ const pushToast = useToast();
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {liveProviderAvailability.map((provider) => (
+                  {[...liveProviderAvailability]
+                    .sort(
+                      (a, b) =>
+                        Number(b.connected) - Number(a.connected) ||
+                        b.freeCount - a.freeCount,
+                    )
+                    .map((provider) => (
                     <div
                       key={provider.provider}
                       className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
@@ -3578,8 +3648,19 @@ const pushToast = useToast();
                 </div>
               </div>
               <div className="h-6 w-px hidden sm:block vol-line"></div>
-              <div className="hidden sm:block text-[10px] vol-t2 uppercase font-semibold">
-                {selectedModel.tag} • {selectedModel.ctx} Context • Free Tier
+              <div className="hidden sm:flex flex-col items-start">
+                <div className="text-[10px] vol-t2 uppercase font-semibold">
+                  {selectedModel.provider} • {selectedModel.tag} • {selectedModel.ctx}
+                </div>
+                <span
+                  className={
+                    selectedTier === "FREE"
+                      ? "mt-0.5 w-fit rounded px-1.5 py-0.5 bg-green-600 text-black text-[9px] font-black tracking-wider uppercase"
+                      : "mt-0.5 w-fit rounded px-1.5 py-0.5 vol-acc-wash vol-accent text-[9px] font-black tracking-wider uppercase"
+                  }
+                >
+                  {selectedTier === "FREE" ? "★ Free Tier" : "Paid"}
+                </span>
               </div>
             </div>
 
