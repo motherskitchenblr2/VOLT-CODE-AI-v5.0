@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { classifyTask, smartRoute } from "./lib/smartRouter";
+import { RepoOpsPanel } from "./components/RepoOpsPanel";
+import { SplitEditorLayout } from "./components/SplitEditorLayout";
+import { AIProviderSelector } from "./components/AIProviderSelector";
+import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
+import { BossGuidancePanel } from "./components/BossGuidancePanel";
+import { useGitBackup } from "./hooks/useGitBackup";
+import { useApiGateway } from "./hooks/useApiGateway";
 import {
   Play,
   History,
@@ -24,7 +31,6 @@ import {
   AlertCircle,
   RefreshCw,
   Crown,
-  Loader2,
   Users,
   GitPullRequest,
 } from "lucide-react";
@@ -122,6 +128,7 @@ type View =
   | "sentinel"
   | "about"
   | "github"
+  | "repo-ops"
   | "admin"
   | "diagnostics"
   | "terminal"
@@ -471,22 +478,6 @@ const App: React.FC = () => {
     username,
   );
 
-  // LIVE engine options: free models from /api/models when a key exists,
-  // falling back to the static FREE_MODELS catalog when offline/keyless.
-  const liveModelOptions: ModelConfig[] = (liveProviderAvailability || [])
-    .flatMap((p) => p.models || [])
-    .filter((m) => m.tier === "FREE")
-    .map((m) => ({
-      id: m.id,
-      name: m.name,
-      tag: "LIVE",
-      ctx: `${Math.round((m.context || 128000) / 1000)}K`,
-      color: "#F97316",
-      provider: m.provider,
-    }));
-  const modelOptions: ModelConfig[] =
-    liveModelOptions.length > 0 ? liveModelOptions : FREE_MODELS;
-
   // Full catalog (free + paid) grouped by provider for the single dropdown.
   const liveModelsAll: ModelConfig[] = (liveProviderAvailability || [])
     .flatMap((p) => p.models || [])
@@ -521,6 +512,18 @@ const App: React.FC = () => {
   }, [modelOptionsAll]);
 
   // Secure vault: which secrets are stored encrypted in MongoDB
+  // Revived dormant module: workspace checkpoints (local + GitHub-backed)
+  const {
+    createCheckpoint: createWorkspaceCheckpoint,
+    restoreCheckpoint,
+    backingUp,
+  } = useGitBackup();
+  const [lastCheckpointId, setLastCheckpointId] = useState<string | null>(null);
+  const [splitView, setSplitView] = useState(false);
+  // Revived dormant module: provider gateway with automatic fallback + logs
+  const { executeQuery: gatewayQuery, loading: gatewayLoading, logs: gatewayLogs } =
+    useApiGateway();
+
   const [vaultStored, setVaultStored] = useState(false);
   const [vaultSyncState, setVaultSyncState] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -2742,6 +2745,18 @@ const App: React.FC = () => {
           </div>
 
           <div
+            onClick={() => setCurrentView("repo-ops")}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
+              currentView === "repo-ops"
+                ? "vol-acc-bg text-black font-bold"
+                : "hover:vol-wash vol-accent"
+            }`}
+          >
+            <GitPullRequest className="w-5 h-5" />
+            REPO OPS
+          </div>
+
+          <div
             onClick={() => setCurrentView("github")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "github"
@@ -3022,6 +3037,104 @@ const App: React.FC = () => {
             </div>
 
             <div className="border vol-ring rounded-xl p-6 vol-panel">
+              <div className="text-lg font-bold mb-2">Gateway Console</div>
+              <p className="text-[11px] vol-t2 mb-3">
+                Runs a probe through the provider fallback chain (skips providers
+                without keys) and shows the routing log.
+              </p>
+              <button
+                disabled={gatewayLoading}
+                onClick={async () => {
+                  await gatewayQuery(
+                    {
+                      code: "// gateway probe",
+                      language: "javascript",
+                      model: selectedModel.id,
+                      skill: selectedSkill,
+                      plugin: selectedPlugin,
+                    },
+                    { groqKey, openrouterKey, nvidiaKey, huggingfaceKey },
+                  );
+                  addLog("Gateway probe finished", "info");
+                }}
+                className="px-3 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-black cursor-pointer disabled:opacity-60"
+              >
+                {gatewayLoading ? "PROBING..." : "RUN PROBE"}
+              </button>
+              <div className="mt-3 max-h-40 overflow-y-auto space-y-1">
+                {gatewayLogs.length === 0 && (
+                  <p className="text-[11px] vol-t2">No gateway activity yet.</p>
+                )}
+                {gatewayLogs.slice(-20).map((l, i) => (
+                  <div key={i} className="text-[10px] font-mono vol-t2">
+                    {l}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
+              <div className="text-lg font-bold mb-2">Provider &amp; Model Picker</div>
+              <p className="text-[11px] vol-t2 mb-3">
+                Pick a provider/model; matching live models apply to the engine.
+              </p>
+              <AIProviderSelector
+                onProviderChange={(p) => addLog(`Provider selected: ${p.name}`, "info")}
+                onModelChange={(m) => {
+                  const hit = modelOptionsAll.find((x) => x.id === m.id);
+                  if (hit) setSelectedModel(hit);
+                  addLog(
+                    `Model selected: ${m.name}${hit ? " (live)" : " (catalog only)"}`,
+                    hit ? "success" : "info",
+                  );
+                }}
+              />
+            </div>
+
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
+              <div className="text-lg font-bold mb-2">Workspace Checkpoints</div>
+              <p className="text-[11px] vol-t2 mb-3">
+                Snapshot the editor before risky edits; restore any time.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  disabled={backingUp}
+                  onClick={async () => {
+                    const id = await createWorkspaceCheckpoint(
+                      loadedFilePath || "editor.txt",
+                      code,
+                      undefined,
+                    );
+                    setLastCheckpointId(id);
+                    addLog(`Checkpoint created: ${id}`, "success");
+                  }}
+                  className="px-3 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-black cursor-pointer disabled:opacity-60"
+                >
+                  {backingUp ? "SNAPSHOTTING..." : "CREATE CHECKPOINT"}
+                </button>
+                <button
+                  disabled={!lastCheckpointId}
+                  onClick={async () => {
+                    if (!lastCheckpointId) return;
+                    const content = await restoreCheckpoint(lastCheckpointId);
+                    if (typeof content === "string") {
+                      handleCodeChange(content);
+                      addLog(`Restored checkpoint ${lastCheckpointId}`, "success");
+                    }
+                  }}
+                  className="px-3 py-2.5 rounded-xl vol-well border vol-ring vol-accent text-xs font-black cursor-pointer disabled:opacity-50"
+                >
+                  RESTORE LAST
+                </button>
+                {lastCheckpointId && (
+                  <span className="text-[10px] font-mono vol-t2 self-center">
+                    {lastCheckpointId}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="flex items-center justify-between mb-4">
                 <div className="text-lg font-bold">
                   Live Provider Availability
@@ -3246,6 +3359,10 @@ const App: React.FC = () => {
 
     if (currentView === "about") {
       return renderAboutWhitePaper();
+    }
+
+    if (currentView === "repo-ops") {
+      return <RepoOpsPanel addLog={(m, l) => addLog(m, l || "info")} />;
     }
 
     if (currentView === "github") {
@@ -3533,9 +3650,68 @@ const App: React.FC = () => {
 
     // Meeting Panel View
     if (currentView === "meeting") {
+      // Meeting minutes + orchestrator guidance derived from the live swarm run
+      const agentNames = Object.keys(agentBreakdown);
+      const participants = agentNames.length ? agentNames : ["Security", "QA", "UI", "Architect"];
+      const minutes = {
+        id: `mtg-${consensusScore ?? 0}`,
+        title: "Agent Swarm Sync",
+        date: new Date(),
+        participants,
+        agenda: ["Review latest analysis", "Approve fixes"],
+        decisions: participants.map((name, i) => ({
+          id: `d-${i}`,
+          title: `${name} verdict`,
+          description:
+            agentBreakdown[name] !== undefined
+              ? `Score ${agentBreakdown[name]}/100`
+              : "Awaiting run",
+          votes: [
+            { agent: "Triage", vote: (agentBreakdown[name] ?? 0) >= 70 ? "yes" : "no" } as const,
+          ],
+          bossApproval: Boolean(consensusPassed),
+          timestamp: new Date(),
+        })),
+        actionItems: participants.map((name, i) => ({
+          id: `a-${i}`,
+          description: `Apply fixes approved by ${name}`,
+          assignedTo: name,
+          dueDate: new Date(),
+          status: (consensusPassed ? "completed" : "pending") as "pending" | "in-progress" | "completed",
+          priority: "medium" as const,
+        })),
+        notes:
+          (Array.isArray(consensusFeedback)
+            ? consensusFeedback.join(" ")
+            : consensusFeedback) || "No consensus feedback yet — run an analysis.",
+      };
+      const score = consensusScore ?? 0;
+      const guidance = !consensusPassed && score > 0
+        ? {
+            id: "g-1",
+            prNumber: 0,
+            reason: "Consensus score below the merge threshold",
+            concern: "rejected-critical-fix" as const,
+            recommendation:
+              (Array.isArray(consensusFeedback)
+                ? consensusFeedback.join(" ")
+                : consensusFeedback) || "Retry with a stricter skill or repair the flagged issues.",
+            agentFeedback: participants.map((n) => `${n}: ${agentBreakdown[n] ?? "?"}/100`),
+            riskLevel: (score < 40 ? "critical" : score < 60 ? "high" : "medium") as
+              | "low"
+              | "medium"
+              | "high"
+              | "critical",
+            timestamp: new Date(),
+          }
+        : null;
       return (
-        <div className="w-full h-full">
+        <div className="w-full h-full overflow-y-auto">
           <MeetingPanel onClose={() => setCurrentView("editor")} />
+          <div className="p-4 md:p-6 space-y-4">
+            {guidance && <BossGuidancePanel guidance={guidance} />}
+            <MeetingMinutesDisplay meeting={minutes} />
+          </div>
         </div>
       );
     }
@@ -3599,12 +3775,22 @@ const App: React.FC = () => {
                 AI Bug Finder, Agent Runner & Telemetrist
               </div>
             </div>
-            <button
-              onClick={() => setShowShortcutsCheatSheet(true)}
-              className="px-3 py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
-            >
-              SHORTCUTS [?]
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setSplitView((v) => !v)}
+                className={`px-3 py-1.5 rounded-lg border vol-ring text-xs font-black cursor-pointer ${
+                  splitView ? "vol-acc-bg text-black" : "hover:vol-wash vol-t2"
+                }`}
+              >
+                {splitView ? "SPLIT ✓" : "SPLIT"}
+              </button>
+              <button
+                onClick={() => setShowShortcutsCheatSheet(true)}
+                className="px-3 py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
+              >
+                SHORTCUTS [?]
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 mt-3">
@@ -3752,6 +3938,20 @@ const App: React.FC = () => {
             </div>
           )}
 
+          {splitView ? (
+            <div className="flex-1 overflow-hidden">
+              <SplitEditorLayout
+                code={code}
+                onCodeChange={handleCodeChange}
+                fixedCode={fixedCode}
+                issues={issues}
+                isAnalyzing={isAnalyzing}
+                onAnalyze={analyzeCode}
+                onApplyFix={applyAllFixes}
+                language={language}
+              />
+            </div>
+          ) : (
           <textarea
             value={code}
             onChange={(e) => handleCodeChange(e.target.value)}
@@ -3764,6 +3964,7 @@ const App: React.FC = () => {
               boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
             }}
           />
+          )}
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
           <div className="md:hidden p-4 border-t vol-ring vol-wash flex flex-col gap-2 select-none w-full shrink-0">
