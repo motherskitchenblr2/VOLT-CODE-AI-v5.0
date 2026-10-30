@@ -35,7 +35,6 @@ const NAV: NavItem[] = [
   ["ide", "IDE Canvas", <Sparkles className="w-5 h-5" />],
   ["swarm", "Agent Swarm", <Bot className="w-5 h-5" />],
   ["meeting", "Agents", <Users className="w-5 h-5" />],
-  ["boss", "Volt Hub", <Crown className="w-5 h-5" />],
   ["sentinel", "Sentinel", <Shield className="w-5 h-5" />],
   ["pr-review", "PR Review", <GitPullRequest className="w-5 h-5" />],
   ["github", "GitHub", <GitBranch className="w-5 h-5" />],
@@ -90,7 +89,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
       {/* ── LAPTOP RAIL (≥1280): the full sidebar (nav + auth cluster) ── */}
       <div className="hidden xl:flex shrink-0 h-full overflow-y-auto">
-        <div className="w-64 border-r vol-ring vol-surface">{sidebar}</div>
+        <div className="w-40 border-r vol-ring vol-surface overflow-y-auto">{sidebar}</div>
       </div>
 
       {/* ── MAIN STAGE — all screens ── */}
@@ -139,15 +138,15 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         </footer>
 
         {/* ── MOBILE BOTTOM TAB BAR (5 primary + more sheet) ── */}
-        <nav className="xl:hidden h-16 shrink-0 border-t vol-ring vol-surface px-2 pt-1 md:hidden"
+        <nav className="xl:hidden h-16 shrink-0 border-t vol-ring vol-surface md:hidden"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-          <div className="grid grid-cols-6 h-full gap-0.5">
-            {NAV.filter(([v]) => ["editor", "ide", "swarm", "boss", "meeting"].includes(v)).map(
+          <div className="flex h-full items-stretch overflow-x-auto no-scrollbar">
+            {NAV.filter(([v]) => ["editor", "ide", "swarm", "meeting"].includes(v)).map(
               ([view, label, icon]) => (
                 <button
                   key={view}
                   onClick={() => setCurrentView(view)}
-                  className={`flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer ${
+                  className={`flex-1 min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer ${
                     currentView === view
                       ? "vol-accent vol-acc-wash"
                       : "vol-t2"
@@ -160,7 +159,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             )}
             <button
               onClick={() => setNavOpen(true)}
-              className="flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer vol-t2"
+              className="min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer vol-t2"
             >
               <Menu className="w-5 h-5" />
               <span className="text-[9px] font-bold tracking-wider">MORE</span>
@@ -177,7 +176,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                 <span className="text-[10px] font-black tracking-widest vol-accent">
                   {sheet === "terminal" ? "TERMINAL" : "DIAGNOSTICS"}
                 </span>
-                <button onClick={() => setSheet("none")} className="cursor-pointer vol-t2" aria-label="Close sheet">
+                <button onClick={() => setSheet("none")} className="cursor-pointer vol-t2 w-9 h-9 flex items-center justify-center rounded-lg" aria-label="Close sheet">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -197,7 +196,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                 <span className="font-black tracking-widest vol-accent">VOLT v5</span>
                 <div className="flex items-center gap-2">
                   <ThemeToggle compact />
-                  <button onClick={() => setNavOpen(false)} className="cursor-pointer vol-t2" aria-label="Close navigation">
+                  <button onClick={() => setNavOpen(false)} className="cursor-pointer vol-t2 w-10 h-10 flex items-center justify-center rounded-lg" aria-label="Close navigation">
                     <X className="w-5 h-5" />
                   </button>
                 </div>

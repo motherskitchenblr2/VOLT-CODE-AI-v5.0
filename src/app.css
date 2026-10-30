@@ -507,3 +507,7 @@ html[data-theme="day"] footer {
     flex-wrap: wrap;
   }
 }
+
+/* hide scrollbars on slider rows while keeping scrollability (touch) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

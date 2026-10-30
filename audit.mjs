@@ -16,7 +16,6 @@ const VIEWS = [
   ["Editor", ["Editor", "NEW ANALYSIS"]],
   ["IDE Canvas", ["IDE Canvas", "IDE CANVAS"]],
   ["Agent Swarm", ["Agent Swarm", "AGENT SWARM"]],
-  ["Volt Hub", ["Volt Hub", "VOLT HUB"]],
   ["Agents", ["Agents", "MEETING PANEL"]],
   ["Sentinel", ["Sentinel", "SENTINEL"]],
   ["GitHub", ["GitHub", "GITHUB WORKSPACE"]],
