@@ -1,15 +1,9 @@
-# VOLT Auto-Fix Prompt — browser audit 2026-10-30T05:17 UTC
-Target branch: `fix/auto`
+# VOLT Auto-Fix Prompt — dual-theme audit 2026-10-30T05:38 UTC
+Branch: `fix/auto`
 
 ## Task for any AI/agent
-1. Checkout/create the target branch.
-2. Fix every failing check listed in the report (file evidence inside
-   `AUDIT_REPORT.md`; run `node audit.mjs` locally against `npm run build`
-   output via `npx vite preview` to reproduce).
-3. Re-audit until 0 failures; run `node scripts/theme-lint.mjs` too.
-4. Commit, push, open a PR with `AUDIT_REPORT.md` as the body.
-5. Reject-loop: if a human deleted one of your PRs, read `AGENT_LESSONS.md`,
-   append the reason, never repeat it.
-
-## Current failures
-None — clean.
+1. Reproduce: `npm run build && npx vite preview` then `AUDIT_URL=http://localhost:4173 node audit.mjs`.
+2. Fix every failing metric: DayDark (dark surfaces in day), DarkGlow (white box-shadows on dark), DarkLight (large light surfaces on dark), overflow/touch.
+3. Re-audit until 0 failures. Push, open PR with this file. If rejected, append the reason to AGENT_LESSONS.md.
+## Failures
+None.
