@@ -54,3 +54,5 @@ before pushing a fix and never repeat a recorded mistake.
 
 - Fixes ship on a NEW branch → PR → human merges to `main`.
 - A deleted/rejected PR = a lesson. Record it here. No repeats.
+
+11. **Never `git reset --hard` with uncommitted work** — PR #119 shipped EMPTY because a reset wiped wave-1 edits before staging. Always `git stash` or verify `git diff --stat` is non-empty before commit.

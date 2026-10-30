@@ -3589,7 +3589,7 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full overflow-hidden">
         {/* Editor Toolbar Header */}
-        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-elev">
+        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
           <div className="mb-1 flex justify-between items-start">
             <div>
               <div className="text-lg sm:text-2xl font-bold leading-tight">
@@ -3680,7 +3680,7 @@ const App: React.FC = () => {
               <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                 Operation Mode
               </div>
-              <div className="flex items-center gap-1.5 vol-panel rounded-lg p-0.5 border vol-line">
+              <div className="flex items-center gap-1.5 vol-well rounded-lg p-1">
                 <button
                   onClick={() => {
                     setAgentMode("manual");
@@ -3771,7 +3771,11 @@ const App: React.FC = () => {
               <button
                 onClick={analyzeCode}
                 disabled={isAnalyzing || isSystemHalted}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl vol-acc-bg text-black text-xs font-black tracking-wide disabled:opacity-60 transition-all cursor-pointer shadow-none"
+                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black tracking-wide disabled:opacity-60 transition-all cursor-pointer ${
+                  isAnalyzing
+                    ? "vol-well vol-accent shadow-[var(--neo-in)]"
+                    : "vol-acc-bg text-black shadow-none"
+                }`}
               >
                 <Bug className="w-4 h-4" />
                 {isAnalyzing ? "ANALYZING..." : "RUN AI"}
