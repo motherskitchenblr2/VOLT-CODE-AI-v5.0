@@ -58,7 +58,10 @@ body {
     font-size: 16px; /* prevents iOS Safari zoom-on-focus */
   }
   section [class*="grid-cols-"] {
-    grid-template-columns: minmax(0, 1fr) !important; /* stat panels stack instead of pushing */
+    grid-template-columns: minmax(
+      0,
+      1fr
+    ) !important; /* stat panels stack instead of pushing */
   }
   section button {
     min-height: 40px; /* ponytail: verified against overflow audit; 44px broke dense rows */
@@ -337,8 +340,11 @@ a {
   --t2: #505c6e;
   --node-fill: #dfe5ee;
   --node-text: #1f2937;
+  --grad-a: #eef2f8;
+  --grad-b: #dde3ec;
   --neo-out: 8px 8px 18px rgba(174, 181, 196, 0.7), -8px -8px 18px #ffffff;
-  --neo-in: inset 5px 5px 11px rgba(174, 181, 196, 0.6), inset -5px -5px 11px #ffffff;
+  --neo-in:
+    inset 5px 5px 11px rgba(174, 181, 196, 0.6), inset -5px -5px 11px #ffffff;
 }
 html[data-theme="dark"] {
   /* DARK — the original OLED workbench look */
@@ -359,6 +365,8 @@ html[data-theme="dark"] {
   --t2: #9aa3b1;
   --node-fill: #0a0a0a;
   --node-text: #ffffff;
+  --grad-a: #1a1a1a;
+  --grad-b: #0a0a0a;
   --neo-out: none;
   --neo-in: none;
 }
@@ -478,7 +486,9 @@ html[data-theme="day"] textarea {
 /* primary actions raise + press in */
 html[data-theme="day"] button.vol-acc-bg,
 html[data-theme="day"] .vol-acc-bg {
-  box-shadow: 5px 5px 14px rgba(174, 181, 196, 0.8), -4px -4px 10px #ffffff;
+  box-shadow:
+    5px 5px 14px rgba(174, 181, 196, 0.8),
+    -4px -4px 10px #ffffff;
 }
 html[data-theme="day"] button.vol-acc-bg:active {
   box-shadow: var(--neo-in);
@@ -502,4 +512,13 @@ html[data-theme="day"] footer {
   section .flex:not([class*="flex-col"]):not([class*="flex-row-reverse"]) {
     flex-wrap: wrap;
   }
+}
+
+/* hide scrollbars on slider rows while keeping scrollability (touch) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

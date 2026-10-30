@@ -20,7 +20,7 @@
 
 ## 📐 Architecture
 
-*Layered view of the runtime:*
+_Layered view of the runtime:_
 
 ```mermaid
 graph TD
@@ -54,17 +54,17 @@ graph TD
 
 ## ⚡ The Workbench
 
-| View | What it does |
-| :--- | :--- |
-| **Editor** | Paste code → `RUN AI ANALYSIS` → issue list with per-issue patch, FIX ALL, VisualDiff review. Live AGENT CHAT HUD on the side |
-| **IDE Canvas** | Pro editing surface with inline agent suggestions (var→const, `===`, long lines) and the agent TODO widget |
-| **Agent Swarm** | Live hub-and-spoke visualization of the orchestration: triage, workers, senior consensus — node scores populate during analysis |
-| **Meeting Panel** | Agent group chat + audio interface + execution panel |
-| **VOLT HUB** | Direct line to the AI core orchestrator (persisted across views) |
-| **PR Review** | Repo PR triage dashboard |
-| **GitHub Workspace** | Browse/work repos without leaving the bench |
-| **Sentinel** | Continuous guard watch & audit trail |
-| **Settings** | Provider keys (Groq / OpenRouter / NVIDIA / HF), model picker, **one-click workspace backup & restore** |
+| View                 | What it does                                                                                                                    |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| **Editor**           | Paste code → `RUN AI ANALYSIS` → issue list with per-issue patch, FIX ALL, VisualDiff review. Live AGENT CHAT HUD on the side   |
+| **IDE Canvas**       | Pro editing surface with inline agent suggestions (var→const, `===`, long lines) and the agent TODO widget                      |
+| **Agent Swarm**      | Live hub-and-spoke visualization of the orchestration: triage, workers, senior consensus — node scores populate during analysis |
+| **Meeting Panel**    | Agent group chat + audio interface + execution panel                                                                            |
+| **VOLT HUB**         | Direct line to the AI core orchestrator (persisted across views)                                                                |
+| **PR Review**        | Repo PR triage dashboard                                                                                                        |
+| **GitHub Workspace** | Browse/work repos without leaving the bench                                                                                     |
+| **Sentinel**         | Continuous guard watch & audit trail                                                                                            |
+| **Settings**         | Provider keys (Groq / OpenRouter / NVIDIA / HF), model picker, **one-click workspace backup & restore**                         |
 
 **Safety rails built in:** crash recovery boundary (backup + reload instead of a white screen), encrypted MongoDB secret vault, per-endpoint hardening, session persistence.
 

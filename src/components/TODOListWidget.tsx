@@ -103,7 +103,7 @@ export function TODOListWidget({
   };
 
   return (
-    <div className="space-y-6 p-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border vol-ring rounded-2xl">
+    <div className="space-y-6 p-6 bg-gradient-to-br from-[var(--grad-a)] to-[var(--grad-b)] border vol-ring rounded-2xl">
       {/* Header with Stats */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">

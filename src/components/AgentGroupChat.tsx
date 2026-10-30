@@ -50,7 +50,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
   const getMessageBackgroundColor = (type: Message["type"]): string => {
     switch (type) {
       case "system":
-        return "bg-gray-900/50 border-l-4 border-yellow-500";
+        return "vol-elev/50 border-l-4 border-yellow-500";
       case "decision":
         return "bg-green-900/20 border-l-4 border-green-500";
       case "audio":
@@ -61,7 +61,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-slate-950 to-black rounded-3xl border vol-line overflow-hidden">
+    <div className="flex flex-col h-full bg-gradient-to-b from-[var(--grad-a)] to-[var(--grad-b)] rounded-3xl border vol-line overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b vol-line vol-panel backdrop-blur-lg">
         <div className="flex items-center gap-3">

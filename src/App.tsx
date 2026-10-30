@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { classifyTask, smartRoute } from "./lib/smartRouter";
 import {
   Play,
   History,
@@ -124,7 +125,6 @@ type View =
   | "admin"
   | "diagnostics"
   | "terminal"
-  | "boss"
   | "meeting"
   | "pr-review"
   | "swarm";
@@ -135,7 +135,8 @@ type AgentMode =
 export interface ModelConfig {
   id: string;
   name: string;
-  tag: "BALANCED" | "CODING" | "REASONING" | "FAST";
+  tag: "BALANCED" | "CODING" | "REASONING" | "FAST" | "LIVE" | "PAID" | "FREE";
+  tier?: "FREE" | "PAID";
   ctx: string;
   color: string;
   provider: "Groq" | "OpenRouter" | "NVIDIA" | "HuggingFace";
@@ -470,6 +471,55 @@ const App: React.FC = () => {
     username,
   );
 
+  // LIVE engine options: free models from /api/models when a key exists,
+  // falling back to the static FREE_MODELS catalog when offline/keyless.
+  const liveModelOptions: ModelConfig[] = (liveProviderAvailability || [])
+    .flatMap((p) => p.models || [])
+    .filter((m) => m.tier === "FREE")
+    .map((m) => ({
+      id: m.id,
+      name: m.name,
+      tag: "LIVE",
+      ctx: `${Math.round((m.context || 128000) / 1000)}K`,
+      color: "#F97316",
+      provider: m.provider,
+    }));
+  const modelOptions: ModelConfig[] =
+    liveModelOptions.length > 0 ? liveModelOptions : FREE_MODELS;
+
+  // Full catalog (free + paid) grouped by provider for the single dropdown.
+  const liveModelsAll: ModelConfig[] = (liveProviderAvailability || [])
+    .flatMap((p) => p.models || [])
+    .map((m) => ({
+      id: m.id,
+      name: m.name,
+      tag: m.tier === "FREE" ? "FREE" : "PAID",
+      ctx: `${Math.round((m.context || 128000) / 1000)}K`,
+      color: "#F97316",
+      provider: m.provider,
+      tier: m.tier,
+    }));
+  const modelOptionsAll: ModelConfig[] =
+    liveModelsAll.length > 0
+      ? liveModelsAll
+      : FREE_MODELS.map((m) => ({ ...m, tier: "FREE" as const }));
+  const modelGroups: Array<[string, ModelConfig[]]> = [
+    ...new Set(modelOptionsAll.map((m) => m.provider)),
+  ].map((prov) => [prov, modelOptionsAll.filter((m) => m.provider === prov)]);
+  const selectedTier =
+    modelOptionsAll.find((m) => m.id === selectedModel.id)?.tier || "FREE";
+
+  useEffect(() => {
+    if (
+      modelOptionsAll.length &&
+      !modelOptionsAll.some((m) => m.id === selectedModel.id)
+    ) {
+      const preferred = modelOptionsAll.find((m) => m.tier === "FREE");
+      setSelectedModel(preferred || modelOptionsAll[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modelOptionsAll]);
+
   // Secure vault: which secrets are stored encrypted in MongoDB
   const [vaultStored, setVaultStored] = useState(false);
   const [vaultSyncState, setVaultSyncState] = useState<
@@ -581,13 +631,10 @@ const App: React.FC = () => {
     [],
   );
 
-const pushToast = useToast();
+  const pushToast = useToast();
   const showToast = useCallback(
     (message: string, type: "success" | "error" | "info" | "warn" = "info") => {
-      pushToast(
-        type === "warn" ? "info" : type,
-        message,
-      );
+      pushToast(type === "warn" ? "info" : type, message);
     },
     [pushToast],
   );
@@ -1174,13 +1221,28 @@ const pushToast = useToast();
         `Sending fetch payload to OpenRouter Gateway for evaluation...`,
         "info",
       );
+      // Smart Router: understand the task, prefer free-tier models, pick the
+      // best provider+model from the live catalog (OpenRouter breadth first
+      // for code/reasoning, Groq for speed on chat). Falls back to the user's
+      // manual selection when no live catalog is available.
+      const taskKind = classifyTask(agentMode, activeSkill);
+      const route = smartRoute(taskKind, liveProviderAvailability || []);
+      const useModelId = route ? route.model.id : selectedModel.id;
+      const useProvider = route ? route.provider : selectedModel.provider;
+      if (route) {
+        addLog(
+          `Smart Router → ${route.provider} ${route.model.id} (${taskKind}, FREE)`,
+          "info",
+        );
+      }
       const res = await fetch("/api/openrouter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code,
           language: activeLanguage,
-          model: selectedModel.id,
+          model: useModelId,
+          provider: useProvider,
           agentMode,
           skill: activeSkill,
           plugin: selectedPlugin,
@@ -1201,8 +1263,35 @@ const pushToast = useToast();
           );
           addLog(`OpenRouter error status 500: Server Error`, "error");
         } else {
-          showToast("Network error. Check your connection.", "error");
-          addLog(`Connection error status ${res.status}`, "error");
+          let serverMsg = "";
+          try {
+            const j = await res.json();
+            serverMsg = typeof j?.error === "string" ? j.error : "";
+          } catch {
+            /* no body */
+          }
+          if (
+            serverMsg.startsWith("NO_KEY") ||
+            serverMsg.includes("Missing API Key")
+          ) {
+            showToast(
+              `API key needed (${serverMsg.replace("NO_KEY:", "") || "provider"}). Add it in Settings → AI Providers.`,
+              "error",
+            );
+            addLog(
+              `Missing API key for AI provider (status ${res.status})`,
+              "error",
+            );
+          } else {
+            showToast(
+              `AI service error (${res.status})${serverMsg ? " — " + serverMsg.slice(0, 90) : ""}`,
+              "error",
+            );
+            addLog(
+              `OpenRouter error status ${res.status}${serverMsg ? ": " + serverMsg : ""}`,
+              "error",
+            );
+          }
         }
         setIsAnalyzing(false);
         setAgentStatus("error");
@@ -1787,27 +1876,46 @@ const pushToast = useToast();
   );
 
   const renderModelSelect = () => (
-    <div className="flex flex-wrap items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-panel">
-      <div className="vol-accent-soft text-xs tracking-wider">ENGINE</div>
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
+      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+        ENGINE
+      </div>
       <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
         id="model-select-dropdown"
         value={selectedModel.id}
         onChange={(e) => {
-          const model = FREE_MODELS.find((m) => m.id === e.target.value)!;
-          setSelectedModel(model);
-          addLog(`Selected execution model: ${model.name}`, "info");
+          const model = modelOptionsAll.find((m) => m.id === e.target.value);
+          if (model) {
+            setSelectedModel(model);
+            addLog(
+              `Selected execution model: ${model.name} (${model.provider}${model.tier === "FREE" ? " · FREE" : ""})`,
+              "info",
+            );
+          }
         }}
-        className="bg-transparent vol-t1 outline-none min-w-0 w-full sm:w-auto sm:min-w-[180px] font-semibold text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none min-w-0 w-full sm:w-auto sm:min-w-[200px] font-semibold text-xs cursor-pointer"
       >
-        {FREE_MODELS.map((model) => (
-          <option
-            key={model.id}
-            value={model.id}
-            className="vol-elev vol-t1"
+        {modelGroups.map(([provider, models]) => (
+          <optgroup
+            key={provider}
+            label={`${provider}${models.some((m) => m.tier === "FREE") ? " — free tier available" : ""}`}
           >
-            {model.name} ({model.tag} • {model.ctx})
-          </option>
+            {models.map((model) => (
+              <option
+                key={model.id}
+                value={model.id}
+                className={
+                  model.tier === "FREE"
+                    ? "bg-green-600 text-black font-bold"
+                    : "vol-elev vol-t1"
+                }
+              >
+                {model.tier === "FREE" ? "★ " : ""}
+                {model.name} ({model.tag} • {model.ctx}) — {model.provider}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
     </div>
@@ -1819,8 +1927,10 @@ const pushToast = useToast();
     onChange: (value: string) => void,
     options: string[],
   ) => (
-    <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-2 vol-panel">
-      <div className="vol-accent-soft text-xs tracking-wider">{label}</div>
+    <div className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
+      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+        {label}
+      </div>
       <ChevronDown className="w-4 h-4 vol-accent-soft" />
       <select
         value={value}
@@ -1831,11 +1941,7 @@ const pushToast = useToast();
         className="bg-transparent vol-t1 outline-none min-w-[130px] text-xs cursor-pointer"
       >
         {options.map((option) => (
-          <option
-            key={option}
-            value={option}
-            className="vol-elev vol-t1"
-          >
+          <option key={option} value={option} className="vol-elev vol-t1">
             {option}
           </option>
         ))}
@@ -2600,18 +2706,6 @@ const pushToast = useToast();
           </div>
 
           <div
-            onClick={() => setCurrentView("boss")}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "boss"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Crown className="w-5 h-5" />
-            VOLT HUB
-          </div>
-
-          <div
             onClick={() => setCurrentView("meeting")}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
               currentView === "meeting"
@@ -2947,7 +3041,8 @@ const pushToast = useToast();
               {liveProviderUpdated && (
                 <p className="text-[10px] vol-t2 mb-3 font-mono">
                   Last checked:{" "}
-                  {new Date(liveProviderUpdated).toLocaleTimeString()}
+                  {new Date(liveProviderUpdated).toLocaleTimeString()} ·
+                  auto-refresh 30 min
                 </p>
               )}
 
@@ -2958,37 +3053,43 @@ const pushToast = useToast();
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {liveProviderAvailability.map((provider) => (
-                    <div
-                      key={provider.provider}
-                      className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            provider.connected
-                              ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
-                              : "bg-red-500"
-                          }`}
-                        />
-                        <span className="text-sm font-bold vol-t1">
-                          {provider.label}
-                        </span>
-                        {provider.connected ? (
-                          <span className="text-[10px] text-green-400 font-semibold uppercase">
-                            Connected
+                  {[...liveProviderAvailability]
+                    .sort(
+                      (a, b) =>
+                        Number(b.connected) - Number(a.connected) ||
+                        b.freeCount - a.freeCount,
+                    )
+                    .map((provider) => (
+                      <div
+                        key={provider.provider}
+                        className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-2 h-2 rounded-full ${
+                              provider.connected
+                                ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
+                                : "bg-red-500"
+                            }`}
+                          />
+                          <span className="text-sm font-bold vol-t1">
+                            {provider.label}
                           </span>
-                        ) : (
-                          <span className="text-[10px] text-red-400 font-semibold uppercase">
-                            Offline
-                          </span>
-                        )}
+                          {provider.connected ? (
+                            <span className="text-[10px] text-green-400 font-semibold uppercase">
+                              Connected
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-red-400 font-semibold uppercase">
+                              Offline
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] vol-t2 font-mono">
+                          {provider.freeCount} free / {provider.paidCount} paid
+                        </div>
                       </div>
-                      <div className="text-[10px] vol-t2 font-mono">
-                        {provider.freeCount} free / {provider.paidCount} paid
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>
@@ -3363,154 +3464,6 @@ const pushToast = useToast();
       );
     }
 
-    if (currentView === "boss") {
-      return (
-        <div className="p-4 md:p-8 flex flex-col h-full overflow-hidden bg-gradient-to-br from-[#0F0F10] to-[#050505] select-text">
-          <div className="flex justify-between items-center border-b vol-ring pb-4 mb-4 select-none shrink-0">
-            <div>
-              <div className="text-xl md:text-2xl font-black flex items-center gap-3 vol-t1 tracking-widest">
-                <Crown className="vol-accent animate-pulse" />
-                VOLT AI AGENT HEAD
-              </div>
-              <div className="text-[10px] md:text-xs vol-accent-soft mt-1 uppercase font-bold tracking-wider">
-                Supreme Core Orchestrator & Code Mechanic Command Cockpit
-              </div>
-            </div>
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 vol-acc-wash border vol-ring-strong rounded-xl text-[10px] font-black vol-accent">
-              <span className="w-1.5 h-1.5 rounded-full vol-acc-bg animate-ping"></span>
-              ORCHESTRATOR ONLINE
-            </div>
-          </div>
-
-          <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
-            {/* Chat column */}
-            <div className="flex-1 flex flex-col h-full vol-panel rounded-2xl border vol-ring overflow-hidden shadow-2xl relative">
-              {/* Chat Feed */}
-              <div className="flex-1 p-6 overflow-y-auto space-y-4">
-                {bossMessages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-5 py-3.5 text-xs md:text-sm leading-relaxed shadow-lg ${
-                        msg.role === "user"
-                          ? "bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] text-black font-extrabold"
-                          : "vol-elev vol-t1 border vol-ring"
-                      }`}
-                    >
-                      {msg.role === "agent" && (
-                        <div className="text-[10px] vol-accent font-black uppercase tracking-wider mb-1 flex items-center gap-1.5 select-none">
-                          <Bot className="w-3.5 h-3.5" />
-                          Volt AI Boss
-                        </div>
-                      )}
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    </div>
-                  </div>
-                ))}
-                {isBossLoading && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[80%] rounded-2xl px-5 py-3.5 vol-elev vol-t2 border vol-line text-xs md:text-sm flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin vol-accent" />
-                      Aligning neural weights and selecting AI models...
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Chat Input form */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  sendBossMessage(bossInput);
-                }}
-                className="p-4 border-t vol-line vol-elev flex gap-3 select-none shrink-0"
-              >
-                <input
-                  type="text"
-                  value={bossInput}
-                  onChange={(e) => setBossInput(e.target.value)}
-                  placeholder="Ask the Agent Head to delegate tasks, refine code, or recommend a model..."
-                  className="flex-1 vol-well border vol-line rounded-xl px-4 py-3 text-sm focus:outline-none focus:vol-ring-hi vol-t1"
-                />
-                <button
-                  type="submit"
-                  disabled={isBossLoading}
-                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF5F00] to-[#FF8C00] hover:opacity-95 text-black font-black text-xs flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(255,95,0,0.3)] disabled:opacity-50"
-                >
-                  <Send className="w-4 h-4" />
-                  SEND
-                </button>
-              </form>
-            </div>
-
-            {/* Models recommendation index column */}
-            <div className="w-full lg:w-80 shrink-0 flex flex-col gap-4 overflow-y-auto">
-              {/* Mission Statement */}
-              <div className="machined-plate p-5 border vol-ring vol-wash space-y-3 shadow-xl">
-                <div className="text-[10px] vol-accent uppercase font-black tracking-widest flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-                  Volt AI Mission
-                </div>
-                <p className="text-xs vol-t1 leading-relaxed font-mono">
-                  Volt AI is a state-of-the-art Agentic AI Coding Editor, Code
-                  Fixer, Code Refiner, and Bug Diagnosing WebApp. Engineered as
-                  a complete Code Mechanic, it automates parallel testing, AST
-                  compliance checks, and cross-language runtime boundaries.
-                </p>
-              </div>
-
-              {/* Model Decision Matrix */}
-              <div className="machined-plate p-5 border vol-line space-y-4 shadow-xl">
-                <div className="text-[10px] vol-t2 uppercase font-black tracking-widest">
-                  Model Recommendation Matrix
-                </div>
-
-                <div className="space-y-3">
-                  {[
-                    {
-                      name: "DeepSeek-R1",
-                      task: "Logical derivation, math, structural diagnostics",
-                      color: "border-l-4 border-blue-500",
-                    },
-                    {
-                      name: "Qwen-2.5-Coder",
-                      task: "Multi-file code generation, auto-completion",
-                      color: "border-l-4 border-green-500",
-                    },
-                    {
-                      name: "Llama-3.3-70B",
-                      task: "General-purpose reviews, auditing, summaries",
-                      color: "border-l-4 border-purple-500",
-                    },
-                    {
-                      name: "NVIDIA Nemotron",
-                      task: "Strict instruction adherence, system guardrails",
-                      color: "border-l-4 border-orange-500",
-                    },
-                  ].map((m) => (
-                    <div
-                      key={m.name}
-                      className={`p-3 vol-panel rounded-xl space-y-1.5 ${m.color}`}
-                    >
-                      <div className="text-xs font-extrabold vol-t1">
-                        {m.name}
-                      </div>
-                      <div className="text-[10px] vol-t2 leading-relaxed font-mono">
-                        {m.task}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // Agent Swarm View
     if (currentView === "swarm") {
       return (
         <div className="w-full h-full overflow-y-auto vol-surface pt-6">
@@ -3636,11 +3589,13 @@ const pushToast = useToast();
     return (
       <div className="flex flex-col h-full overflow-hidden">
         {/* Editor Toolbar Header */}
-        <div className="border-b vol-ring p-6 shrink-0 vol-elev">
+        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-elev">
           <div className="mb-1 flex justify-between items-start">
             <div>
-              <div className="text-xl sm:text-2xl font-bold">MULTI-LANGUAGE EDITOR</div>
-              <div className="text-xs vol-accent-soft font-semibold tracking-wide">
+              <div className="text-lg sm:text-2xl font-bold leading-tight">
+                MULTI-LANGUAGE EDITOR
+              </div>
+              <div className="text-[10px] sm:text-xs vol-accent-soft font-semibold tracking-wide">
                 AI Bug Finder, Agent Runner & Telemetrist
               </div>
             </div>
@@ -3652,46 +3607,48 @@ const pushToast = useToast();
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 mt-4">
+          <div className="flex flex-col gap-2 mt-3">
             {renderModelSelect()}
-            {renderSelect(
-              "Plugin",
-              selectedPlugin,
-              setSelectedPlugin,
-              pluginOptions,
-            )}
-            {renderSelect(
-              "Skill",
-              selectedSkill,
-              setSelectedSkill,
-              skillOptions,
-            )}
-            {renderSelect(
-              "Mode",
-              agentMode,
-              (v) => setAgentMode(v as AgentMode),
-              modeOptions,
-            )}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-3">
+              {renderSelect(
+                "Plugin",
+                selectedPlugin,
+                setSelectedPlugin,
+                pluginOptions,
+              )}
+              {renderSelect(
+                "Skill",
+                selectedSkill,
+                setSelectedSkill,
+                skillOptions,
+              )}
+              {renderSelect(
+                "Mode",
+                agentMode,
+                (v) => setAgentMode(v as AgentMode),
+                modeOptions,
+              )}
 
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="vol-well border vol-ring-strong px-4 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold"
-            >
-              {languages.map((l) => (
-                <option key={l.value} value={l.value}>
-                  {l.label}
-                </option>
-              ))}
-            </select>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
+              >
+                {languages.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
 
-            <div className="px-4 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold">
-              DETECTED: {detectedLanguage.toUpperCase()}
+              <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
+                DETECTED: {detectedLanguage.toUpperCase()}
+              </div>
             </div>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-4 items-center">
-            <div className="px-4 py-2.5 rounded-xl border vol-ring-strong vol-panel inline-flex items-center gap-3 select-none">
+            <div className="px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl border vol-ring-strong vol-panel inline-flex items-center gap-2 sm:gap-3 select-none">
               <Zap className="w-4 h-4 vol-accent animate-pulse" />
               <div className="flex flex-col">
                 <div className="vol-accent text-[9px] tracking-widest font-bold uppercase">
@@ -3701,13 +3658,25 @@ const pushToast = useToast();
                   {selectedModel.name}
                 </div>
               </div>
-              <div className="h-6 w-px bg-white/20"></div>
-              <div className="text-[10px] vol-t2 uppercase font-semibold">
-                {selectedModel.tag} • {selectedModel.ctx} Context • Free Tier
+              <div className="h-6 w-px hidden sm:block vol-line"></div>
+              <div className="hidden sm:flex flex-col items-start">
+                <div className="text-[10px] vol-t2 uppercase font-semibold">
+                  {selectedModel.provider} • {selectedModel.tag} •{" "}
+                  {selectedModel.ctx}
+                </div>
+                <span
+                  className={
+                    selectedTier === "FREE"
+                      ? "mt-0.5 w-fit rounded px-1.5 py-0.5 bg-green-600 text-black text-[9px] font-black tracking-wider uppercase"
+                      : "mt-0.5 w-fit rounded px-1.5 py-0.5 vol-acc-wash vol-accent text-[9px] font-black tracking-wider uppercase"
+                  }
+                >
+                  {selectedTier === "FREE" ? "★ Free Tier" : "Paid"}
+                </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 border vol-ring-strong rounded-xl px-4 py-1.5 vol-panel select-none">
+            <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
               <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                 Operation Mode
               </div>
@@ -3745,16 +3714,14 @@ const pushToast = useToast();
             </div>
 
             {showTokenUsage && tokensUsed > 0 && (
-              <div className="p-3 rounded-xl border vol-ring vol-panel flex items-center gap-6">
+              <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
                 <div>
                   <div className="vol-accent text-[10px] tracking-wider font-bold">
                     TOTAL CONSUMPTION
                   </div>
                   <div className="vol-t1 font-extrabold text-lg">
                     {tokensUsed}{" "}
-                    <span className="text-xs vol-t2 font-normal">
-                      tokens
-                    </span>
+                    <span className="text-xs vol-t2 font-normal">tokens</span>
                   </div>
                 </div>
                 <div className="h-8 w-px vol-wash"></div>
@@ -3768,7 +3735,7 @@ const pushToast = useToast();
         </div>
 
         {/* Textarea Area */}
-        <div className="flex-1 relative overflow-hidden flex flex-col vol-surface">
+        <div className="flex-1 relative overflow-hidden flex flex-col vol-surface min-h-[44vh]">
           {isScanning && (
             <motion.div
               initial={{ width: 0 }}
@@ -3811,7 +3778,7 @@ const pushToast = useToast();
               </button>
 
               <button
-                onClick={() => setCurrentView("boss")}
+                onClick={() => setCurrentView("meeting")}
                 className="flex items-center justify-center gap-2 py-3 rounded-xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
               >
                 <Crown className="w-4 h-4" />
@@ -3914,7 +3881,7 @@ const pushToast = useToast();
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView("boss")}
+              onClick={() => setCurrentView("meeting")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border vol-ring-strong vol-accent font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
@@ -4148,9 +4115,7 @@ const pushToast = useToast();
               >
                 <div>
                   <div className="font-bold vol-t1">{agent.name}</div>
-                  <div className="text-[9px] vol-t2 mt-0.5">
-                    {agent.role}
-                  </div>
+                  <div className="text-[9px] vol-t2 mt-0.5">{agent.role}</div>
                 </div>
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
               </div>
@@ -4271,9 +4236,7 @@ const pushToast = useToast();
                         {issue.severity}
                       </div>
                     </div>
-                    <div className="vol-accent mb-3">
-                      {issue.description}
-                    </div>
+                    <div className="vol-accent mb-3">{issue.description}</div>
                     <div className="text-sm opacity-75 leading-snug mb-4">
                       {issue.explanation}
                     </div>
@@ -4534,9 +4497,9 @@ const pushToast = useToast();
                     "Code with live agent suggestions",
                   ],
                   [
-                    "boss",
+                    "meeting",
                     Bot,
-                    "VOLT HUB",
+                    "AGENTS",
                     "Chat with the AI core orchestrator",
                   ],
                   [

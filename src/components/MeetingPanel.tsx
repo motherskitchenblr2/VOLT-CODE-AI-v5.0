@@ -231,7 +231,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-black to-slate-950 p-6 overflow-hidden">
+    <div className="w-full h-full bg-gradient-to-br from-[var(--grad-a)] via-[var(--grad-a)] to-[var(--grad-b)] p-6 overflow-hidden">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -256,9 +256,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             <button
               onClick={() => setLanguage("en")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
-                language === "en"
-                  ? "bg-blue-600 vol-t1"
-                  : "vol-t2 hover:vol-t1"
+                language === "en" ? "bg-blue-600 vol-t1" : "vol-t2 hover:vol-t1"
               }`}
             >
               EN
@@ -266,9 +264,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
             <button
               onClick={() => setLanguage("hi")}
               className={`px-3 py-1.5 rounded font-semibold text-sm transition-all ${
-                language === "hi"
-                  ? "bg-blue-600 vol-t1"
-                  : "vol-t2 hover:vol-t1"
+                language === "hi" ? "bg-blue-600 vol-t1" : "vol-t2 hover:vol-t1"
               }`}
             >
               HI

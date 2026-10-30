@@ -180,7 +180,7 @@ export function AIProviderSelector({
   };
 
   return (
-    <div className="space-y-4 p-6 bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border vol-ring rounded-2xl">
+    <div className="space-y-4 p-6 bg-gradient-to-br from-[var(--grad-a)] to-[var(--grad-b)] border vol-ring rounded-2xl">
       <div className="text-xs font-bold vol-accent uppercase tracking-wider mb-4 flex items-center gap-2">
         <div className="w-2 h-2 vol-acc-bg rounded-full"></div>
         AI Provider Selection

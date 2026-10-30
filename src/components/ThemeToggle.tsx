@@ -28,7 +28,11 @@ export const ThemeToggle: React.FC<{ compact?: boolean }> = ({ compact }) => {
         compact ? "h-10 w-10" : "h-10 w-10"
       }`}
     >
-      {isDay ? <Moon className="w-4 h-4 vol-accent" /> : <Sun className="w-4 h-4 vol-accent" />}
+      {isDay ? (
+        <Moon className="w-4 h-4 vol-accent" />
+      ) : (
+        <Sun className="w-4 h-4 vol-accent" />
+      )}
     </button>
   );
 };
