@@ -535,7 +535,9 @@ html[data-theme="day"] footer {
   html[data-theme="day"] section .vol-panel,
   html[data-theme="day"] section .vol-elev {
     border-radius: 18px;
-    box-shadow: 10px 10px 22px rgba(174, 181, 196, 0.8), -8px -8px 18px #ffffff;
+    box-shadow:
+      10px 10px 22px rgba(174, 181, 196, 0.8),
+      -8px -8px 18px #ffffff;
   }
   section .vol-well,
   section input,
@@ -556,7 +558,9 @@ html[data-theme="day"] footer {
 @media (max-width: 767px) {
   html[data-theme="day"] .vol-bottomnav {
     background: var(--s-elev);
-    box-shadow: 0 -10px 24px rgba(174, 181, 196, 0.6), inset 0 1px 0 #ffffff;
+    box-shadow:
+      0 -10px 24px rgba(174, 181, 196, 0.6),
+      inset 0 1px 0 #ffffff;
   }
   html[data-theme="day"] .vol-bottomnav .neo-active {
     background: var(--s-well);
