@@ -1,9 +1,7 @@
-# VOLT Auto-Fix Prompt — browser audit 2026-10-30T04:48 UTC
-
+# VOLT Auto-Fix Prompt — browser audit 2026-10-30T05:17 UTC
 Target branch: `fix/auto`
 
 ## Task for any AI/agent
-
 1. Checkout/create the target branch.
 2. Fix every failing check listed in the report (file evidence inside
    `AUDIT_REPORT.md`; run `node audit.mjs` locally against `npm run build`
@@ -14,5 +12,4 @@ Target branch: `fix/auto`
    append the reason, never repeat it.
 
 ## Current failures
-
 None — clean.
