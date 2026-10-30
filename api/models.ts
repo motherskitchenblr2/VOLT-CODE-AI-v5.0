@@ -172,6 +172,20 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
   }
 
   const rawProvider = typeof req.query.provider === 'string' ? req.query.provider.toLowerCase() : '';
+  // Keys arrive via header (preferred) or legacy query param. Headers keep
+  // credentials out of access logs; the query path stays for compatibility.
+  const headerKeyMap: Record<string, string> = {};
+  const rawHeaderKeys = req.headers?.["x-volt-provider-keys"];
+  if (typeof rawHeaderKeys === "string" && rawHeaderKeys.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(rawHeaderKeys) as Record<string, unknown>;
+      for (const [k, v] of Object.entries(parsed)) {
+        if (typeof v === "string" && v) headerKeyMap[k.toLowerCase()] = v;
+      }
+    } catch {
+      /* ignore malformed header */
+    }
+  }
   const rawKeys = Array.isArray(req.query.key)
     ? (req.query.key as string[])
     : typeof req.query.key === 'string'
@@ -203,6 +217,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       const stored = storedSecrets[providerToSecretKey[provider]];
       const key =
         (typeof stored === 'string' && stored.length > 0 ? stored : '') ||
+        headerKeyMap[provider] ||
         rawKeys[index] ||
         apiKeyFromEnv(provider) ||
         '';

@@ -242,7 +242,7 @@ export function applySecurityHeaders(res: Res, origin?: string): void {
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, Cookie",
+      "Content-Type, Authorization, Cookie, X-Volt-Provider-Keys",
     );
   }
 }
