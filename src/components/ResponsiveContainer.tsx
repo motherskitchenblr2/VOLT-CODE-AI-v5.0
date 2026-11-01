@@ -222,7 +222,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                 ) : (
                   <div className="p-3 grid grid-cols-2 gap-2 pb-[calc(env(safe-area-inset-bottom)+12px)]">
                     {NAV.filter(
-                      ([v]) => !["editor", "ide", "swarm", "meeting"].includes(v),
+                      ([v]) =>
+                        !["editor", "ide", "swarm", "meeting"].includes(v),
                     ).map(([view, label, icon]) => (
                       <button
                         key={view}

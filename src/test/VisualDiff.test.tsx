@@ -24,7 +24,11 @@ const paneOf = (label: string) =>
 describe("VisualDiff mobile panes", () => {
   it("shows one pane at a time with the toggle", () => {
     render(
-      <VisualDiff issues={[issue]} acceptedHunkIds={[]} onToggleHunk={() => {}} />,
+      <VisualDiff
+        issues={[issue]}
+        acceptedHunkIds={[]}
+        onToggleHunk={() => {}}
+      />,
     );
 
     fireEvent.click(screen.getByText("Side-By-Side"));
