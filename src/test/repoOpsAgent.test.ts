@@ -1,10 +1,25 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { scanWorkflow, scanSecrets, scanPatch, summarize } from "../lib/injectionScan";
-import { merge3, findConflictCandidates, mergePrompt } from "../lib/conflictResolver";
-import { reviewPullRequest, reviewMarkdown, lessonMarkdown, type PRFile } from "../lib/repoAgent";
+import {
+  scanWorkflow,
+  scanSecrets,
+  scanPatch,
+  summarize,
+} from "../lib/injectionScan";
+import {
+  merge3,
+  findConflictCandidates,
+  mergePrompt,
+} from "../lib/conflictResolver";
+import {
+  reviewPullRequest,
+  reviewMarkdown,
+  lessonMarkdown,
+  type PRFile,
+} from "../lib/repoAgent";
 import { PermissionSystem } from "../services/PermissionSystem";
 
-const rules = (yaml: string) => scanWorkflow(".github/workflows/ci.yml", yaml).map((f) => f.rule);
+const rules = (yaml: string) =>
+  scanWorkflow(".github/workflows/ci.yml", yaml).map((f) => f.rule);
 
 describe("injectionScan — workflows", () => {
   it("flags pull_request_target that checks out the PR head", () => {
@@ -18,7 +33,12 @@ describe("injectionScan — workflows", () => {
       "          ref: ${{ github.event.pull_request.head.sha }}",
     ].join("\n");
     const found = scanWorkflow("ci.yml", yaml);
-    expect(found.some((f) => f.rule === "wf-pr-target-head-checkout" && f.severity === "critical")).toBe(true);
+    expect(
+      found.some(
+        (f) =>
+          f.rule === "wf-pr-target-head-checkout" && f.severity === "critical",
+      ),
+    ).toBe(true);
   });
 
   it("flags untrusted event text inside a run block, with a real line number", () => {
@@ -32,7 +52,9 @@ describe("injectionScan — workflows", () => {
       "      - run: |",
       '          echo "${{ github.event.pull_request.title }}"',
     ].join("\n");
-    const found = scanWorkflow("ci.yml", yaml).find((f) => f.rule === "wf-untrusted-in-run");
+    const found = scanWorkflow("ci.yml", yaml).find(
+      (f) => f.rule === "wf-untrusted-in-run",
+    );
     expect(found?.severity).toBe("high");
     expect(found?.line).toBe(8);
   });
@@ -88,7 +110,8 @@ describe("injectionScan — workflows", () => {
 
 describe("injectionScan — secrets", () => {
   it("finds a GitHub PAT and a private key", () => {
-    const text = "const t = 'github_pat_11BTAZRSA09FPm9atZjOgO_oD4dPw5OuEz2YfOISWU8Ix';\n-----BEGIN RSA PRIVATE KEY-----";
+    const text =
+      "const t = 'github_pat_11BTAZRSA09FPm9atZjOgO_oD4dPw5OuEz2YfOISWU8Ix';\n-----BEGIN RSA PRIVATE KEY-----";
     const found = scanSecrets("src/a.ts", text).map((f) => f.rule);
     expect(found).toContain("secret-github-pat");
     expect(found).toContain("secret-private-key");
@@ -113,11 +136,15 @@ describe("injectionScan — secrets", () => {
 
 describe("conflictResolver", () => {
   it("takes the changed side when the other side did not change", () => {
-    expect(merge3({ path: "a.ts", base: "x", ours: "x", theirs: "y" })).toMatchObject({
+    expect(
+      merge3({ path: "a.ts", base: "x", ours: "x", theirs: "y" }),
+    ).toMatchObject({
       status: "auto",
       content: "y",
     });
-    expect(merge3({ path: "a.ts", base: "x", ours: "y", theirs: "x" })).toMatchObject({
+    expect(
+      merge3({ path: "a.ts", base: "x", ours: "y", theirs: "x" }),
+    ).toMatchObject({
       status: "auto",
       content: "y",
     });
@@ -127,17 +154,28 @@ describe("conflictResolver", () => {
     const out = merge3({ path: "a.ts", base: "x", ours: "y", theirs: "z" });
     expect(out.status).toBe("manual");
     expect(out.content).toBeUndefined();
-    expect(mergePrompt({ path: "a.ts", base: "x", ours: "y", theirs: "z" })).toContain("=== PR BRANCH ===");
+    expect(
+      mergePrompt({ path: "a.ts", base: "x", ours: "y", theirs: "z" }),
+    ).toContain("=== PR BRANCH ===");
   });
 
   it("handles identical and deleted files", () => {
-    expect(merge3({ path: "a", base: "x", ours: "y", theirs: "y" }).status).toBe("identical");
-    expect(merge3({ path: "a", base: "x", ours: null, theirs: null }).status).toBe("deleted");
-    expect(merge3({ path: "a", base: "x", ours: null, theirs: "x" })).toMatchObject({ status: "auto", content: null });
+    expect(
+      merge3({ path: "a", base: "x", ours: "y", theirs: "y" }).status,
+    ).toBe("identical");
+    expect(
+      merge3({ path: "a", base: "x", ours: null, theirs: null }).status,
+    ).toBe("deleted");
+    expect(
+      merge3({ path: "a", base: "x", ours: null, theirs: "x" }),
+    ).toMatchObject({ status: "auto", content: null });
   });
 
   it("finds files changed on both sides since the merge base", () => {
-    expect(findConflictCandidates(["a", "b", "c"], ["b", "c", "d"])).toEqual(["b", "c"]);
+    expect(findConflictCandidates(["a", "b", "c"], ["b", "c", "d"])).toEqual([
+      "b",
+      "c",
+    ]);
   });
 });
 
@@ -149,20 +187,29 @@ describe("repoAgent — pull request review", () => {
   });
 
   it("blocks a leaked key and asks for changes", () => {
-    const report = reviewPullRequest([file("src/a.ts", '+const k = "ghp_abcdefghijklmnopqrstuvwxyz0123456789";')]);
+    const report = reviewPullRequest([
+      file(
+        "src/a.ts",
+        '+const k = "ghp_abcdefghijklmnopqrstuvwxyz0123456789";',
+      ),
+    ]);
     expect(report.verdict).toBe("request_changes");
     expect(report.blocks).toBeGreaterThan(0);
     expect(reviewMarkdown(report)).toContain("request changes");
   });
 
   it("warns when source changes without a test", () => {
-    const report = reviewPullRequest([file("src/lib/x.ts", "+export const x = 1;")]);
+    const report = reviewPullRequest([
+      file("src/lib/x.ts", "+export const x = 1;"),
+    ]);
     expect(report.findings.map((f) => f.rule)).toContain("no-tests");
     expect(report.verdict).toBe("comment");
   });
 
   it("approves a clean test-only diff", () => {
-    const report = reviewPullRequest([file("src/test/x.test.ts", "+it('works', () => expect(1).toBe(1));")]);
+    const report = reviewPullRequest([
+      file("src/test/x.test.ts", "+it('works', () => expect(1).toBe(1));"),
+    ]);
     expect(report.verdict).toBe("approve");
     expect(report.blocks).toBe(0);
   });
@@ -214,8 +261,12 @@ describe("PermissionSystem — per-repo team policies", () => {
       members: [{ id: "a1", name: "Fixer", role: "agent" }],
     });
     expect(saved.members).toHaveLength(1);
-    expect(new PermissionSystem().canDo("me/repo", "agent", "edit_code")).toBe(true);
-    expect(new PermissionSystem().canDo("me/repo", "agent", "merge_pr")).toBe(false);
+    expect(new PermissionSystem().canDo("me/repo", "agent", "edit_code")).toBe(
+      true,
+    );
+    expect(new PermissionSystem().canDo("me/repo", "agent", "merge_pr")).toBe(
+      false,
+    );
     expect(permissions.getRepoPolicy("me/repo").members[0].name).toBe("Fixer");
   });
 
