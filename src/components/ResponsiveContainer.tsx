@@ -59,9 +59,9 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   currentView,
   setCurrentView,
 }) => {
-  const [sheet, setSheet] = useState<"none" | "terminal" | "diagnostics">(
-    "none",
-  );
+  const [sheet, setSheet] = useState<
+    "none" | "terminal" | "diagnostics" | "more"
+  >("none");
   const [navOpen, setNavOpen] = useState(false);
   const title = NAV.find(([v]) => v === currentView)?.[1] ?? "Editor";
 
@@ -149,12 +149,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           {terminal}
         </footer>
 
-        {/* ── MOBILE BOTTOM TAB BAR (5 primary + more sheet) ── */}
+        {/* ── MOBILE BOTTOM DOCK (5 primary + MORE slide-up sheet) ── */}
         <nav
-          className="xl:hidden h-16 shrink-0 border-t vol-ring vol-surface md:hidden"
+          className="xl:hidden md:hidden h-14 shrink-0 border-t vol-ring vol-surface backdrop-blur-md z-50"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          <div className="flex h-full items-stretch overflow-x-auto no-scrollbar">
+          <div className="flex h-full items-stretch">
             {NAV.filter(([v]) =>
               ["editor", "ide", "swarm", "meeting"].includes(v),
             ).map(([view, label, icon]) => (
@@ -162,7 +162,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                 key={view}
                 data-view={view}
                 onClick={() => setCurrentView(view)}
-                className={`flex-1 min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer ${
+                aria-current={currentView === view ? "page" : undefined}
+                className={`flex-1 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl cursor-pointer ${
                   currentView === view ? "vol-accent vol-acc-wash" : "vol-t2"
                 }`}
               >
@@ -173,8 +174,9 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
               </button>
             ))}
             <button
-              onClick={() => setNavOpen(true)}
-              className="min-w-[68px] flex flex-col items-center justify-center gap-0.5 rounded-xl min-h-[44px] cursor-pointer vol-t2 transition-all hover:vol-wash"
+              onClick={() => setSheet("more")}
+              aria-haspopup="dialog"
+              className="flex-1 min-w-[44px] min-h-[44px] flex flex-col items-center justify-center gap-0.5 rounded-xl cursor-pointer vol-t2 transition-all hover:vol-wash"
             >
               <Menu className="w-5 h-5" />
               <span className="text-[9px] font-bold tracking-wider">MORE</span>
@@ -182,28 +184,85 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           </div>
         </nav>
 
-        {/* mobile/tablet SHARED bottom-sheet (terminal or diagnostics) */}
+        {/* mobile/tablet SHARED slide-up sheet: terminal | telemetry | more tools */}
         {sheet !== "none" && (
           <div className="lg:hidden fixed inset-0 z-[90] flex flex-col justify-end">
             <div
               className="absolute inset-0 vol-veil"
               onClick={() => setSheet("none")}
             />
-            <div className="relative vol-surface border-t vol-ring h-[55vh] flex flex-col rounded-t-2xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b vol-line">
+            <div
+              role="dialog"
+              aria-label="Mobile tools"
+              className={`relative vol-surface border-t vol-ring flex flex-col rounded-t-2xl overflow-hidden ${
+                sheet === "more" ? "max-h-[80dvh]" : "h-[55vh]"
+              }`}
+            >
+              <div className="flex items-center justify-between px-4 py-2.5 border-b vol-line shrink-0">
                 <span className="text-[10px] font-black tracking-widest vol-accent">
-                  {sheet === "terminal" ? "TERMINAL" : "DIAGNOSTICS"}
+                  {sheet === "terminal"
+                    ? "TERMINAL"
+                    : sheet === "diagnostics"
+                      ? "TELEMETRY"
+                      : "MORE TOOLS"}
                 </span>
                 <button
                   onClick={() => setSheet("none")}
-                  className="cursor-pointer vol-t2 w-9 h-9 flex items-center justify-center rounded-lg"
+                  className="cursor-pointer vol-t2 w-11 h-11 flex items-center justify-center rounded-lg"
                   aria-label="Close sheet"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <div className="flex-1 overflow-auto">
-                {sheet === "terminal" ? terminal : diagnostics}
+              <div className="flex-1 min-h-0 overflow-auto">
+                {sheet === "terminal" ? (
+                  terminal
+                ) : sheet === "diagnostics" ? (
+                  diagnostics
+                ) : (
+                  <div className="p-3 grid grid-cols-2 gap-2 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+                    {NAV.filter(
+                      ([v]) => !["editor", "ide", "swarm", "meeting"].includes(v),
+                    ).map(([view, label, icon]) => (
+                      <button
+                        key={view}
+                        data-view={view}
+                        onClick={() => {
+                          setCurrentView(view);
+                          setSheet("none");
+                        }}
+                        className={`flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-left cursor-pointer ${
+                          currentView === view
+                            ? "vol-acc-bg text-black font-bold"
+                            : "vol-accent-soft hover:vol-wash"
+                        }`}
+                      >
+                        {icon}
+                        <span className="text-[11px] font-bold tracking-wider">
+                          {label}
+                        </span>
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setSheet("diagnostics")}
+                      className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-left cursor-pointer vol-accent-soft hover:vol-wash"
+                    >
+                      <Activity className="w-5 h-5" />
+                      <span className="text-[11px] font-bold tracking-wider">
+                        Telemetry
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => setSheet("terminal")}
+                      className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-left cursor-pointer vol-accent-soft hover:vol-wash"
+                    >
+                      <Terminal className="w-5 h-5" />
+                      <span className="text-[11px] font-bold tracking-wider">
+                        Terminal
+                      </span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
