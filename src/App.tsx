@@ -1950,18 +1950,22 @@ const App: React.FC = () => {
     onChange: (value: string) => void,
     options: string[],
   ) => (
-    <div className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
-      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+    <div
+      className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4"
+      title={`${label}: ${value}`}
+    >
+      <div className="shrink-0 vol-accent-soft text-[10px] sm:text-xs tracking-wider">
         {label}
       </div>
-      <ChevronDown className="w-4 h-4 vol-accent-soft" />
+      <ChevronDown className="w-4 h-4 shrink-0 vol-accent-soft" />
+      {/* narrow screens: cap chip width and ellipsize instead of pushing the rail */}
       <select
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
           addLog(`Updated config: ${label} -> ${e.target.value}`, "info");
         }}
-        className="bg-transparent vol-t1 outline-none min-w-[130px] text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none w-[92px] sm:w-auto sm:min-w-[130px] max-w-[92px] sm:max-w-none truncate text-xs cursor-pointer"
       >
         {options.map((option) => (
           <option key={option} value={option} className="vol-elev vol-t1">
@@ -2897,9 +2901,11 @@ const App: React.FC = () => {
     }
 
     if (currentView === "settings") {
+      // one scroller only: the shell section already scrolls; a nested
+      // h-full overflow-y-auto here froze touch scrolling on phones
       return (
-        <div className="p-8 max-w-2xl overflow-y-auto h-full pb-20">
-          <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
+        <div className="p-4 sm:p-8 max-w-2xl mx-auto pb-24">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
             <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-1">Workspace Backup</div>
@@ -3870,7 +3876,8 @@ const App: React.FC = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
+                title={`Language: ${languages.find((l) => l.value === language)?.label ?? language}`}
+                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0 w-[120px] sm:w-auto max-w-[120px] sm:max-w-none truncate"
               >
                 {languages.map((l) => (
                   <option key={l.value} value={l.value}>
@@ -3879,7 +3886,10 @@ const App: React.FC = () => {
                 ))}
               </select>
 
-              <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
+              <div
+                title={`Detected language: ${detectedLanguage.toUpperCase()}`}
+                className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0 whitespace-nowrap"
+              >
                 DETECTED: {detectedLanguage.toUpperCase()}
               </div>
             </div>
