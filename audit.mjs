@@ -42,53 +42,111 @@ const scan = (theme) =>
     const lightBleed = [];
     const darkBleed = [];
     const isDay = theme === "day";
-    document.querySelectorAll("section *, aside *, header *, nav *, footer *").forEach((el) => {
-      const r = el.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) return;
-      if (r.right > vw + 2) {
-        bad.push({ tag: el.tagName.toLowerCase(), cls: String(el.className || "").slice(0, 60), right: Math.round(r.right), w: Math.round(r.width), text: (el.textContent || "").trim().slice(0, 24) });
-      }
-      const cs = getComputedStyle(el);
-      const sh = cs.boxShadow;
-      if (sh && sh !== "none") {
-        shadowed++;
-        if (!isDay && /255,\s*255,\s*255/.test(sh)) {
-          whiteGlow.push({ cls: String(el.className || "").slice(0, 50), sh: sh.slice(0, 48) });
+    document
+      .querySelectorAll("section *, aside *, header *, nav *, footer *")
+      .forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width <= 0 || r.height <= 0) return;
+        if (r.right > vw + 2) {
+          bad.push({
+            tag: el.tagName.toLowerCase(),
+            cls: String(el.className || "").slice(0, 60),
+            right: Math.round(r.right),
+            w: Math.round(r.width),
+            text: (el.textContent || "").trim().slice(0, 24),
+          });
         }
-      }
-      if (!isDay && cs.backgroundColor) {
-        const m = cs.backgroundColor.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
-        if (m && (m[4] === undefined ? 1 : parseFloat(m[4])) >= 0.5 && r.width * r.height > 2500) {
-          const lum = 0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3];
-          if (lum > 195) lightBleed.push({ cls: String(el.className || "").slice(0, 45), bg: cs.backgroundColor, text: (el.textContent || "").trim().slice(0, 16) });
-        }
-      }
-      if (isDay && cs.backgroundColor) {
-        const m = cs.backgroundColor.match(/rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/);
-        if (m && (m[4] === undefined ? 1 : parseFloat(m[4])) >= 0.35) {
-          const lum = 0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3];
-          if (lum < 70 && !String(el.className).includes("vol-code-well")) {
-            darkBleed.push({ cls: String(el.className || "").slice(0, 50), bg: cs.backgroundColor, text: (el.textContent || "").trim().slice(0, 16) });
+        const cs = getComputedStyle(el);
+        const sh = cs.boxShadow;
+        if (sh && sh !== "none") {
+          shadowed++;
+          if (!isDay && /255,\s*255,\s*255/.test(sh)) {
+            whiteGlow.push({
+              cls: String(el.className || "").slice(0, 50),
+              sh: sh.slice(0, 48),
+            });
           }
         }
-      }
-    });
+        if (!isDay && cs.backgroundColor) {
+          const m = cs.backgroundColor.match(
+            /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/,
+          );
+          if (
+            m &&
+            (m[4] === undefined ? 1 : parseFloat(m[4])) >= 0.5 &&
+            r.width * r.height > 2500
+          ) {
+            const lum = 0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3];
+            if (lum > 195)
+              lightBleed.push({
+                cls: String(el.className || "").slice(0, 45),
+                bg: cs.backgroundColor,
+                text: (el.textContent || "").trim().slice(0, 16),
+              });
+          }
+        }
+        if (isDay && cs.backgroundColor) {
+          const m = cs.backgroundColor.match(
+            /rgba?\((\d+), (\d+), (\d+)(?:, ([\d.]+))?\)/,
+          );
+          if (m && (m[4] === undefined ? 1 : parseFloat(m[4])) >= 0.35) {
+            const lum = 0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3];
+            if (lum < 70 && !String(el.className).includes("vol-code-well")) {
+              darkBleed.push({
+                cls: String(el.className || "").slice(0, 50),
+                bg: cs.backgroundColor,
+                text: (el.textContent || "").trim().slice(0, 16),
+              });
+            }
+          }
+        }
+      });
     const small = [];
     if (vw <= 900) {
       document.querySelectorAll("button, [role=button]").forEach((el) => {
         const r = el.getBoundingClientRect();
-        if (r.width > 0 && r.height > 0 && r.height < 40) small.push({ h: Math.round(r.height), text: (el.textContent || el.getAttribute("aria-label") || "").trim().slice(0, 20) });
+        if (r.width > 0 && r.height > 0 && r.height < 40)
+          small.push({
+            h: Math.round(r.height),
+            text: (el.textContent || el.getAttribute("aria-label") || "")
+              .trim()
+              .slice(0, 20),
+          });
       });
     }
-    return { vw, theme, hOverflow: Math.max(0, document.documentElement.scrollWidth - vw), maskedOverflow: masked, offenders: bad.length, sample: bad.slice(0, 5), smallTargets: small.length, smallSample: small.slice(0, 4), shadowed, darkBleed: darkBleed.length, darkSample: darkBleed.slice(0, 4), whiteGlow: whiteGlow.length, whiteGlowSample: whiteGlow.slice(0, 4), lightBleed: lightBleed.length, lightBleedSample: lightBleed.slice(0, 4) };
+    return {
+      vw,
+      theme,
+      hOverflow: Math.max(0, document.documentElement.scrollWidth - vw),
+      maskedOverflow: masked,
+      offenders: bad.length,
+      sample: bad.slice(0, 5),
+      smallTargets: small.length,
+      smallSample: small.slice(0, 4),
+      shadowed,
+      darkBleed: darkBleed.length,
+      darkSample: darkBleed.slice(0, 4),
+      whiteGlow: whiteGlow.length,
+      whiteGlowSample: whiteGlow.slice(0, 4),
+      lightBleed: lightBleed.length,
+      lightBleedSample: lightBleed.slice(0, 4),
+    };
   })();
 
 async function clickView(page, candidates, anchor, viewId) {
   const visibleAnchor = async () =>
-    anchor ? await page.locator(anchor).first().isVisible().catch(() => false) : true;
+    anchor
+      ? await page
+          .locator(anchor)
+          .first()
+          .isVisible()
+          .catch(() => false)
+      : true;
   const elementsFor = async (label) => {
     const found = [];
-    for (const h of await page.locator(`:is(button,[role=button],div,a):has-text("${label}")`).all()) {
+    for (const h of await page
+      .locator(`:is(button,[role=button],div,a):has-text("${label}")`)
+      .all()) {
       if (!(await h.isVisible().catch(() => false))) continue;
       const b = await h.boundingBox().catch(() => null);
       if (b) found.push({ h, area: b.width * b.height });
@@ -97,7 +155,8 @@ async function clickView(page, candidates, anchor, viewId) {
     return found.map((f) => f.h);
   };
 
-  const direct = () => (viewId ? page.locator(`[data-view="${viewId}"]`).first() : null);
+  const direct = () =>
+    viewId ? page.locator(`[data-view="${viewId}"]`).first() : null;
   const openDrawer = async () => {
     const more = page.locator('button:has-text("MORE")').first();
     if (!(await more.isVisible().catch(() => false))) return false;
@@ -150,9 +209,15 @@ async function clickView(page, candidates, anchor, viewId) {
 }
 
 const out = [];
-const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || undefined });
+const browser = await chromium.launch({
+  executablePath: process.env.CHROME_PATH || undefined,
+});
 for (const vp of VIEWPORTS) {
-  const ctx = await browser.newContext({ viewport: { width: vp.w, height: vp.h }, isMobile: vp.mobile, hasTouch: vp.mobile });
+  const ctx = await browser.newContext({
+    viewport: { width: vp.w, height: vp.h },
+    isMobile: vp.mobile,
+    hasTouch: vp.mobile,
+  });
   await ctx.addInitScript(() => localStorage.setItem("volt_onboarded", "1"));
   const page = await ctx.newPage();
   await page.goto(BASE, { waitUntil: "domcontentloaded", timeout: 60000 });
@@ -163,18 +228,32 @@ for (const vp of VIEWPORTS) {
     // A click helper can silently land on the wrong view and every metric then
     // looks green for a view that was never opened. Anchor-assert when given.
     const navFail = anchor
-      ? !(await page.locator(anchor).first().waitFor({ state: "visible", timeout: 5000 }).then(() => true).catch(() => false))
+      ? !(await page
+          .locator(anchor)
+          .first()
+          .waitFor({ state: "visible", timeout: 5000 })
+          .then(() => true)
+          .catch(() => false))
       : false;
-    if (navFail) console.log(`  ! ${name}: navigation anchor not found (${anchor}) — this row is invalid`);
+    if (navFail)
+      console.log(
+        `  ! ${name}: navigation anchor not found (${anchor}) — this row is invalid`,
+      );
     const day = await page.evaluate(scan, "day");
-    await page.screenshot({ path: `${SHOTS}/${vp.name}--${name.replace(/\s+/g, "_")}--day.png` });
-    await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
+    await page.screenshot({
+      path: `${SHOTS}/${vp.name}--${name.replace(/\s+/g, "_")}--day.png`,
+    });
+    await page.evaluate(() => {
+      document.documentElement.dataset.theme = "dark";
+    });
     // Long enough for box-shadow transitions to finish; at 250ms the scan caught
     // mid-transition shadows (near-zero offsets + white inset) and called them
     // white glows.
     await page.waitForTimeout(700);
     const dark = await page.evaluate(scan, "dark");
-    await page.evaluate(() => { document.documentElement.dataset.theme = "day"; });
+    await page.evaluate(() => {
+      document.documentElement.dataset.theme = "day";
+    });
     out.push({ vp: vp.name, view: name, clicked, navFail, day, dark });
   }
   await ctx.close();
@@ -183,22 +262,49 @@ await browser.close();
 fs.writeFileSync("/tmp/opencode/audit.json", JSON.stringify(out, null, 1));
 
 function isFail(r) {
-  return Math.max(r.hOverflow, r.maskedOverflow, r.offenders, r.smallTargets) > 0 || r.darkBleed > 0 || r.whiteGlow > 0 || r.lightBleed > 0;
+  return (
+    Math.max(r.hOverflow, r.maskedOverflow, r.offenders, r.smallTargets) > 0 ||
+    r.darkBleed > 0 ||
+    r.whiteGlow > 0 ||
+    r.lightBleed > 0
+  );
 }
 const fails = out.filter((o) => o.navFail || isFail(o.day) || isFail(o.dark));
 for (const o of out) {
   const f = (t) => (isFail(t) ? "FAIL" : "ok");
-  console.log(`${o.vp.padEnd(12)} ${o.view.padEnd(12)} ${o.navFail ? "NAV-FAIL " : "nav-ok   "} day=${f(o.day)}(off=${o.day.offenders},dark=${o.day.darkBleed},shadow=${o.day.shadowed}) dark=${f(o.dark)}(glow=${o.dark.whiteGlow},light=${o.dark.lightBleed},off=${o.dark.offenders})`);
+  console.log(
+    `${o.vp.padEnd(12)} ${o.view.padEnd(12)} ${o.navFail ? "NAV-FAIL " : "nav-ok   "} day=${f(o.day)}(off=${o.day.offenders},dark=${o.day.darkBleed},shadow=${o.day.shadowed}) dark=${f(o.dark)}(glow=${o.dark.whiteGlow},light=${o.dark.lightBleed},off=${o.dark.offenders})`,
+  );
 }
 for (const o of fails) {
-  if (o.navFail) console.log(`  ✗ ${o.vp}/${o.view} navigation anchor missing — row cannot be trusted`);
-  if (o.dark.whiteGlow > 0) console.log(`  ✗ ${o.vp}/${o.view} DARK white-glow: ${JSON.stringify(o.dark.whiteGlowSample)}`);
-  if (o.dark.lightBleed > 0) console.log(`  ✗ ${o.vp}/${o.view} DARK light-bleed: ${JSON.stringify(o.dark.lightBleedSample)}`);
-  if (o.day.darkBleed > 0) console.log(`  ✗ ${o.vp}/${o.view} DAY dark-bleed: ${JSON.stringify(o.day.darkSample)}`);
-  if (o.day.offenders > 0) console.log(`  ✗ ${o.vp}/${o.view} DAY overflow: ${JSON.stringify(o.day.sample)}`);
+  if (o.navFail)
+    console.log(
+      `  ✗ ${o.vp}/${o.view} navigation anchor missing — row cannot be trusted`,
+    );
+  if (o.dark.whiteGlow > 0)
+    console.log(
+      `  ✗ ${o.vp}/${o.view} DARK white-glow: ${JSON.stringify(o.dark.whiteGlowSample)}`,
+    );
+  if (o.dark.lightBleed > 0)
+    console.log(
+      `  ✗ ${o.vp}/${o.view} DARK light-bleed: ${JSON.stringify(o.dark.lightBleedSample)}`,
+    );
+  if (o.day.darkBleed > 0)
+    console.log(
+      `  ✗ ${o.vp}/${o.view} DAY dark-bleed: ${JSON.stringify(o.day.darkSample)}`,
+    );
+  if (o.day.offenders > 0)
+    console.log(
+      `  ✗ ${o.vp}/${o.view} DAY overflow: ${JSON.stringify(o.day.sample)}`,
+    );
 }
 const now = new Date().toISOString();
-const rows = out.map((o) => `| ${o.vp} | ${o.view} | ${o.navFail ? "yes" : "no"} | ${o.day.offenders} | ${o.day.darkBleed} | ${o.day.smallTargets} | ${o.dark.whiteGlow} | ${o.dark.lightBleed} | ${o.dark.offenders} |`).join("\n");
+const rows = out
+  .map(
+    (o) =>
+      `| ${o.vp} | ${o.view} | ${o.navFail ? "yes" : "no"} | ${o.day.offenders} | ${o.day.darkBleed} | ${o.day.smallTargets} | ${o.dark.whiteGlow} | ${o.dark.lightBleed} | ${o.dark.offenders} |`,
+  )
+  .join("\n");
 const report = `# VOLT Dual-Theme Audit Report — ${now.slice(0, 16)} UTC
 Scope: 8 views × 3 viewports × 2 themes = 48 checks.
 
@@ -220,5 +326,9 @@ ${fails.length ? fails.map((o) => `- ${o.vp} / ${o.view}: ${isFail(o.day) ? "day
 `;
 fs.writeFileSync("AUDIT_REPORT.md", report);
 fs.writeFileSync("FIX_PROMPT.md", fixPrompt);
-console.log(fails.length ? `→ ${fails.length} failing — AUDIT_REPORT.md + FIX_PROMPT.md written` : "→ ALL GREEN — AUDIT_REPORT.md + FIX_PROMPT.md written");
+console.log(
+  fails.length
+    ? `→ ${fails.length} failing — AUDIT_REPORT.md + FIX_PROMPT.md written`
+    : "→ ALL GREEN — AUDIT_REPORT.md + FIX_PROMPT.md written",
+);
 process.exit(fails.length ? 1 : 0);

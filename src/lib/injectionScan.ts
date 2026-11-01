@@ -57,13 +57,18 @@ function runBlocks(yaml: string): Array<{ start: number; text: string }> {
   return blocks;
 }
 
-const UNTRUSTED_IN_RUN: Array<{ re: RegExp; rule: string; severity: Severity; message: string }> = [
+const UNTRUSTED_IN_RUN: Array<{
+  re: RegExp;
+  rule: string;
+  severity: Severity;
+  message: string;
+}> = [
   {
     re: /\$\{\{\s*github\.event\.(?:pull_request|issue|comment|discussion|review)[\w.]*\.(?:title|body|head\.ref|head\.label)\s*\}\}/,
     rule: "wf-untrusted-in-run",
     severity: "high",
     message:
-      "Untrusted GitHub event text is interpolated into a shell script. An attacker controls the PR/issue title or body, so this is command injection. Pass it through an env: variable and quote \"$VAR\".",
+      'Untrusted GitHub event text is interpolated into a shell script. An attacker controls the PR/issue title or body, so this is command injection. Pass it through an env: variable and quote "$VAR".',
   },
   {
     re: /\$\{\{\s*github\.head_ref\s*\}\}/,
@@ -84,8 +89,12 @@ const UNTRUSTED_IN_RUN: Array<{ re: RegExp; rule: string; severity: Severity; me
 export function scanWorkflow(file: string, yaml: string): ScanFinding[] {
   const findings: ScanFinding[] = [];
   const blocks = runBlocks(yaml);
-  const push = (severity: Severity, rule: string, message: string, line?: number) =>
-    findings.push({ file, line, rule, severity, message });
+  const push = (
+    severity: Severity,
+    rule: string,
+    message: string,
+    line?: number,
+  ) => findings.push({ file, line, rule, severity, message });
 
   // 1. pull_request_target + checkout of the PR head is the classic pwn request.
   if (/\bpull_request_target\b/.test(yaml)) {
@@ -112,7 +121,9 @@ export function scanWorkflow(file: string, yaml: string): ScanFinding[] {
   // 2. Shell scripts: interpolated attacker text, secret echo, curl | sh.
   for (const block of blocks) {
     const blockLine = (needle: string) =>
-      block.start + block.text.slice(0, block.text.indexOf(needle)).split("\n").length - 1;
+      block.start +
+      block.text.slice(0, block.text.indexOf(needle)).split("\n").length -
+      1;
     for (const rule of UNTRUSTED_IN_RUN) {
       const m = block.text.match(rule.re);
       if (m) push(rule.severity, rule.rule, rule.message, blockLine(m[0]));
@@ -184,25 +195,29 @@ const SECRET_PATTERNS: SecretPattern[] = [
     rule: "secret-github-pat",
     severity: "critical",
     re: /github_pat_[A-Za-z0-9_]{20,}/,
-    message: "GitHub fine-grained PAT committed in source. Rotate it and read it from env/secrets.",
+    message:
+      "GitHub fine-grained PAT committed in source. Rotate it and read it from env/secrets.",
   },
   {
     rule: "secret-github-token",
     severity: "critical",
     re: /\bgh[pousr]_[A-Za-z0-9]{30,}/,
-    message: "GitHub token committed in source. Rotate it and read it from env/secrets.",
+    message:
+      "GitHub token committed in source. Rotate it and read it from env/secrets.",
   },
   {
     rule: "secret-openai-key",
     severity: "critical",
     re: /\bsk-[A-Za-z0-9_-]{20,}/,
-    message: "API key committed in source. Rotate it and load it from a server-side env var.",
+    message:
+      "API key committed in source. Rotate it and load it from a server-side env var.",
   },
   {
     rule: "secret-aws-key",
     severity: "critical",
     re: /\bAKIA[0-9A-Z]{16}\b/,
-    message: "AWS access key id committed in source. Rotate it and use an IAM role.",
+    message:
+      "AWS access key id committed in source. Rotate it and use an IAM role.",
   },
   {
     rule: "secret-slack-token",
@@ -214,7 +229,8 @@ const SECRET_PATTERNS: SecretPattern[] = [
     rule: "secret-private-key",
     severity: "critical",
     re: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
-    message: "Private key committed in source. Rotate the key pair immediately.",
+    message:
+      "Private key committed in source. Rotate the key pair immediately.",
   },
 ];
 
@@ -247,6 +263,10 @@ export function summarize(findings: ScanFinding[]) {
   const counts = { critical: 0, high: 0, medium: 0, low: 0 };
   for (const f of findings) counts[f.severity]++;
   const verdict: "fail" | "review" | "pass" =
-    counts.critical > 0 ? "fail" : counts.high + counts.medium > 0 ? "review" : "pass";
+    counts.critical > 0
+      ? "fail"
+      : counts.high + counts.medium > 0
+        ? "review"
+        : "pass";
   return { ...counts, total: findings.length, verdict };
 }

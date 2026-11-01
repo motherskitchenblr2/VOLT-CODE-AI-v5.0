@@ -521,8 +521,11 @@ const App: React.FC = () => {
   const [lastCheckpointId, setLastCheckpointId] = useState<string | null>(null);
   const [splitView, setSplitView] = useState(false);
   // Revived dormant module: provider gateway with automatic fallback + logs
-  const { executeQuery: gatewayQuery, loading: gatewayLoading, logs: gatewayLogs } =
-    useApiGateway();
+  const {
+    executeQuery: gatewayQuery,
+    loading: gatewayLoading,
+    logs: gatewayLogs,
+  } = useApiGateway();
 
   const [vaultStored, setVaultStored] = useState(false);
   const [vaultSyncState, setVaultSyncState] = useState<
@@ -3051,8 +3054,8 @@ const App: React.FC = () => {
             <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-2">Gateway Console</div>
               <p className="text-[11px] vol-t2 mb-3">
-                Runs a probe through the provider fallback chain (skips providers
-                without keys) and shows the routing log.
+                Runs a probe through the provider fallback chain (skips
+                providers without keys) and shows the routing log.
               </p>
               <button
                 disabled={gatewayLoading}
@@ -3086,12 +3089,16 @@ const App: React.FC = () => {
             </div>
 
             <div className="border vol-ring rounded-xl p-6 vol-panel">
-              <div className="text-lg font-bold mb-2">Provider &amp; Model Picker</div>
+              <div className="text-lg font-bold mb-2">
+                Provider &amp; Model Picker
+              </div>
               <p className="text-[11px] vol-t2 mb-3">
                 Pick a provider/model; matching live models apply to the engine.
               </p>
               <AIProviderSelector
-                onProviderChange={(p) => addLog(`Provider selected: ${p.name}`, "info")}
+                onProviderChange={(p) =>
+                  addLog(`Provider selected: ${p.name}`, "info")
+                }
                 onModelChange={(m) => {
                   const hit = modelOptionsAll.find((x) => x.id === m.id);
                   if (hit) setSelectedModel(hit);
@@ -3104,7 +3111,9 @@ const App: React.FC = () => {
             </div>
 
             <div className="border vol-ring rounded-xl p-6 vol-panel">
-              <div className="text-lg font-bold mb-2">Workspace Checkpoints</div>
+              <div className="text-lg font-bold mb-2">
+                Workspace Checkpoints
+              </div>
               <p className="text-[11px] vol-t2 mb-3">
                 Snapshot the editor before risky edits; restore any time.
               </p>
@@ -3131,7 +3140,10 @@ const App: React.FC = () => {
                     const content = await restoreCheckpoint(lastCheckpointId);
                     if (typeof content === "string") {
                       handleCodeChange(content);
-                      addLog(`Restored checkpoint ${lastCheckpointId}`, "success");
+                      addLog(
+                        `Restored checkpoint ${lastCheckpointId}`,
+                        "success",
+                      );
                     }
                   }}
                   className="px-3 py-2.5 rounded-xl vol-well border vol-ring vol-accent text-xs font-black cursor-pointer disabled:opacity-50"
@@ -3664,7 +3676,9 @@ const App: React.FC = () => {
     if (currentView === "meeting") {
       // Meeting minutes + orchestrator guidance derived from the live swarm run
       const agentNames = Object.keys(agentBreakdown);
-      const participants = agentNames.length ? agentNames : ["Security", "QA", "UI", "Architect"];
+      const participants = agentNames.length
+        ? agentNames
+        : ["Security", "QA", "UI", "Architect"];
       const minutes = {
         id: `mtg-${consensusScore ?? 0}`,
         title: "Agent Swarm Sync",
@@ -3679,7 +3693,10 @@ const App: React.FC = () => {
               ? `Score ${agentBreakdown[name]}/100`
               : "Awaiting run",
           votes: [
-            { agent: "Triage", vote: (agentBreakdown[name] ?? 0) >= 70 ? "yes" : "no" } as const,
+            {
+              agent: "Triage",
+              vote: (agentBreakdown[name] ?? 0) >= 70 ? "yes" : "no",
+            } as const,
           ],
           bossApproval: Boolean(consensusPassed),
           timestamp: new Date(),
@@ -3689,34 +3706,40 @@ const App: React.FC = () => {
           description: `Apply fixes approved by ${name}`,
           assignedTo: name,
           dueDate: new Date(),
-          status: (consensusPassed ? "completed" : "pending") as "pending" | "in-progress" | "completed",
+          status: (consensusPassed ? "completed" : "pending") as
+            "pending" | "in-progress" | "completed",
           priority: "medium" as const,
         })),
         notes:
           (Array.isArray(consensusFeedback)
             ? consensusFeedback.join(" ")
-            : consensusFeedback) || "No consensus feedback yet — run an analysis.",
+            : consensusFeedback) ||
+          "No consensus feedback yet — run an analysis.",
       };
       const score = consensusScore ?? 0;
-      const guidance = !consensusPassed && score > 0
-        ? {
-            id: "g-1",
-            prNumber: 0,
-            reason: "Consensus score below the merge threshold",
-            concern: "rejected-critical-fix" as const,
-            recommendation:
-              (Array.isArray(consensusFeedback)
-                ? consensusFeedback.join(" ")
-                : consensusFeedback) || "Retry with a stricter skill or repair the flagged issues.",
-            agentFeedback: participants.map((n) => `${n}: ${agentBreakdown[n] ?? "?"}/100`),
-            riskLevel: (score < 40 ? "critical" : score < 60 ? "high" : "medium") as
-              | "low"
-              | "medium"
-              | "high"
-              | "critical",
-            timestamp: new Date(),
-          }
-        : null;
+      const guidance =
+        !consensusPassed && score > 0
+          ? {
+              id: "g-1",
+              prNumber: 0,
+              reason: "Consensus score below the merge threshold",
+              concern: "rejected-critical-fix" as const,
+              recommendation:
+                (Array.isArray(consensusFeedback)
+                  ? consensusFeedback.join(" ")
+                  : consensusFeedback) ||
+                "Retry with a stricter skill or repair the flagged issues.",
+              agentFeedback: participants.map(
+                (n) => `${n}: ${agentBreakdown[n] ?? "?"}/100`,
+              ),
+              riskLevel: (score < 40
+                ? "critical"
+                : score < 60
+                  ? "high"
+                  : "medium") as "low" | "medium" | "high" | "critical",
+              timestamp: new Date(),
+            }
+          : null;
       return (
         <div className="w-full h-full overflow-y-auto">
           <MeetingPanel onClose={() => setCurrentView("editor")} />
@@ -3964,18 +3987,18 @@ const App: React.FC = () => {
               />
             </div>
           ) : (
-          <textarea
-            value={code}
-            onChange={(e) => handleCodeChange(e.target.value)}
-            spellCheck={false}
-            autoCorrect="off"
-            className="w-full flex-1 resize-none bg-transparent p-4 sm:p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
-            style={{
-              fontFamily:
-                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
-            }}
-          />
+            <textarea
+              value={code}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              spellCheck={false}
+              autoCorrect="off"
+              className="w-full flex-1 resize-none bg-transparent p-4 sm:p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
+              style={{
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
+              }}
+            />
           )}
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}

@@ -33,7 +33,10 @@ export interface ReviewReport {
 
 const SECURITY_LEVELS = new Set(["critical", "high"]);
 
-const toFinding = (severity: ReviewSeverity, f: ScanFinding): ReviewFinding => ({
+const toFinding = (
+  severity: ReviewSeverity,
+  f: ScanFinding,
+): ReviewFinding => ({
   rule: f.rule,
   severity,
   file: f.file,
@@ -41,7 +44,12 @@ const toFinding = (severity: ReviewSeverity, f: ScanFinding): ReviewFinding => (
 });
 
 /** Code smells that are cheap to spot in a patch and worth stopping. */
-const PATCH_RULES: Array<{ rule: string; severity: ReviewSeverity; re: RegExp; message: string }> = [
+const PATCH_RULES: Array<{
+  rule: string;
+  severity: ReviewSeverity;
+  re: RegExp;
+  message: string;
+}> = [
   {
     rule: "conflict-markers",
     severity: "block",
@@ -52,25 +60,29 @@ const PATCH_RULES: Array<{ rule: string; severity: ReviewSeverity; re: RegExp; m
     rule: "eval-usage",
     severity: "block",
     re: /^\+\s*(?:eval\(|new Function\()/m,
-    message: "Dynamic code execution (eval / new Function). Removes the safety of the bundle; use a map of handlers.",
+    message:
+      "Dynamic code execution (eval / new Function). Removes the safety of the bundle; use a map of handlers.",
   },
   {
     rule: "child-process",
     severity: "block",
     re: /^\+.*require\(["'](?:node:)?child_process["']\)|\+\s*import\s+.*["'](?:node:)?child_process["']/m,
-    message: "child_process in app code. If it must exist, it belongs in a script with input validation.",
+    message:
+      "child_process in app code. If it must exist, it belongs in a script with input validation.",
   },
   {
     rule: "raw-html",
     severity: "warn",
     re: /dangerouslySetInnerHTML/,
-    message: "dangerouslySetInnerHTML renders untrusted HTML as-is; sanitize it or render text.",
+    message:
+      "dangerouslySetInnerHTML renders untrusted HTML as-is; sanitize it or render text.",
   },
   {
     rule: "insecure-http",
     severity: "warn",
     re: /^\+\s*fetch\(\s*["']http:\/\//m,
-    message: "Plain http:// request; use https:// so payloads are not readable in transit.",
+    message:
+      "Plain http:// request; use https:// so payloads are not readable in transit.",
   },
   {
     rule: "debug-leftover",
@@ -82,7 +94,8 @@ const PATCH_RULES: Array<{ rule: string; severity: ReviewSeverity; re: RegExp; m
     rule: "base64-atob-json",
     severity: "note",
     re: /^\+.*\batob\(/m,
-    message: "atob() is used; it throws on non-latin1 input. Wrap it and handle the failure.",
+    message:
+      "atob() is used; it throws on non-latin1 input. Wrap it and handle the failure.",
   },
 ];
 
@@ -95,30 +108,46 @@ export function reviewPullRequest(files: PRFile[]): ReviewReport {
     const patch = file.patch ?? "";
     for (const rule of PATCH_RULES) {
       if (rule.re.test(patch)) {
-        findings.push({ rule: rule.rule, severity: rule.severity, file: file.filename, message: rule.message });
+        findings.push({
+          rule: rule.rule,
+          severity: rule.severity,
+          file: file.filename,
+          message: rule.message,
+        });
       }
     }
     // Only added lines can leak a new secret.
     for (const f of scanPatch(file.filename, patch)) {
-      findings.push(toFinding(SECURITY_LEVELS.has(f.severity) ? "block" : "warn", f));
+      findings.push(
+        toFinding(SECURITY_LEVELS.has(f.severity) ? "block" : "warn", f),
+      );
     }
     if (/^\.github\/workflows\/.+\.ya?ml$/.test(file.filename)) {
       for (const f of scanWorkflow(file.filename, patch)) {
         findings.push(
-          toFinding(f.severity === "critical" || f.severity === "high" ? "block" : "warn", f),
+          toFinding(
+            f.severity === "critical" || f.severity === "high"
+              ? "block"
+              : "warn",
+            f,
+          ),
         );
       }
     }
   }
 
-  const touchesTests = paths.some((p) => /(^|\/)(test|tests|__tests__)\//.test(p) || /\.test\.[jt]sx?$/.test(p));
+  const touchesTests = paths.some(
+    (p) =>
+      /(^|\/)(test|tests|__tests__)\//.test(p) || /\.test\.[jt]sx?$/.test(p),
+  );
   const touchesCode = paths.some((p) => /^src\/(?!test\/).*\.[jt]sx?$/.test(p));
   if (touchesCode && !touchesTests) {
     findings.push({
       rule: "no-tests",
       severity: "warn",
       file: "src/",
-      message: "Source changed but no test changed. Add one runnable check covering the new branch of logic.",
+      message:
+        "Source changed but no test changed. Add one runnable check covering the new branch of logic.",
     });
   }
 
@@ -127,7 +156,8 @@ export function reviewPullRequest(files: PRFile[]): ReviewReport {
       rule: "env-committed",
       severity: "block",
       file: ".env",
-      message: "A .env file is in the diff. Secrets belong in the hosting env vars, never in git.",
+      message:
+        "A .env file is in the diff. Secrets belong in the hosting env vars, never in git.",
     });
   }
 
@@ -138,7 +168,8 @@ export function reviewPullRequest(files: PRFile[]): ReviewReport {
       rule: "lockfile-mismatch",
       severity: "warn",
       file: lockChanged ? "package-lock.json" : "package.json",
-      message: "package.json and package-lock.json must change together, or installs drift from the lock.",
+      message:
+        "package.json and package-lock.json must change together, or installs drift from the lock.",
     });
   }
 
@@ -163,7 +194,8 @@ export function reviewPullRequest(files: PRFile[]): ReviewReport {
   };
 }
 
-const icon = (s: ReviewSeverity) => (s === "block" ? "🛑" : s === "warn" ? "⚠️" : "ℹ️");
+const icon = (s: ReviewSeverity) =>
+  s === "block" ? "🛑" : s === "warn" ? "⚠️" : "ℹ️";
 
 /** Markdown body for the real GitHub review. */
 export function reviewMarkdown(report: ReviewReport): string {
@@ -174,7 +206,9 @@ export function reviewMarkdown(report: ReviewReport): string {
         ? "Review notes from the VOLT review agent."
         : "No blocking issues found by the VOLT review agent.";
   const rows = report.findings
-    .map((f) => `- ${icon(f.severity)} **${f.rule}** \`${f.file}\` — ${f.message}`)
+    .map(
+      (f) => `- ${icon(f.severity)} **${f.rule}** \`${f.file}\` — ${f.message}`,
+    )
     .join("\n");
   return [
     `## VOLT review — ${report.verdict.replace("_", " ")}`,
@@ -183,7 +217,8 @@ export function reviewMarkdown(report: ReviewReport): string {
     "",
     `Reviewed ${report.filesReviewed} file(s), ${report.linesAdded} added line(s). ${report.blocks} blocking, ${report.warns} warning.`,
     "",
-    rows || "_Nothing to flag: no secrets, no workflow injection, no debug leftovers._",
+    rows ||
+      "_Nothing to flag: no secrets, no workflow injection, no debug leftovers._",
     "",
     "_Rules run locally in the app; no code is sent anywhere for this report._",
   ].join("\n");
@@ -201,7 +236,9 @@ export function reviewPrompt(report: ReviewReport, files: PRFile[]): string {
     "If the static rules below already caught something, say whether it matters and how to fix it.",
     "",
     "Static findings:",
-    report.findings.map((f) => `- [${f.severity}] ${f.file}: ${f.message}`).join("\n") || "- none",
+    report.findings
+      .map((f) => `- [${f.severity}] ${f.file}: ${f.message}`)
+      .join("\n") || "- none",
     "",
     "Diff (truncated):",
     diff,
@@ -215,7 +252,10 @@ export function lessonMarkdown(input: {
   reason: string;
   date?: Date;
 }): string {
-  const date = (input.date ?? new Date()).toISOString().slice(0, 16).replace("T", " ");
+  const date = (input.date ?? new Date())
+    .toISOString()
+    .slice(0, 16)
+    .replace("T", " ");
   return [
     "",
     `## ${date} UTC — PR #${input.prNumber} rejected`,
