@@ -100,17 +100,18 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
       {/* ── MAIN STAGE — all screens ── */}
       <div className="flex-1 flex flex-col overflow-hidden relative min-w-0">
         {/* Mobile/tablet header: title + sheet triggers (hidden ≥1280 where panes exist) */}
-        <header className="xl:hidden h-14 shrink-0 border-b vol-ring vol-surface flex items-center justify-between px-4">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="xl:hidden h-12 shrink-0 border-b vol-ring vol-surface flex items-center justify-between px-3">
+          {/* Title gets flex-1 min-w-0 truncate — no max-width cap, so "EDITOR" never clips to "EDI..." */}
+          <div className="flex items-center gap-2 min-w-0 flex-1">
             <Menu
-              className="w-5 h-5 vol-accent mr-0 cursor-pointer"
+              className="w-5 h-5 shrink-0 vol-accent cursor-pointer"
               onClick={() => setNavOpen(true)}
             />
-            <span className="font-black tracking-widest vol-t1 text-sm min-w-0 max-w-[45%] sm:max-w-none truncate">
+            <span className="shrink-0 text-sm font-semibold tracking-wider vol-t1 truncate">
               {title.toUpperCase()}
             </span>
           </div>
-          <div className="flex items-center gap-3 vol-t2">
+          <div className="flex items-center gap-1.5 vol-t2 shrink-0">
             <ThemeToggle compact />
             <button
               onClick={() =>
