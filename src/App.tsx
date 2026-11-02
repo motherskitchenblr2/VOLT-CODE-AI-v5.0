@@ -361,11 +361,12 @@ const ControlAccordion: React.FC<{
   title: string;
   icon: React.ReactNode;
   defaultOpen?: boolean;
+  className?: string;
   children: React.ReactNode;
-}> = ({ title, icon, defaultOpen = false, children }) => {
+}> = ({ title, icon, defaultOpen = false, className, children }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border vol-ring-strong rounded-xl vol-panel overflow-hidden">
+    <div className={`border vol-ring-strong rounded-xl vol-panel overflow-hidden ${className ?? ""}`}>
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 px-3 py-2 vol-surface text-left cursor-pointer"
@@ -3811,7 +3812,7 @@ const App: React.FC = () => {
 
     // Default Editor View
     return (
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-24">
         {/* Editor Toolbar Header */}
         <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
           <div className="mb-1 flex justify-between items-start">
@@ -3848,8 +3849,8 @@ const App: React.FC = () => {
             </ControlAccordion>
 
             <ControlAccordion title="CONFIG" icon={<Settings className="w-4 h-4" />} defaultOpen={false}>
-              {/* Mode / Language aligned grid (4 cols on desktop, 2 on mobile) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {/* Mode / Language aligned grid — horizontal scroll rail on mobile */}
+              <div className="flex flex-row gap-2 overflow-x-auto no-scrollbar py-1">
                 {renderSelect(
                   "Plugin",
                   selectedPlugin,
@@ -3868,7 +3869,7 @@ const App: React.FC = () => {
                   (v) => setAgentMode(v as AgentMode),
                   modeOptions,
                 )}
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 shrink-0">
                   <select
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
@@ -3891,7 +3892,7 @@ const App: React.FC = () => {
               </div>
             </ControlAccordion>
 
-            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false}>
+            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false} className="hidden md:block">
               <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
                 <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                   Operation Mode
@@ -3986,7 +3987,7 @@ const App: React.FC = () => {
             </div>
           ) : (
             <div
-              className="flex-1 relative overflow-hidden vol-surface min-h-[44vh]"
+              className="flex-1 relative overflow-hidden vol-surface min-h-[45dvh]"
             >
               {/* Sticky line-number gutter — scroll-synced with the editor */}
               <div
@@ -4031,8 +4032,8 @@ const App: React.FC = () => {
           )}
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
-          <div className="md:hidden p-4 border-t vol-ring vol-wash flex flex-col gap-2 select-none w-full shrink-0">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="md:hidden sticky bottom-16 z-30 p-2 border-t vol-ring vol-surface w-full select-none">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               <button
                 onClick={analyzeCode}
                 disabled={isAnalyzing || isSystemHalted}
@@ -4053,18 +4054,18 @@ const App: React.FC = () => {
                 <Users className="w-4 h-4" />
                 AGENT CHAT
               </button>
-            </div>
 
-            {fixedCode && (
-              <button
-                id="fix-all-btn-mobile"
-                onClick={applyAllFixes}
-                className="w-full py-3.5 flex items-center justify-center gap-2 rounded-xl vol-acc-bg text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
-              >
-                <Zap className="w-4 h-4" />
-                APPLY ALL PATCHES ({issues.length})
-              </button>
-            )}
+              {fixedCode && (
+                <button
+                  id="fix-all-btn-mobile"
+                  onClick={applyAllFixes}
+                  className="py-3.5 flex items-center justify-center gap-2 rounded-xl vol-acc-bg text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
+                >
+                  <Zap className="w-4 h-4" />
+                  APPLY ALL PATCHES ({issues.length})
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Action Overlay buttons */}
