@@ -2,7 +2,9 @@
  * SkillSpector rule subset: credential leaks.
  * Flags hardcoded keys/tokens and environment-token harvesting patterns.
  */
-import type { ScanFinding } from "./astExecution";
+import { lineColumnOf, type ScanFinding } from "./index";
+
+type SeverityType = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
 const CREDENTIAL_PATTERNS: Array<{
   re: RegExp;
@@ -36,16 +38,6 @@ const CREDENTIAL_PATTERNS: Array<{
   },
 ];
 
-type SeverityType = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-
-function lineColumnOf(code: string, index: number): ScanLocation {
-  const before = code.slice(0, index);
-  const line = before.split("\n").length;
-  const lastNewline = before.lastIndexOf("\n");
-  const column = lastNewline === -1 ? index + 1 : index - lastNewline;
-  return { line, column };
-}
-
 export function credentialLeak(code: string): ScanFinding[] {
   const findings: ScanFinding[] = [];
   for (const { re, rule, severity, message } of CREDENTIAL_PATTERNS) {
@@ -66,5 +58,3 @@ export function credentialLeak(code: string): ScanFinding[] {
   }
   return findings;
 }
-
-type ScanLocation = { line: number; column: number };

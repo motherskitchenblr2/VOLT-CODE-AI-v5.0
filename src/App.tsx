@@ -7,7 +7,6 @@ import { SplitEditorLayout } from "./components/SplitEditorLayout";
 import { AIProviderSelector } from "./components/AIProviderSelector";
 import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
 import { BossGuidancePanel } from "./components/BossGuidancePanel";
-import { useGitBackup } from "./hooks/useGitBackup";
 import { useApiGateway } from "./hooks/useApiGateway";
 import {
   Play,
@@ -54,18 +53,7 @@ import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas"
 import { TODOListWidget, type TodoItem } from "./components/TODOListWidget";
 import { SwarmPanel } from "./components/SwarmPanel";
 
-import {
-  PerformanceOptimizer,
-  OptimizerReport,
-} from "./services/PerformanceOptimizer";
-import { ProviderRegistry, ProviderState } from "./services/ProviderRegistry";
 import { RecoveryCenter } from "./services/RecoveryCenter";
-import { RepairPlanner } from "./services/RepairPlanner";
-import {
-  RepoIntelligence,
-  HealthScoreDetails,
-} from "./services/RepoIntelligence";
-import { SentinelWatcher } from "./services/SentinelWatcher";
 import { inspectBuffer } from "./services/sentinelService";
 import { riskLevel, levelLabel } from "./lib/sentinel/analyzers";
 import {
@@ -517,21 +505,15 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelOptionsAll]);
 
-  // Secure vault: which secrets are stored encrypted in MongoDB
-  // Revived dormant module: workspace checkpoints (local + GitHub-backed)
-  const {
-    createCheckpoint: createWorkspaceCheckpoint,
-    restoreCheckpoint,
-    backingUp,
-  } = useGitBackup();
-  const [lastCheckpointId, setLastCheckpointId] = useState<string | null>(null);
-  const [splitView, setSplitView] = useState(false);
   // Revived dormant module: provider gateway with automatic fallback + logs
   const {
     executeQuery: gatewayQuery,
     loading: gatewayLoading,
     logs: gatewayLogs,
   } = useApiGateway();
+
+  const [lastCheckpointId, setLastCheckpointId] = useState<string | null>(null);
+  const [splitView, setSplitView] = useState(false);
 
   const [vaultStored, setVaultStored] = useState(false);
   const [vaultSyncState, setVaultSyncState] = useState<
@@ -593,17 +575,6 @@ const App: React.FC = () => {
   const [showLangAlert, setShowLangAlert] = useState(false);
 
   // RC2 Upgraded states
-  const [providers, setProviders] = useState<ProviderState[]>(() => {
-    const reg = new ProviderRegistry();
-    return reg.getAllProviders();
-  });
-
-  const [optimizerReport, setOptimizerReport] = useState<OptimizerReport>(() =>
-    PerformanceOptimizer.generateReport(
-      'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}',
-    ),
-  );
-
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [acceptedHunkIds, setAcceptedHunkIds] = useState<number[]>([]);
   const [consensusPassed, setConsensusPassed] = useState<boolean | null>(null);
@@ -612,14 +583,6 @@ const App: React.FC = () => {
   const [agentBreakdown, setAgentBreakdown] = useState<Record<string, number>>(
     {},
   );
-
-  const [repoHealth, setRepoHealth] = useState<HealthScoreDetails>({
-    totalScore: 98,
-    lintWarnings: 2,
-    complexityPenalty: 0,
-    circularCyclesCount: 0,
-    testPassRate: 100,
-  });
 
   const [isMaintenanceActive, setIsMaintenanceActive] = useState(false);
   const [isSystemHalted, setIsSystemHalted] = useState(false);
@@ -653,10 +616,6 @@ const App: React.FC = () => {
 
   // Instantiating hooks/refs
   const consensusEngine = useRef(new ConsensusEngine());
-  const repoIntelligence = useRef(new RepoIntelligence());
-  const sentinelWatcher = useRef(
-    new SentinelWatcher((msg, type) => addLog(msg, type)),
-  );
 
   // GitHub Workspace State
   const [repoPath, setRepoPath] = useState(
@@ -898,72 +857,6 @@ const App: React.FC = () => {
     [username, addLog],
   );
 
-  const onRefreshProviderHealth = useCallback(
-    async (providerName: string) => {
-      const reg = new ProviderRegistry();
-      const targetKey = providerName.toLowerCase();
-      let keyRaw = "";
-      if (targetKey === "groq") keyRaw = groqKey;
-      else if (targetKey === "openrouter") keyRaw = openrouterKey;
-      else if (targetKey === "nvidia") keyRaw = nvidiaKey;
-      else if (targetKey === "huggingface") keyRaw = huggingfaceKey;
-
-      const start = performance.now();
-      const checkFn = async () => {
-        if (keyRaw) {
-          const response = await fetch("/api/provider-validate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, provider: targetKey, keyRaw }),
-          });
-          if (!response.ok) throw new Error("Unresponsive");
-        } else {
-          let testUrl = "https://api.groq.com";
-          if (targetKey === "openrouter") testUrl = "https://openrouter.ai";
-          else if (targetKey === "nvidia")
-            testUrl = "https://integrate.api.nvidia.com";
-          else if (targetKey === "huggingface")
-            testUrl = "https://huggingface.co";
-
-          await fetch(testUrl, { mode: "no-cors" });
-        }
-        return Math.round(performance.now() - start);
-      };
-
-      try {
-        const updated = await reg.refreshProviderHealth(providerName, checkFn);
-        setProviders((prev) =>
-          prev.map((p) =>
-            p.name.toLowerCase() === targetKey ? { ...p, ...updated } : p,
-          ),
-        );
-        addLog(
-          `AI Provider health checked for ${providerName}. Status: ${updated.status}, Latency: ${updated.latencyMs}ms`,
-          "success",
-        );
-      } catch {
-        const latencyFallback = Math.round(performance.now() - start);
-        setProviders((prev) =>
-          prev.map((p) =>
-            p.name.toLowerCase() === targetKey
-              ? {
-                  ...p,
-                  status: "RED",
-                  latencyMs: latencyFallback,
-                  connected: false,
-                }
-              : p,
-          ),
-        );
-        addLog(
-          `AI Provider health check failed or timed out for ${providerName}.`,
-          "error",
-        );
-      }
-    },
-    [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, addLog],
-  );
-
   const onToggleHunk = useCallback((id: number) => {
     setAcceptedHunkIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -992,47 +885,6 @@ const App: React.FC = () => {
     fetchAuditLogs();
     loadCheckpoints();
   }, [loadedFilePath]);
-
-  // Real-time optimizer & graph updates
-  useEffect(() => {
-    const report = PerformanceOptimizer.generateReport(code);
-    setOptimizerReport(report);
-
-    const fileList = [
-      { path: loadedFilePath || "editor_buffer.ts", content: code },
-      ...githubFiles.map((f) => ({ path: f.path, content: "" })),
-    ];
-    repoIntelligence.current.buildKnowledgeGraph(fileList, [
-      "react",
-      "lucide-react",
-      "framer-motion",
-    ]);
-
-    const cycles = repoIntelligence.current.detectCircularDependencies();
-    const health = repoIntelligence.current.calculateHealthScore(
-      fileList.length,
-      issues.length + (enableSentinel ? sentinelIssues.length : 0),
-      100,
-      cycles.length,
-    );
-    setRepoHealth(health);
-  }, [
-    code,
-    loadedFilePath,
-    githubFiles,
-    issues,
-    sentinelIssues,
-    enableSentinel,
-  ]);
-
-  useEffect(() => {
-    if (enableSentinel) {
-      sentinelWatcher.current.startFpsMonitor();
-    }
-    return () => {
-      sentinelWatcher.current.stopFpsMonitor();
-    };
-  }, [enableSentinel]);
 
   useEffect(() => {
     if (terminalEndRef.current) {
@@ -1195,8 +1047,7 @@ const App: React.FC = () => {
           {
             language: activeLanguage,
             filePath: loadedFilePath,
-            circularCycles:
-              repoIntelligence.current.detectCircularDependencies().length,
+            circularCycles: 0,
           },
         );
 
@@ -1332,11 +1183,10 @@ const App: React.FC = () => {
         return;
       }
 
-      const cycles = repoIntelligence.current.detectCircularDependencies();
       const evalResult = await consensusEngine.current.evaluateCodePatch(
         data.fixedCode || code,
         {
-          circularCycles: cycles.length,
+          circularCycles: 0,
           filePath: loadedFilePath,
           language: activeLanguage,
         },
@@ -3147,32 +2997,24 @@ const App: React.FC = () => {
               </p>
               <div className="flex flex-wrap gap-2">
                 <button
-                  disabled={backingUp}
                   onClick={async () => {
-                    const id = await createWorkspaceCheckpoint(
+                    const id = await createCheckpoint(
                       loadedFilePath || "editor.txt",
                       code,
-                      undefined,
                     );
                     setLastCheckpointId(id);
                     addLog(`Checkpoint created: ${id}`, "success");
                   }}
                   className="px-3 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-black cursor-pointer disabled:opacity-60"
                 >
-                  {backingUp ? "SNAPSHOTTING..." : "CREATE CHECKPOINT"}
+                  CREATE CHECKPOINT
                 </button>
                 <button
                   disabled={!lastCheckpointId}
                   onClick={async () => {
                     if (!lastCheckpointId) return;
-                    const content = await restoreCheckpoint(lastCheckpointId);
-                    if (typeof content === "string") {
-                      handleCodeChange(content);
-                      addLog(
-                        `Restored checkpoint ${lastCheckpointId}`,
-                        "success",
-                      );
-                    }
+                    await onRestoreCheckpoint(lastCheckpointId);
+                    addLog(`Restored checkpoint ${lastCheckpointId}`, "success");
                   }}
                   className="px-3 py-2.5 rounded-xl vol-well border vol-ring vol-accent text-xs font-black cursor-pointer disabled:opacity-50"
                 >
@@ -3456,7 +3298,6 @@ const App: React.FC = () => {
                   }
                 }}
                 selectedFilePath={loadedFilePath}
-                healthScore={repoHealth.totalScore}
               />
             </div>
 
@@ -3621,9 +3462,6 @@ const App: React.FC = () => {
           onRefreshLogs={fetchAuditLogs}
           onMaintenanceToggle={setIsMaintenanceActive}
           isMaintenanceActive={isMaintenanceActive}
-          providers={providers}
-          onRefreshProviderHealth={onRefreshProviderHealth}
-          optimizerReport={optimizerReport}
           checkpoints={checkpoints}
           onRestoreCheckpoint={onRestoreCheckpoint}
           enableSentinel={enableSentinel}
@@ -4245,49 +4083,27 @@ const App: React.FC = () => {
   };
 
   const renderDiagnosticsColumn = () => {
-    const roadmap = RepairPlanner.planRepairs(
-      [...issues, ...(enableSentinel ? sentinelIssues : [])].map(
-        (iss: Issue) => ({
-          filePath: loadedFilePath || "editor_buffer.ts",
-          line: 0,
-          severity:
-            (iss.severity === "Low" ? "Cosmetic" : iss.severity) || "Medium",
-          description: iss.description,
-        }),
-      ),
-    );
-
     return (
       <div className="space-y-6 select-none">
-        {/* REPO HEALTH SCORE */}
+        {/* ACTIVE SENTINEL FINDINGS */}
         <div className="border vol-line vol-elev rounded-2xl p-4 space-y-3">
           <div className="text-[10px] vol-t2 uppercase font-black tracking-wider">
-            Repository Health Metric
+            Sentinel Findings
           </div>
-          <div className="flex items-end justify-between">
-            <div className="text-3xl font-black vol-t1">
-              {repoHealth.totalScore}
-              <span className="text-xs vol-t2 font-normal">/100</span>
-            </div>
-            <span
-              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                repoHealth.totalScore > 85
-                  ? "bg-green-500/10 text-green-400"
-                  : "bg-yellow-500/10 text-yellow-400"
-              }`}
-            >
-              {repoHealth.totalScore > 85 ? "EXCELLENT" : "DEGRADED"}
-            </span>
+          <div className="text-3xl font-black vol-t1">
+            {sentinelIssues.length}
+            <span className="text-xs vol-t2 font-normal">/100</span>
           </div>
           <div className="w-full vol-wash h-1.5 rounded-full overflow-hidden">
             <div
               className="vol-acc-bg h-full"
-              style={{ width: `${repoHealth.totalScore}%` }}
+              style={{ width: `${Math.min(sentinelIssues.length, 5) * 20}%` }}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] vol-t2">
-            <div>Complexity Penalty: -{repoHealth.complexityPenalty}</div>
-            <div>Circular Dependencies: {repoHealth.circularCyclesCount}</div>
+          <div className="text-[10px] vol-t2">
+            {sentinelIssues.length === 0
+              ? "No active findings."
+              : `${sentinelIssues.length} issue(s) flagged by SkillSpector.`}
           </div>
         </div>
 
@@ -4344,49 +4160,27 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* REPAIR PRIORITY PLANNER ROADMAP */}
+        {/* SENTINEL FINDINGS BY SEVERITY */}
         <div className="border vol-line vol-elev rounded-2xl p-4 space-y-4">
           <div className="text-[10px] vol-t2 uppercase font-black tracking-wider font-semibold">
-            Repair Priority Roadmap
+            Findings by Severity
           </div>
-
           <div className="space-y-3">
             {[
-              {
-                label: "Critical Fixing Items",
-                list: roadmap.critical,
-                color: "text-red-400",
-              },
-              {
-                label: "High Fixing Items",
-                list: roadmap.high,
-                color: "text-orange-400",
-              },
-              {
-                label: "Medium Fixing Items",
-                list: roadmap.medium,
-                color: "text-yellow-400",
-              },
-              {
-                label: "Cosmetic Fixing Items",
-                list: roadmap.cosmetic,
-                color: "text-blue-400",
-              },
+              { label: "Critical", items: sentinelIssues.filter((i) => i.severity === "Critical"), color: "text-red-400" },
+              { label: "High", items: sentinelIssues.filter((i) => i.severity === "High"), color: "text-orange-400" },
+              { label: "Medium", items: sentinelIssues.filter((i) => i.severity === "Medium"), color: "text-yellow-400" },
+              { label: "Low", items: sentinelIssues.filter((i) => i.severity === "Low"), color: "text-blue-400" },
             ].map((group) => {
-              if (group.list.length === 0) return null;
+              if (group.items.length === 0) return null;
               return (
                 <div key={group.label} className="space-y-1.5">
-                  <div
-                    className={`text-[9px] font-black uppercase ${group.color}`}
-                  >
-                    {group.label} ({group.list.length})
+                  <div className={`text-[9px] font-black uppercase ${group.color}`}>
+                    {group.label} ({group.items.length})
                   </div>
                   <div className="space-y-1">
-                    {group.list.map((iss, idx) => (
-                      <div
-                        key={idx}
-                        className="p-2 vol-panel border vol-line rounded-lg text-[10px] vol-t1"
-                      >
+                    {group.items.map((iss, idx) => (
+                      <div key={idx} className="p-2 vol-panel border vol-line rounded-lg text-[10px] vol-t1">
                         {iss.description}
                       </div>
                     ))}
@@ -4395,12 +4189,11 @@ const App: React.FC = () => {
               );
             })}
 
-            {issues.length === 0 &&
-              (!enableSentinel || sentinelIssues.length === 0) && (
-                <div className="text-center vol-t2 py-8 text-[10px] font-mono">
-                  No detected defects. Repository roadmap is clear.
-                </div>
-              )}
+            {sentinelIssues.length === 0 && (
+              <div className="text-center vol-t2 py-8 text-[10px] font-mono">
+                No sentinel findings. Repository is clean.
+              </div>
+            )}
           </div>
         </div>
 

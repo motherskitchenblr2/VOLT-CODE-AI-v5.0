@@ -13,7 +13,7 @@ interface GitHubWorkspaceProps {
   files: Array<{ path: string; sha: string }>;
   onFileSelect: (path: string) => void;
   selectedFilePath: string;
-  healthScore: number;
+  healthScore?: number;
 }
 
 export const GitHubWorkspace: React.FC<GitHubWorkspaceProps> = ({
@@ -22,7 +22,7 @@ export const GitHubWorkspace: React.FC<GitHubWorkspaceProps> = ({
   files,
   onFileSelect,
   selectedFilePath,
-  healthScore,
+  healthScore = 0,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<
     "explorer" | "branches" | "pulls" | "commits"
