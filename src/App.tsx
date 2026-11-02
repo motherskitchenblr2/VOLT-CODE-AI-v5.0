@@ -3843,11 +3843,19 @@ const App: React.FC = () => {
 
           {/* Horizontal control rail — collapsible accordion sections */}
           <div className="space-y-2">
-            <ControlAccordion title="ENGINE & MODEL" icon={<Zap className="w-4 h-4" />} defaultOpen={true}>
+            <ControlAccordion
+              title="ENGINE & MODEL"
+              icon={<Zap className="w-4 h-4" />}
+              defaultOpen={true}
+            >
               {renderModelSelect()}
             </ControlAccordion>
 
-            <ControlAccordion title="CONFIG" icon={<Settings className="w-4 h-4" />} defaultOpen={false}>
+            <ControlAccordion
+              title="CONFIG"
+              icon={<Settings className="w-4 h-4" />}
+              defaultOpen={false}
+            >
               {/* Mode / Language aligned grid (4 cols on desktop, 2 on mobile) */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {renderSelect(
@@ -3891,7 +3899,11 @@ const App: React.FC = () => {
               </div>
             </ControlAccordion>
 
-            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false}>
+            <ControlAccordion
+              title="OPERATION MODE"
+              icon={<Activity className="w-4 h-4" />}
+              defaultOpen={false}
+            >
               <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
                 <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                   Operation Mode
@@ -3931,7 +3943,11 @@ const App: React.FC = () => {
             </ControlAccordion>
 
             {showTokenUsage && tokensUsed > 0 && (
-              <ControlAccordion title="TOKEN USAGE" icon={<GitPullRequest className="w-4 h-4" />} defaultOpen={false}>
+              <ControlAccordion
+                title="TOKEN USAGE"
+                icon={<GitPullRequest className="w-4 h-4" />}
+                defaultOpen={false}
+              >
                 <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
                   <div>
                     <div className="vol-accent text-[10px] tracking-wider font-bold">
@@ -3985,9 +4001,7 @@ const App: React.FC = () => {
               />
             </div>
           ) : (
-            <div
-              className="flex-1 relative overflow-hidden vol-surface min-h-[44vh]"
-            >
+            <div className="flex-1 relative overflow-hidden vol-surface min-h-[44vh]">
               {/* Sticky line-number gutter — scroll-synced with the editor */}
               <div
                 ref={gutterRef}
@@ -3998,7 +4012,7 @@ const App: React.FC = () => {
                     "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                   fontSize: "14px",
                   lineHeight: "1.65",
-                  paddingTop: "1rem", /* matches textarea p-4 */
+                  paddingTop: "1rem" /* matches textarea p-4 */,
                   color: "var(--t2, #505c6e)",
                 }}
               >
