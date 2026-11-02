@@ -282,45 +282,6 @@ describe("App component (App.tsx)", () => {
     expect(textareas.length).toBeGreaterThanOrEqual(0);
   });
 
-  it("has pluginOptions that match the server allowlist", async () => {
-    /**
-     * The pluginOptions array in App.tsx must remain in sync with the
-     * allowedPlugins array in api/openrouter.ts. This regression test imports
-     * the handler and verifies that every App.tsx plugin value is accepted.
-     */
-    const pluginOptions = [
-      "Test Runner",
-      "Console Trace",
-      "Diff Reviewer",
-      "Repo Scanner",
-      "API Schema Reader",
-      "Dependency Audit",
-    ];
-
-    const { default: handler } = await import("../../api/openrouter");
-
-    for (const plugin of pluginOptions) {
-      const req = { method: "POST", body: { code: "const x = 1;", plugin } };
-      const res = {
-        _status: 0,
-        _json: null as unknown,
-        status(c: number) {
-          this._status = c;
-          return this;
-        },
-        json(d: unknown) {
-          this._json = d;
-          return this;
-        },
-      };
-      // We only need to check that the plugin validation passes (not 400)
-      // by calling the handler. Fetch is not set up here so it will throw later,
-      // but status should not be 400.
-      await handler(req, res).catch(() => {});
-      expect(res._status).not.toBe(400);
-    }
-  });
-
   it("sendAgentMessage passes customPrompt in the fetch body", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

@@ -6,12 +6,33 @@
  * Weighting (SkillSpector): CRITICAL +50, HIGH +25, MEDIUM +10, LOW +5.
  * Score capped at 100.
  */
-import type { ScanFinding, ScanLocation } from "./astExecution";
 import { astExecution } from "./astExecution";
 import { credentialLeak } from "./credentialLeak";
 import { promptInjection } from "./promptInjection";
 
-export type { ScanFinding, ScanLocation };
+export interface ScanLocation {
+  line: number;
+  column: number;
+}
+
+export interface ScanFinding {
+  rule_id: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  confidence: number;
+  location: ScanLocation;
+  message: string;
+  original: string;
+  fixed: string;
+}
+
+/** 1-based line + column of a character index in a string. */
+export function lineColumnOf(code: string, index: number): ScanLocation {
+  const before = code.slice(0, index);
+  const line = before.split("\n").length;
+  const lastNewline = before.lastIndexOf("\n");
+  const column = lastNewline === -1 ? index + 1 : index - lastNewline;
+  return { line, column };
+}
 
 const WEIGHT: Record<string, number> = {
   CRITICAL: 50,
@@ -26,7 +47,6 @@ export type RiskLevel = "green" | "yellow" | "red";
 
 export function analyzeCodeBuffer(code: string): ScanFinding[] {
   const findings = ANALYZERS.flatMap((analyze) => analyze(code));
-  // One finding per rule per scan keeps results readable (no per-occurrence spam).
   const seen = new Set<string>();
   return findings.filter((f) => {
     if (seen.has(f.rule_id)) return false;

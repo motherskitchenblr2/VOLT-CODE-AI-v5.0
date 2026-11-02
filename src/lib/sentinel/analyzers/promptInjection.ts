@@ -3,7 +3,9 @@
  * Scans agent-facing markdown/docstrings for instruction overrides and
  * system-prompt leakage attempts.
  */
-import type { ScanFinding } from "./astExecution";
+import { lineColumnOf, type ScanFinding } from "./index";
+
+type SeverityType = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
 const PROMPT_INJECTION_PATTERNS: Array<{
   re: RegExp;
@@ -37,16 +39,6 @@ const PROMPT_INJECTION_PATTERNS: Array<{
   },
 ];
 
-type SeverityType = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-
-function lineColumnOf(code: string, index: number): ScanLocation {
-  const before = code.slice(0, index);
-  const line = before.split("\n").length;
-  const lastNewline = before.lastIndexOf("\n");
-  const column = lastNewline === -1 ? index + 1 : index - lastNewline;
-  return { line, column };
-}
-
 export function promptInjection(code: string): ScanFinding[] {
   const findings: ScanFinding[] = [];
   for (const { re, rule, severity, message } of PROMPT_INJECTION_PATTERNS) {
@@ -67,5 +59,3 @@ export function promptInjection(code: string): ScanFinding[] {
   }
   return findings;
 }
-
-type ScanLocation = { line: number; column: number };

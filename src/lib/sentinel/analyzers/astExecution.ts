@@ -3,22 +3,7 @@
  * Matches eval(), new Function(), vm.runInContext() — all attacker-controllable
  * code paths. Neutralizing the call is a deterministic, safe auto-fix.
  */
-export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-
-export interface ScanLocation {
-  line: number;
-  column: number;
-}
-
-export interface ScanFinding {
-  rule_id: string;
-  severity: Severity;
-  confidence: number;
-  location: ScanLocation;
-  message: string;
-  original: string;
-  fixed: string;
-}
+import { lineColumnOf, type ScanFinding } from "./index";
 
 const DANGEROUS_CALLS: Array<{
   re: RegExp;
@@ -45,14 +30,6 @@ const DANGEROUS_CALLS: Array<{
     message: "Dynamic code execution via vm.runInContext() is blocked by Sentinel.",
   },
 ];
-
-function lineColumnOf(code: string, index: number): ScanLocation {
-  const before = code.slice(0, index);
-  const line = before.split("\n").length;
-  const lastNewline = before.lastIndexOf("\n");
-  const column = lastNewline === -1 ? index + 1 : index - lastNewline;
-  return { line, column };
-}
 
 export function astExecution(code: string): ScanFinding[] {
   const findings: ScanFinding[] = [];
