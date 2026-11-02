@@ -66,6 +66,8 @@ import {
   HealthScoreDetails,
 } from "./services/RepoIntelligence";
 import { SentinelWatcher } from "./services/SentinelWatcher";
+import { inspectBuffer } from "./services/sentinelService";
+import { riskLevel, levelLabel } from "./lib/sentinel/analyzers";
 import {
   ConsensusEngine,
   MultiAgentOrchestrator,
@@ -450,7 +452,7 @@ const App: React.FC = () => {
     `[SYSTEM] Volt Diagnostic Engine initialized. Ready for v5.0 operations.`,
   ]);
   const [historySearch, setHistorySearch] = useState("");
-  const [debounceDelay, setDebounceDelay] = useState(800);
+  const [debounceDelay, setDebounceDelay] = useState(2500);
   const [showTokenUsage, setShowTokenUsage] = useState(true);
   const [showShortcutsCheatSheet, setShowShortcutsCheatSheet] = useState(false);
 
@@ -688,6 +690,11 @@ const App: React.FC = () => {
     timeSavedMinutes: 0,
     tokensConsumed: 0,
   });
+  const [sentinelRiskScore, setSentinelRiskScore] = useState(0);
+
+  const sentinelLevel = riskLevel(sentinelRiskScore);
+  const sentinelLabel = levelLabel(sentinelLevel, sentinelIssues.length);
+  const sentinelSummary = `SkillSpector risk ${sentinelRiskScore}/100 · ${sentinelIssues.length} issue(s)`;
 
   // Boss Chat State (v6.1 Boss of the App Cockpit)
   const [bossMessages, setBossMessages] = useState<
@@ -1052,41 +1059,34 @@ const App: React.FC = () => {
         "info",
       );
       try {
-        const res = await fetch("/api/openrouter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code,
-            language: language === "auto" ? detectedLanguage : language,
-            model: "mistralai/mistral-7b-instruct:free", // use fastest
-            agentMode: "manual",
-            skill: "Syntax Repair",
-            plugin: selectedPlugin,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (active && data && data.issues) {
-            setSentinelIssues(data.issues);
-            setSentinelStats((prev) => ({
-              ...prev,
-              totalRuns: prev.totalRuns + 1,
-              tokensConsumed: prev.tokensConsumed + (data.tokensUsed || 0),
-            }));
-            addLog(
-              `[SENTINEL] Passive scan completed. Found ${data.issues.length} potential issue(s).`,
-              data.issues.length > 0 ? "warn" : "success",
-            );
-            setLastSentinelScan(new Date().toLocaleTimeString());
-          }
-        } else {
-          if (active) {
-            addLog(
-              `[SENTINEL] Passive scan failed with HTTP ${res.status}`,
-              "error",
-            );
-          }
+        const scan = await inspectBuffer(
+          code,
+          language === "auto" ? detectedLanguage : language,
+        );
+        const issues: Issue[] = scan.findings.map((f, i) => ({
+          id: Date.now() + i,
+          type: f.rule_id,
+          severity: mapSentinelSeverity(f.severity),
+          description: f.message,
+          explanation: f.message,
+          original: f.original,
+          fixed: f.fixed,
+        }));
+        if (active && scan.findings.length > 0) {
+          setSentinelIssues(issues);
+        } else if (active) {
+          setSentinelIssues([]);
         }
+        setSentinelStats((prev) => ({
+          ...prev,
+          totalRuns: prev.totalRuns + 1,
+        }));
+        setSentinelRiskScore(scan.riskScore);
+        addLog(
+          `[SENTINEL] Passive scan completed. Found ${scan.findings.length} issue(s) (risk ${scan.riskScore}/100).`,
+          scan.findings.length > 0 ? "warn" : "success",
+        );
+        setLastSentinelScan(new Date().toLocaleTimeString());
       } catch (err) {
         console.error(err);
       } finally {
@@ -1125,6 +1125,20 @@ const App: React.FC = () => {
 
   const escapeRegExp = (str: string) => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  };
+
+  const mapSentinelSeverity = (s: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"): Issue["severity"] => {
+    switch (s) {
+      case "CRITICAL":
+        return "Critical";
+      case "HIGH":
+        return "High";
+      case "MEDIUM":
+        return "Medium";
+      case "LOW":
+      default:
+        return "Low";
+    }
   };
 
   const analyzeCode = useCallback(async () => {
@@ -3839,6 +3853,28 @@ const App: React.FC = () => {
               >
                 SHORTCUTS [?]
               </button>
+              {/* Sentinel status pill — persistent across editor view */}
+              <div
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border vol-ring text-xs font-bold cursor-pointer ${
+                  sentinelLevel === "green"
+                    ? "vol-well vol-t1"
+                    : sentinelLevel === "yellow"
+                      ? "vol-acc-wash vol-accent"
+                      : "bg-red-500/20 border-red-500/40 text-red-400"
+                }`}
+                title={sentinelSummary}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    sentinelLevel === "green"
+                      ? "bg-green-500"
+                      : sentinelLevel === "yellow"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                  }`}
+                ></span>
+                {sentinelLabel}
+              </div>
             </div>
           </div>
 
@@ -4820,6 +4856,8 @@ const App: React.FC = () => {
         diagnostics={renderDiagnosticsColumn()}
         currentView={currentView}
         setCurrentView={setCurrentView as (v: string) => void}
+        sentinelLevel={sentinelLevel}
+        sentinelLabel={sentinelLabel}
       />
 
       {renderDiffModal()}

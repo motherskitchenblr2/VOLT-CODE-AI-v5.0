@@ -25,6 +25,8 @@ interface ResponsiveContainerProps {
   diagnostics: React.ReactNode;
   currentView: string;
   setCurrentView: (view: string) => void;
+  sentinelLevel?: "green" | "yellow" | "red";
+  sentinelLabel?: string;
 }
 
 type NavItem = [view: string, label: string, icon: React.ReactNode];
@@ -58,6 +60,8 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   diagnostics,
   currentView,
   setCurrentView,
+  sentinelLevel,
+  sentinelLabel,
 }) => {
   const [sheet, setSheet] = useState<
     "none" | "terminal" | "diagnostics" | "more"
@@ -131,6 +135,28 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             >
               <Terminal className="w-5 h-5" />
             </button>
+            {sentinelLevel && sentinelLabel && (
+              <div
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-xl border shrink-0 text-[10px] font-bold ${
+                  sentinelLevel === "green"
+                    ? "vol-well vol-t1"
+                    : sentinelLevel === "yellow"
+                      ? "vol-acc-wash vol-accent"
+                      : "bg-red-500/20 border-red-500/40 text-red-400"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    sentinelLevel === "green"
+                      ? "bg-green-500"
+                      : sentinelLevel === "yellow"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                  }`}
+                ></span>
+                {sentinelLabel}
+              </div>
+            )}
           </div>
         </header>
 
