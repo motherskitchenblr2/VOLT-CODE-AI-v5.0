@@ -73,3 +73,10 @@ before pushing a fix and never repeat a recorded mistake.
 15. **Never gate UI on `PermissionSystem.currentUser` when it is set in an effect** —
     the first render answers "denied" and nothing re-renders, so the strip stayed
     "merge blocked" while acting as owner. Derive capability from role + repo policy.
+
+16. **The prettier/eslint bot auto-pushes format commits to the PR branch** — after PR #125
+    was opened, the bot pushed `7683f53` and `3d39c31`
+    (`refactor: auto-format code with prettier & eslint`) onto `ui/mobile-editor-density`.
+    A subsequent push without first fetching was rejected / needed a rebase or ff-merge.
+    Lesson: always `git fetch` (then rebase or fast-forward) before pushing to a PR branch,
+    and re-check the head SHA after any bot activity.
