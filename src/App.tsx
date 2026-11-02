@@ -3666,7 +3666,7 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16">
         {/* Editor Toolbar Header */}
-        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
+        <div className="hidden md:block border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
           <div className="mb-1 flex justify-between items-start">
             <div>
               <div className="text-lg sm:text-2xl font-bold leading-tight">
@@ -3957,7 +3957,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Textarea Area */}
-        <div className="flex-1 relative flex flex-col vol-surface min-h-[44vh]">
+        <div className="flex-1 relative flex flex-col vol-surface min-h-[60dvh]">
           {isScanning && (
             <motion.div
               initial={{ width: 0 }}
