@@ -3664,7 +3664,7 @@ const App: React.FC = () => {
 
     // Default Editor View
     return (
-      <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-24">
+      <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16">
         {/* Editor Toolbar Header */}
         <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
           <div className="mb-1 flex justify-between items-start">
@@ -3829,7 +3829,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Textarea Area */}
-        <div className="flex-1 relative overflow-hidden flex flex-col vol-surface min-h-[44vh]">
+        <div className="flex-1 relative flex flex-col vol-surface min-h-[44vh]">
           {isScanning && (
             <motion.div
               initial={{ width: 0 }}
@@ -3906,7 +3906,7 @@ const App: React.FC = () => {
           )}
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
-          <div className="md:hidden sticky bottom-16 z-30 p-2 border-t vol-ring vol-surface w-full select-none">
+          <div className="md:hidden sticky bottom-14 z-40 flex items-center justify-end gap-2 px-3 py-2 w-full border-t vol-ring vol-surface backdrop-blur-md select-none">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               <button
                 onClick={analyzeCode}
