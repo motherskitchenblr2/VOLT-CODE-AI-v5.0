@@ -356,7 +356,9 @@ const ControlAccordion: React.FC<{
 }> = ({ title, icon, defaultOpen = false, className, children }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={`border vol-ring-strong rounded-xl vol-panel overflow-hidden ${className ?? ""}`}>
+    <div
+      className={`border vol-ring-strong rounded-xl vol-panel overflow-hidden ${className ?? ""}`}
+    >
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 px-3 py-2 vol-surface text-left cursor-pointer"
@@ -979,7 +981,9 @@ const App: React.FC = () => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   };
 
-  const mapSentinelSeverity = (s: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"): Issue["severity"] => {
+  const mapSentinelSeverity = (
+    s: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
+  ): Issue["severity"] => {
     switch (s) {
       case "CRITICAL":
         return "Critical";
@@ -3014,7 +3018,10 @@ const App: React.FC = () => {
                   onClick={async () => {
                     if (!lastCheckpointId) return;
                     await onRestoreCheckpoint(lastCheckpointId);
-                    addLog(`Restored checkpoint ${lastCheckpointId}`, "success");
+                    addLog(
+                      `Restored checkpoint ${lastCheckpointId}`,
+                      "success",
+                    );
                   }}
                   className="px-3 py-2.5 rounded-xl vol-well border vol-ring vol-accent text-xs font-black cursor-pointer disabled:opacity-50"
                 >
@@ -3718,11 +3725,19 @@ const App: React.FC = () => {
 
           {/* Desktop: collapsible accordion sections */}
           <div className="hidden md:block space-y-2">
-            <ControlAccordion title="ENGINE & MODEL" icon={<Zap className="w-4 h-4" />} defaultOpen={true}>
+            <ControlAccordion
+              title="ENGINE & MODEL"
+              icon={<Zap className="w-4 h-4" />}
+              defaultOpen={true}
+            >
               {renderModelSelect()}
             </ControlAccordion>
 
-            <ControlAccordion title="CONFIG" icon={<Settings className="w-4 h-4" />} defaultOpen={false}>
+            <ControlAccordion
+              title="CONFIG"
+              icon={<Settings className="w-4 h-4" />}
+              defaultOpen={false}
+            >
               {/* Mode / Language aligned grid — horizontal scroll rail on mobile */}
               <div className="flex flex-row gap-2 overflow-x-auto no-scrollbar py-1">
                 {renderSelect(
@@ -3766,7 +3781,11 @@ const App: React.FC = () => {
               </div>
             </ControlAccordion>
 
-            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false}>
+            <ControlAccordion
+              title="OPERATION MODE"
+              icon={<Activity className="w-4 h-4" />}
+              defaultOpen={false}
+            >
               <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
                 <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                   Operation Mode
@@ -3806,7 +3825,11 @@ const App: React.FC = () => {
             </ControlAccordion>
 
             {showTokenUsage && tokensUsed > 0 && (
-              <ControlAccordion title="TOKEN USAGE" icon={<GitPullRequest className="w-4 h-4" />} defaultOpen={false}>
+              <ControlAccordion
+                title="TOKEN USAGE"
+                icon={<GitPullRequest className="w-4 h-4" />}
+                defaultOpen={false}
+              >
                 <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
                   <div>
                     <div className="vol-accent text-[10px] tracking-wider font-bold">
@@ -3832,11 +3855,15 @@ const App: React.FC = () => {
             <div className="flex items-center gap-1.5 min-w-max">
               {/* Engine Pill */}
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">ENGINE</span>
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  ENGINE
+                </span>
                 <select
                   value={selectedModel.id}
                   onChange={(e) => {
-                    const model = modelOptionsAll.find((m) => m.id === e.target.value);
+                    const model = modelOptionsAll.find(
+                      (m) => m.id === e.target.value,
+                    );
                     if (model) {
                       setSelectedModel(model);
                       addLog(
@@ -3848,10 +3875,18 @@ const App: React.FC = () => {
                   className="h-7 w-[140px] max-w-[140px] text-xs font-mono bg-transparent border border-neutral-700 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
                   {modelGroups.map(([provider, models]) => (
-                    <optgroup key={provider} label={`${provider}${models.some((m) => m.tier === "FREE") ? " · free" : ""}`}>
+                    <optgroup
+                      key={provider}
+                      label={`${provider}${models.some((m) => m.tier === "FREE") ? " · free" : ""}`}
+                    >
                       {models.map((model) => (
-                        <option key={model.id} value={model.id} className="bg-neutral-900 text-neutral-200">
-                          {model.tier === "FREE" ? "★ " : ""}{model.name}
+                        <option
+                          key={model.id}
+                          value={model.id}
+                          className="bg-neutral-900 text-neutral-200"
+                        >
+                          {model.tier === "FREE" ? "★ " : ""}
+                          {model.name}
                         </option>
                       ))}
                     </optgroup>
@@ -3861,41 +3896,65 @@ const App: React.FC = () => {
 
               {/* Plugin Pill */}
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">PLUGIN</span>
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  PLUGIN
+                </span>
                 <select
                   value={selectedPlugin}
                   onChange={(e) => {
                     setSelectedPlugin(e.target.value);
-                    addLog(`Updated config: Plugin -> ${e.target.value}`, "info");
+                    addLog(
+                      `Updated config: Plugin -> ${e.target.value}`,
+                      "info",
+                    );
                   }}
                   className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
                   {pluginOptions.map((option) => (
-                    <option key={option} value={option} className="bg-neutral-900 text-neutral-200">{option}</option>
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {option}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Skill Pill */}
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">SKILL</span>
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  SKILL
+                </span>
                 <select
                   value={selectedSkill}
                   onChange={(e) => {
                     setSelectedSkill(e.target.value);
-                    addLog(`Updated config: Skill -> ${e.target.value}`, "info");
+                    addLog(
+                      `Updated config: Skill -> ${e.target.value}`,
+                      "info",
+                    );
                   }}
                   className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
                   {skillOptions.map((option) => (
-                    <option key={option} value={option} className="bg-neutral-900 text-neutral-200">{option}</option>
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {option}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Mode Pill */}
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">MODE</span>
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  MODE
+                </span>
                 <select
                   value={agentMode}
                   onChange={(e) => {
@@ -3905,28 +3964,44 @@ const App: React.FC = () => {
                   className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
                   {modeOptions.map((option) => (
-                    <option key={option} value={option} className="bg-neutral-900 text-neutral-200">{option}</option>
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {option}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Language Pill */}
               <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">LANG</span>
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  LANG
+                </span>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
                   className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
                   {languages.map((l) => (
-                    <option key={l.value} value={l.value} className="bg-neutral-900 text-neutral-200">{l.label}</option>
+                    <option
+                      key={l.value}
+                      value={l.value}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {l.label}
+                    </option>
                   ))}
                 </select>
               </div>
 
               {/* Mode Toggle */}
               <button
-                onClick={() => setAgentMode(agentMode === "manual" ? "assist" : "manual")}
+                onClick={() =>
+                  setAgentMode(agentMode === "manual" ? "assist" : "manual")
+                }
                 className="h-7 px-2.5 text-[11px] font-mono rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 whitespace-nowrap active:scale-95 transition-transform"
               >
                 {agentMode === "manual" ? "MANUAL" : "AUTO"}
@@ -3988,9 +4063,7 @@ const App: React.FC = () => {
               />
             </div>
           ) : (
-            <div
-              className="flex-1 relative overflow-hidden vol-surface min-h-[45dvh]"
-            >
+            <div className="flex-1 relative overflow-hidden vol-surface min-h-[45dvh]">
               {/* Sticky line-number gutter — scroll-synced with the editor */}
               <div
                 ref={gutterRef}
@@ -4001,7 +4074,7 @@ const App: React.FC = () => {
                     "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                   fontSize: "14px",
                   lineHeight: "1.65",
-                  paddingTop: "1rem", /* matches textarea p-4 */
+                  paddingTop: "1rem" /* matches textarea p-4 */,
                   color: "var(--t2, #505c6e)",
                 }}
               >
@@ -4295,20 +4368,41 @@ const App: React.FC = () => {
           </div>
           <div className="space-y-3">
             {[
-              { label: "Critical", items: sentinelIssues.filter((i) => i.severity === "Critical"), color: "text-red-400" },
-              { label: "High", items: sentinelIssues.filter((i) => i.severity === "High"), color: "text-orange-400" },
-              { label: "Medium", items: sentinelIssues.filter((i) => i.severity === "Medium"), color: "text-yellow-400" },
-              { label: "Low", items: sentinelIssues.filter((i) => i.severity === "Low"), color: "text-blue-400" },
+              {
+                label: "Critical",
+                items: sentinelIssues.filter((i) => i.severity === "Critical"),
+                color: "text-red-400",
+              },
+              {
+                label: "High",
+                items: sentinelIssues.filter((i) => i.severity === "High"),
+                color: "text-orange-400",
+              },
+              {
+                label: "Medium",
+                items: sentinelIssues.filter((i) => i.severity === "Medium"),
+                color: "text-yellow-400",
+              },
+              {
+                label: "Low",
+                items: sentinelIssues.filter((i) => i.severity === "Low"),
+                color: "text-blue-400",
+              },
             ].map((group) => {
               if (group.items.length === 0) return null;
               return (
                 <div key={group.label} className="space-y-1.5">
-                  <div className={`text-[9px] font-black uppercase ${group.color}`}>
+                  <div
+                    className={`text-[9px] font-black uppercase ${group.color}`}
+                  >
                     {group.label} ({group.items.length})
                   </div>
                   <div className="space-y-1">
                     {group.items.map((iss, idx) => (
-                      <div key={idx} className="p-2 vol-panel border vol-line rounded-lg text-[10px] vol-t1">
+                      <div
+                        key={idx}
+                        className="p-2 vol-panel border vol-line rounded-lg text-[10px] vol-t1"
+                      >
                         {iss.description}
                       </div>
                     ))}

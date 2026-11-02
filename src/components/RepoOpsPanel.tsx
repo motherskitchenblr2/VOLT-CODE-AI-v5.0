@@ -121,7 +121,9 @@ const PRTab: React.FC<{
   addLesson: (text: string) => void;
 }> = ({ ops, prs, busy, onRefresh, setBusy, lessons, addLesson }) => {
   const [reports, setReports] = useState<Record<number, ReviewReport>>({});
-  const [scannedHeadShas, setScannedHeadShas] = useState<Record<number, string>>({});
+  const [scannedHeadShas, setScannedHeadShas] = useState<
+    Record<number, string>
+  >({});
   const [pendingClose, setPendingClose] = useState<{
     n: number;
     title: string;
