@@ -32,8 +32,8 @@ function mcpEnabled(): boolean {
   try {
     return (
       typeof import.meta !== "undefined" &&
-      (import.meta as { env?: Record<string, string> }).env?.VITE_SENTINEL_MCP ===
-        "true"
+      (import.meta as { env?: Record<string, string> }).env
+        ?.VITE_SENTINEL_MCP === "true"
     );
   } catch {
     return false;
@@ -46,7 +46,9 @@ async function skillspectorMcpScan(
   _context?: object,
 ): Promise<SentinelScanResult> {
   // Placeholder for `skillspector mcp` integration. Not installed by default.
-  throw new Error("skillspector mcp not configured (set VITE_SENTINEL_MCP=true)");
+  throw new Error(
+    "skillspector mcp not configured (set VITE_SENTINEL_MCP=true)",
+  );
 }
 
 function localScan(code: string): SentinelScanResult {
@@ -57,7 +59,13 @@ function localScan(code: string): SentinelScanResult {
     findings.length === 0
       ? "No SkillSpector findings."
       : `${findings.length} finding(s), risk ${riskScore}/100`;
-  return { findings, riskScore, level, summary, scannedAt: new Date().toISOString() };
+  return {
+    findings,
+    riskScore,
+    level,
+    summary,
+    scannedAt: new Date().toISOString(),
+  };
 }
 
 /**
@@ -98,7 +106,13 @@ export function handleSentinelScan(payload: {
     findings.length === 0
       ? "No SkillSpector findings."
       : `${findings.length} finding(s), risk ${riskScore}/100`;
-  return { findings, riskScore, level, summary, scannedAt: new Date().toISOString() };
+  return {
+    findings,
+    riskScore,
+    level,
+    summary,
+    scannedAt: new Date().toISOString(),
+  };
 }
 
 export default { inspectBuffer, handleSentinelScan };

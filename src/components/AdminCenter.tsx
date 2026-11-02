@@ -453,7 +453,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
         </div>
       )}
 
-
       {activeAdminTab === "audit" && (
         <div className="border vol-ring vol-elev p-6 rounded-2xl space-y-4">
           <div className="flex justify-between items-center">
