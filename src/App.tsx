@@ -3716,8 +3716,8 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Horizontal control rail — collapsible accordion sections */}
-          <div className="space-y-2">
+          {/* Desktop: collapsible accordion sections */}
+          <div className="hidden md:block space-y-2">
             <ControlAccordion title="ENGINE & MODEL" icon={<Zap className="w-4 h-4" />} defaultOpen={true}>
               {renderModelSelect()}
             </ControlAccordion>
@@ -3766,7 +3766,7 @@ const App: React.FC = () => {
               </div>
             </ControlAccordion>
 
-            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false} className="hidden md:block">
+            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false}>
               <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
                 <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
                   Operation Mode
@@ -3825,6 +3825,134 @@ const App: React.FC = () => {
                 </div>
               </ControlAccordion>
             )}
+          </div>
+
+          {/* Mobile: slim horizontal slider rail */}
+          <div className="block md:hidden overflow-x-auto no-scrollbar scroll-smooth border-b border-neutral-800 bg-neutral-950/90 px-2 py-1.5 backdrop-blur z-20">
+            <div className="flex items-center gap-1.5 min-w-max">
+              {/* Engine Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">ENGINE</span>
+                <select
+                  value={selectedModel.id}
+                  onChange={(e) => {
+                    const model = modelOptionsAll.find((m) => m.id === e.target.value);
+                    if (model) {
+                      setSelectedModel(model);
+                      addLog(
+                        `Selected execution model: ${model.name} (${model.provider}${model.tier === "FREE" ? " · FREE" : ""})`,
+                        "info",
+                      );
+                    }
+                  }}
+                  className="h-7 w-[140px] max-w-[140px] text-xs font-mono bg-transparent border border-neutral-700 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {modelGroups.map(([provider, models]) => (
+                    <optgroup key={provider} label={`${provider}${models.some((m) => m.tier === "FREE") ? " · free" : ""}`}>
+                      {models.map((model) => (
+                        <option key={model.id} value={model.id} className="bg-neutral-900 text-neutral-200">
+                          {model.tier === "FREE" ? "★ " : ""}{model.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {/* Plugin Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">PLUGIN</span>
+                <select
+                  value={selectedPlugin}
+                  onChange={(e) => {
+                    setSelectedPlugin(e.target.value);
+                    addLog(`Updated config: Plugin -> ${e.target.value}`, "info");
+                  }}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {pluginOptions.map((option) => (
+                    <option key={option} value={option} className="bg-neutral-900 text-neutral-200">{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Skill Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">SKILL</span>
+                <select
+                  value={selectedSkill}
+                  onChange={(e) => {
+                    setSelectedSkill(e.target.value);
+                    addLog(`Updated config: Skill -> ${e.target.value}`, "info");
+                  }}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {skillOptions.map((option) => (
+                    <option key={option} value={option} className="bg-neutral-900 text-neutral-200">{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mode Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">MODE</span>
+                <select
+                  value={agentMode}
+                  onChange={(e) => {
+                    setAgentMode(e.target.value as AgentMode);
+                    addLog(`Updated config: Mode -> ${e.target.value}`, "info");
+                  }}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {modeOptions.map((option) => (
+                    <option key={option} value={option} className="bg-neutral-900 text-neutral-200">{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Language Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">LANG</span>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {languages.map((l) => (
+                    <option key={l.value} value={l.value} className="bg-neutral-900 text-neutral-200">{l.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mode Toggle */}
+              <button
+                onClick={() => setAgentMode(agentMode === "manual" ? "assist" : "manual")}
+                className="h-7 px-2.5 text-[11px] font-mono rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 whitespace-nowrap active:scale-95 transition-transform"
+              >
+                {agentMode === "manual" ? "MANUAL" : "AUTO"}
+              </button>
+
+              {/* Detected Language Tag */}
+              <span className="text-[10px] font-mono text-neutral-400 px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 whitespace-nowrap">
+                {detectedLanguage.toUpperCase()}
+              </span>
+
+              {/* Split & Shortcuts Triggers */}
+              <button
+                onClick={() => setSplitView((v) => !v)}
+                className="h-7 px-2.5 text-[10px] font-mono text-neutral-400 bg-transparent border border-neutral-700 rounded-full cursor-pointer hover:bg-neutral-800/50"
+                title={splitView ? "Split view: OFF" : "Split view: ON"}
+              >
+                {splitView ? "SPLIT ON" : "SPLIT OFF"}
+              </button>
+              <button
+                onClick={() => setShowShortcutsCheatSheet(true)}
+                className="h-7 px-2.5 text-[10px] font-mono text-neutral-400 bg-transparent border border-neutral-700 rounded-full cursor-pointer hover:bg-neutral-800/50"
+                title="Keyboard shortcuts"
+              >
+                [?]
+              </button>
+            </div>
           </div>
         </div>
 
