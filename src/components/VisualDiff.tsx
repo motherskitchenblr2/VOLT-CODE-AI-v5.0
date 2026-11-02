@@ -23,6 +23,9 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
   onToggleHunk,
 }) => {
   const [diffMode, setDiffMode] = useState<"side-by-side" | "inline">("inline");
+  const [mobilePane, setMobilePane] = useState<"original" | "patch" | "diff">(
+    "diff",
+  );
   const [expandedExplanation, setExpandedExplanation] = useState<
     Record<number, boolean>
   >({});
@@ -50,13 +53,13 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
               key={`n-${i}`}
               className="flex py-0.5 px-3 hover:vol-wash font-mono text-[11px] vol-t2"
             >
-              <span className="w-8 select-none vol-t2 text-right pr-3">
+              <span className="w-8 shrink-0 select-none vol-t2 text-right pr-3">
                 {i + 1}
               </span>
-              <span className="w-8 select-none vol-t2 text-right pr-3">
+              <span className="w-8 shrink-0 select-none vol-t2 text-right pr-3">
                 {i + 1}
               </span>
-              <span className="w-5 select-none vol-t1/10 text-center font-bold">
+              <span className="w-5 shrink-0 select-none vol-t1/10 text-center font-bold">
                 {" "}
               </span>
               <span className="whitespace-pre-wrap">{orig}</span>
@@ -68,13 +71,13 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
               key={`r-${i}`}
               className="flex py-0.5 px-3 bg-red-500/10 border-l-2 border-red-500 font-mono text-[11px] text-red-400"
             >
-              <span className="w-8 select-none text-red-500/30 text-right pr-3">
+              <span className="w-8 shrink-0 select-none text-red-500/30 text-right pr-3">
                 {i + 1}
               </span>
-              <span className="w-8 select-none text-red-500/10 text-right pr-3">
+              <span className="w-8 shrink-0 select-none text-red-500/10 text-right pr-3">
                 -
               </span>
-              <span className="w-5 select-none text-red-500/40 text-center font-bold">
+              <span className="w-5 shrink-0 select-none text-red-500/40 text-center font-bold">
                 -
               </span>
               <span className="whitespace-pre-wrap">{orig}</span>
@@ -85,13 +88,13 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
               key={`a-${i}`}
               className="flex py-0.5 px-3 bg-green-500/10 border-l-2 border-green-500 font-mono text-[11px] text-green-400"
             >
-              <span className="w-8 select-none text-green-500/10 text-right pr-3">
+              <span className="w-8 shrink-0 select-none text-green-500/10 text-right pr-3">
                 -
               </span>
-              <span className="w-8 select-none text-green-500/30 text-right pr-3">
+              <span className="w-8 shrink-0 select-none text-green-500/30 text-right pr-3">
                 {i + 1}
               </span>
-              <span className="w-5 select-none text-green-500/40 text-center font-bold">
+              <span className="w-5 shrink-0 select-none text-green-500/40 text-center font-bold">
                 +
               </span>
               <span className="whitespace-pre-wrap">{fix}</span>
@@ -104,13 +107,13 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
             key={`r-${i}`}
             className="flex py-0.5 px-3 bg-red-500/10 border-l-2 border-red-500 font-mono text-[11px] text-red-400"
           >
-            <span className="w-8 select-none text-red-500/30 text-right pr-3">
+            <span className="w-8 shrink-0 select-none text-red-500/30 text-right pr-3">
               {i + 1}
             </span>
-            <span className="w-8 select-none text-red-500/10 text-right pr-3">
+            <span className="w-8 shrink-0 select-none text-red-500/10 text-right pr-3">
               -
             </span>
-            <span className="w-5 select-none text-red-500/40 text-center font-bold">
+            <span className="w-5 shrink-0 select-none text-red-500/40 text-center font-bold">
               -
             </span>
             <span className="whitespace-pre-wrap">{orig}</span>
@@ -122,13 +125,13 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
             key={`a-${i}`}
             className="flex py-0.5 px-3 bg-green-500/10 border-l-2 border-green-500 font-mono text-[11px] text-green-400"
           >
-            <span className="w-8 select-none text-green-500/10 text-right pr-3">
+            <span className="w-8 shrink-0 select-none text-green-500/10 text-right pr-3">
               -
             </span>
-            <span className="w-8 select-none text-green-500/30 text-right pr-3">
+            <span className="w-8 shrink-0 select-none text-green-500/30 text-right pr-3">
               {i + 1}
             </span>
-            <span className="w-5 select-none text-green-500/40 text-center font-bold">
+            <span className="w-5 shrink-0 select-none text-green-500/40 text-center font-bold">
               +
             </span>
             <span className="whitespace-pre-wrap">{fix}</span>
@@ -138,7 +141,7 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
     }
 
     return (
-      <div className="vol-surface border vol-line rounded-xl overflow-hidden py-2 max-h-72 overflow-y-auto">
+      <div className="vol-surface border vol-line rounded-xl overflow-hidden overflow-x-auto py-2 max-h-72 overflow-y-auto">
         {elements}
       </div>
     );
@@ -147,46 +150,82 @@ export const VisualDiff: React.FC<VisualDiffProps> = ({
   const renderSideBySideDiff = (original: string, fixed: string) => {
     const originalLines = original.split("\n");
     const fixedLines = fixed.split("\n");
+    // < md: one pane at a time via the [Original] [Patch] [Diff] toggle.
+    // ≥ md: both columns stay side by side, toggle hidden.
+    const paneHidden = (pane: "original" | "patch") =>
+      mobilePane === pane ? "" : "hidden";
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Original Column */}
-        <div className="space-y-1">
-          <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider pl-1 mb-1">
-            Original Code
-          </div>
-          <div className="vol-well border border-red-500/10 rounded-xl p-3 max-h-72 overflow-y-auto font-mono text-[11px] text-red-300 space-y-0.5">
-            {originalLines.map((line, idx) => (
-              <div
-                key={idx}
-                className="flex hover:bg-red-500/5 py-0.5 px-1 rounded"
-              >
-                <span className="w-8 select-none text-red-500/30 text-right pr-2 shrink-0">
-                  {idx + 1}
-                </span>
-                <span className="whitespace-pre-wrap">{line || " "}</span>
-              </div>
-            ))}
-          </div>
+      <div className="space-y-3">
+        <div className="md:hidden flex gap-1.5" role="tablist">
+          {(["original", "patch", "diff"] as const).map((pane) => (
+            <button
+              key={pane}
+              role="tab"
+              aria-selected={mobilePane === pane}
+              onClick={() => setMobilePane(pane)}
+              className={`flex-1 min-h-[44px] rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                mobilePane === pane
+                  ? "vol-acc-bg text-black"
+                  : "vol-well vol-t2 hover:vol-wash"
+              }`}
+            >
+              {pane === "original"
+                ? "Original"
+                : pane === "patch"
+                  ? "Patch"
+                  : "Diff"}
+            </button>
+          ))}
         </div>
 
-        {/* Fixed Column */}
-        <div className="space-y-1">
-          <div className="text-[10px] text-green-400 font-bold uppercase tracking-wider pl-1 mb-1">
-            Staged Patch
+        {mobilePane === "diff" && (
+          <div className="md:hidden">{renderInlineDiff(original, fixed)}</div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Original Column */}
+          <div className={`space-y-1 ${paneHidden("original")} md:block`}>
+            <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider pl-1 mb-1">
+              Original Code
+            </div>
+            <div className="vol-well border border-red-500/10 rounded-xl p-3 max-h-72 overflow-y-auto overflow-x-auto font-mono text-[11px] text-red-300 space-y-0.5">
+              {originalLines.map((line, idx) => (
+                <div
+                  key={idx}
+                  className="flex hover:bg-red-500/5 py-0.5 px-1 rounded"
+                >
+                  <span className="w-8 shrink-0 select-none text-red-500/30 text-right pr-2">
+                    {idx + 1}
+                  </span>
+                  <span className="whitespace-pre-wrap break-words">
+                    {line || " "}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="vol-well border border-green-500/10 rounded-xl p-3 max-h-72 overflow-y-auto font-mono text-[11px] text-green-300 space-y-0.5">
-            {fixedLines.map((line, idx) => (
-              <div
-                key={idx}
-                className="flex hover:bg-green-500/5 py-0.5 px-1 rounded"
-              >
-                <span className="w-8 select-none text-green-500/30 text-right pr-2 shrink-0">
-                  {idx + 1}
-                </span>
-                <span className="whitespace-pre-wrap">{line || " "}</span>
-              </div>
-            ))}
+
+          {/* Fixed Column */}
+          <div className={`space-y-1 ${paneHidden("patch")} md:block`}>
+            <div className="text-[10px] text-green-400 font-bold uppercase tracking-wider pl-1 mb-1">
+              Staged Patch
+            </div>
+            <div className="vol-well border border-green-500/10 rounded-xl p-3 max-h-72 overflow-y-auto overflow-x-auto font-mono text-[11px] text-green-300 space-y-0.5">
+              {fixedLines.map((line, idx) => (
+                <div
+                  key={idx}
+                  className="flex hover:bg-green-500/5 py-0.5 px-1 rounded"
+                >
+                  <span className="w-8 shrink-0 select-none text-green-500/30 text-right pr-2">
+                    {idx + 1}
+                  </span>
+                  <span className="whitespace-pre-wrap break-words">
+                    {line || " "}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

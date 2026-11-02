@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { classifyTask, smartRoute } from "./lib/smartRouter";
+import { detectLanguage } from "./lib/detectLanguage";
 import { RepoOpsPanel } from "./components/RepoOpsPanel";
 import { SplitEditorLayout } from "./components/SplitEditorLayout";
 import { AIProviderSelector } from "./components/AIProviderSelector";
@@ -344,58 +345,6 @@ const modeOptions: AgentMode[] = [
   "auto-debug",
   "team-review",
 ];
-
-const detectLanguage = (codeStr: string, filePath?: string): string => {
-  if (filePath) {
-    const ext = filePath.split(".").pop()?.toLowerCase();
-    if (ext === "yaml" || ext === "yml") return "yaml";
-    if (ext === "py") return "python";
-    if (ext === "cpp" || ext === "cc" || ext === "h") return "cpp";
-    if (ext === "html" || ext === "htm") return "html";
-    if (ext === "css") return "css";
-    if (ext === "js" || ext === "jsx") return "javascript";
-    if (ext === "ts" || ext === "tsx") return "typescript";
-  }
-
-  if (!codeStr || !codeStr.trim()) return "unknown";
-
-  // YAML detection (run this first before any JS/TS triggers since YAML config might contain scripts/commands)
-  if (
-    codeStr.includes("yaml-language-server") ||
-    codeStr.includes("rules:") ||
-    codeStr.includes("reviews:") ||
-    codeStr.includes("early_access:") ||
-    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) &&
-      !codeStr.includes("{") &&
-      !codeStr.includes("}"))
-  ) {
-    return "yaml";
-  }
-
-  if (
-    (codeStr.includes("def ") || codeStr.includes("import ")) &&
-    codeStr.includes(":")
-  )
-    return "python";
-  if (codeStr.includes("#include") || codeStr.includes("int main"))
-    return "cpp";
-  if (
-    codeStr.includes("<html") ||
-    codeStr.includes("<div") ||
-    codeStr.includes("<!DOCTYPE html>")
-  )
-    return "html";
-  if (codeStr.includes("{") && codeStr.includes("}") && codeStr.includes(":"))
-    return "css";
-  if (
-    codeStr.includes("const ") ||
-    codeStr.includes("let ") ||
-    codeStr.includes("function ") ||
-    codeStr.includes("console.log")
-  )
-    return "javascript";
-  return "unknown";
-};
 
 const getErrorMessage = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
@@ -1868,9 +1817,13 @@ const App: React.FC = () => {
   const languages = [
     { value: "auto", label: "Auto Detect" },
     { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
     { value: "python", label: "Python" },
     { value: "cpp", label: "C++" },
     { value: "html", label: "HTML" },
+    { value: "css", label: "CSS" },
+    { value: "yaml", label: "YAML" },
+    { value: "unknown", label: "Plain Text" },
   ];
 
   const filteredSessions = sessions.filter(
@@ -1933,18 +1886,22 @@ const App: React.FC = () => {
     onChange: (value: string) => void,
     options: string[],
   ) => (
-    <div className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
-      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+    <div
+      className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4"
+      title={`${label}: ${value}`}
+    >
+      <div className="shrink-0 vol-accent-soft text-[10px] sm:text-xs tracking-wider">
         {label}
       </div>
-      <ChevronDown className="w-4 h-4 vol-accent-soft" />
+      <ChevronDown className="w-4 h-4 shrink-0 vol-accent-soft" />
+      {/* narrow screens: cap chip width and ellipsize instead of pushing the rail */}
       <select
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
           addLog(`Updated config: ${label} -> ${e.target.value}`, "info");
         }}
-        className="bg-transparent vol-t1 outline-none min-w-[130px] text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none w-[92px] sm:w-auto sm:min-w-[130px] max-w-[92px] sm:max-w-none truncate text-xs cursor-pointer"
       >
         {options.map((option) => (
           <option key={option} value={option} className="vol-elev vol-t1">
@@ -2880,9 +2837,11 @@ const App: React.FC = () => {
     }
 
     if (currentView === "settings") {
+      // one scroller only: the shell section already scrolls; a nested
+      // h-full overflow-y-auto here froze touch scrolling on phones
       return (
-        <div className="p-8 max-w-2xl overflow-y-auto h-full pb-20">
-          <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
+        <div className="p-4 sm:p-8 max-w-2xl mx-auto pb-24">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
             <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-1">Workspace Backup</div>
@@ -3853,7 +3812,8 @@ const App: React.FC = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
+                title={`Language: ${languages.find((l) => l.value === language)?.label ?? language}`}
+                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0 w-[120px] sm:w-auto max-w-[120px] sm:max-w-none truncate"
               >
                 {languages.map((l) => (
                   <option key={l.value} value={l.value}>
@@ -3862,7 +3822,10 @@ const App: React.FC = () => {
                 ))}
               </select>
 
-              <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
+              <div
+                title={`Detected language: ${detectedLanguage.toUpperCase()}`}
+                className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0 whitespace-nowrap"
+              >
                 DETECTED: {detectedLanguage.toUpperCase()}
               </div>
             </div>

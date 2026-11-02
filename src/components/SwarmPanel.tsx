@@ -66,10 +66,20 @@ export const SwarmPanel: React.FC<SwarmPanelProps> = ({
         </span>
       </div>
 
-      <div className="rounded-2xl border vol-ring vol-panel p-2">
+      {/* Graph viewport: keeps the 500×320 diagram legible on phones by
+          scrolling horizontally instead of shrinking labels to ~7px.
+          Fixed width (not min-w) because app.css phone hardening sets
+          `section * { min-width: 0 }`, which nulls any min-width here; and
+          `section svg { max-width: 100% }`, so max-w-none is required for the
+          scroll to exist at all. That rule lives outside any cascade layer, so
+          utilities lose to it — hence the inline maxWidth override.
+          touch-auto, not touch-pan-x/pan-y: those two utilities set the same
+          CSS property, so the later one wins and kills the other axis. */}
+      <div className="rounded-2xl border vol-ring vol-panel p-2 w-full overflow-x-auto touch-auto">
         <svg
           viewBox="0 0 500 320"
-          className="w-full h-auto"
+          className="h-auto w-[460px] sm:w-full"
+          style={{ maxWidth: "none" }}
           role="img"
           aria-label="Agent swarm topology diagram"
         >
