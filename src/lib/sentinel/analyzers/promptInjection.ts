@@ -15,13 +15,15 @@ const PROMPT_INJECTION_PATTERNS: Array<{
     re: /ignore\s+(?:all\s+)?previous\s+(?:instructions|commands|directives)/gi,
     rule: "prompt-injection-ignore-previous",
     severity: "HIGH",
-    message: "Prompt injection attempt: 'ignore previous instructions' override detected.",
+    message:
+      "Prompt injection attempt: 'ignore previous instructions' override detected.",
   },
   {
     re: /disregard\s+(?:all\s+)?(?:prior|previous|above)\s+(?:instructions|rules)/gi,
     rule: "prompt-injection-disregard",
     severity: "HIGH",
-    message: "Prompt injection attempt: 'disregard prior instructions' override detected.",
+    message:
+      "Prompt injection attempt: 'disregard prior instructions' override detected.",
   },
   {
     re: /system\s+prompt\s+leakage|leak\s+(?:the\s+)?system\s+prompt/gi,
