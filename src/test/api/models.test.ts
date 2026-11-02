@@ -139,7 +139,7 @@ describe('api/models live availability', () => {
 
   it('handles a single key value passed as a string query param', async () => {
     stubFetch((url) => {
-      if (url.includes('groq.com')) {
+      if (getHostname(url) === 'api.groq.com') {
         return { ok: true, json: async () => ({ data: [{ id: 'llama-3.3-70b-versatile' }] }) };
       }
       return { ok: true, json: async () => ({ data: [] }) };

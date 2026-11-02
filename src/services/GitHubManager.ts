@@ -404,7 +404,9 @@ export class GitHubManager {
   }
 
   /** Files in a PR, with patches. Used by the review agent. */
-  async getPullRequestFiles(prNumber: number): Promise<Record<string, unknown>[]> {
+  async getPullRequestFiles(
+    prNumber: number,
+  ): Promise<Record<string, unknown>[]> {
     return this.gh<Record<string, unknown>[]>(
       `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/files?per_page=100`,
     );
@@ -416,7 +418,8 @@ export class GitHubManager {
     event: "APPROVE" | "REQUEST_CHANGES" | "COMMENT",
     body: string,
   ): Promise<{ id: number; html_url: string }> {
-    if (!body.trim()) throw new Error("Review body is empty — nothing to post.");
+    if (!body.trim())
+      throw new Error("Review body is empty — nothing to post.");
     return this.gh<{ id: number; html_url: string }>(
       `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/reviews`,
       { method: "POST", body: { event, body } },
@@ -462,7 +465,8 @@ export class GitHubManager {
         data.encoding === "base64" ? atob(raw.replace(/\s/g, "")) : raw;
       return { content, sha: data.sha };
     } catch (error) {
-      if (error instanceof Error && /GitHub 404/.test(error.message)) return null;
+      if (error instanceof Error && /GitHub 404/.test(error.message))
+        return null;
       throw error;
     }
   }
@@ -479,7 +483,9 @@ export class GitHubManager {
         `/repos/${this.config.owner}/${this.config.repo}/contents/${path}?ref=${encodeURIComponent(ref)}`,
       );
       return Array.isArray(data)
-        ? data.filter((e) => e.type === "file").map((e) => ({ name: e.name, path: e.path }))
+        ? data
+            .filter((e) => e.type === "file")
+            .map((e) => ({ name: e.name, path: e.path }))
         : [];
     } catch (error) {
       if (error instanceof Error && /GitHub 404/.test(error.message)) return [];
@@ -488,7 +494,9 @@ export class GitHubManager {
   }
 
   /** Workflow files on a branch — the input for the injection sweep. */
-  async getWorkflows(ref: string): Promise<Array<{ path: string; content: string }>> {
+  async getWorkflows(
+    ref: string,
+  ): Promise<Array<{ path: string; content: string }>> {
     const entries = await this.getDirectory(".github/workflows", ref);
     const out: Array<{ path: string; content: string }> = [];
     for (const entry of entries) {
@@ -503,7 +511,9 @@ export class GitHubManager {
   static async listRepos(
     token: string,
     owner: string,
-  ): Promise<Array<{ full_name: string; private: boolean; default_branch: string }>> {
+  ): Promise<
+    Array<{ full_name: string; private: boolean; default_branch: string }>
+  > {
     const headers = {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
@@ -529,7 +539,11 @@ export class GitHubManager {
       )) ??
       [];
     return repos
-      .filter((r) => (r.owner?.login || "").toLowerCase() === owner.toLowerCase() || !r.owner)
+      .filter(
+        (r) =>
+          (r.owner?.login || "").toLowerCase() === owner.toLowerCase() ||
+          !r.owner,
+      )
       .map((r) => ({
         full_name: r.full_name,
         private: r.private,

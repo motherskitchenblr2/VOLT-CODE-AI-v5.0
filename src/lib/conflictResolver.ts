@@ -35,17 +35,30 @@ export function merge3(input: ThreeWayInput): MergeOutcome {
   const { path, base, ours, theirs } = input;
 
   if (ours === null && theirs === null) {
-    return { path, status: "deleted", content: null, reason: "Deleted on both sides." };
+    return {
+      path,
+      status: "deleted",
+      content: null,
+      reason: "Deleted on both sides.",
+    };
   }
   if (ours === theirs) {
-    return { path, status: "identical", content: ours, reason: "Both sides are identical." };
+    return {
+      path,
+      status: "identical",
+      content: ours,
+      reason: "Both sides are identical.",
+    };
   }
   if (base === ours) {
     return {
       path,
       status: "auto",
       content: theirs,
-      reason: theirs === null ? "Deleted on the PR side only." : "Target branch unchanged; PR version wins.",
+      reason:
+        theirs === null
+          ? "Deleted on the PR side only."
+          : "Target branch unchanged; PR version wins.",
     };
   }
   if (base === theirs) {
@@ -53,7 +66,10 @@ export function merge3(input: ThreeWayInput): MergeOutcome {
       path,
       status: "auto",
       content: ours,
-      reason: ours === null ? "Deleted on the target branch only." : "PR unchanged; target version wins.",
+      reason:
+        ours === null
+          ? "Deleted on the target branch only."
+          : "PR unchanged; target version wins.",
     };
   }
   return {

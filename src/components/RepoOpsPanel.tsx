@@ -31,7 +31,11 @@ import {
   type PRFile,
   type ReviewReport,
 } from "../lib/repoAgent";
-import { scanWorkflow, summarize, type ScanFinding } from "../lib/injectionScan";
+import {
+  scanWorkflow,
+  summarize,
+  type ScanFinding,
+} from "../lib/injectionScan";
 import {
   findConflictCandidates,
   merge3,
@@ -80,14 +84,16 @@ interface Ops {
   note: (msg: string, status?: "success" | "failed" | "unauthorized") => void;
 }
 
-const Panel: React.FC<{ title: string; hint?: string; children: React.ReactNode }> = ({
-  title,
-  hint,
-  children,
-}) => (
+const Panel: React.FC<{
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}> = ({ title, hint, children }) => (
   <div className="p-3 rounded-2xl vol-panel border vol-ring space-y-2">
     <div>
-      <div className="text-[10px] font-black tracking-wider vol-t2 uppercase">{title}</div>
+      <div className="text-[10px] font-black tracking-wider vol-t2 uppercase">
+        {title}
+      </div>
       {hint && <p className="text-[11px] vol-t2">{hint}</p>}
     </div>
     {children}
@@ -115,7 +121,10 @@ const PRTab: React.FC<{
   addLesson: (text: string) => void;
 }> = ({ ops, prs, busy, onRefresh, setBusy, lessons, addLesson }) => {
   const [reports, setReports] = useState<Record<number, ReviewReport>>({});
-  const [pendingClose, setPendingClose] = useState<{ n: number; title: string } | null>(null);
+  const [pendingClose, setPendingClose] = useState<{
+    n: number;
+    title: string;
+  } | null>(null);
   const [reason, setReason] = useState("");
   const { manager, can, note } = ops;
 
@@ -141,7 +150,10 @@ const PRTab: React.FC<{
         report.blocks ? "failed" : "success",
       );
     } catch (e) {
-      note(`Review failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Review failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -151,7 +163,11 @@ const PRTab: React.FC<{
     if (!manager) return;
     const report = reports[n];
     if (!report) return note("Run REVIEW first.", "failed");
-    if (!can("approve_pr")) return note(`Role ${ops.role.toUpperCase()} cannot post reviews (approve_pr)`, "unauthorized");
+    if (!can("approve_pr"))
+      return note(
+        `Role ${ops.role.toUpperCase()} cannot post reviews (approve_pr)`,
+        "unauthorized",
+      );
     setBusy(`post-${n}`);
     try {
       const event =
@@ -160,10 +176,19 @@ const PRTab: React.FC<{
           : report.verdict === "approve"
             ? "APPROVE"
             : "COMMENT";
-      const posted = await manager.createReview(n, event, reviewMarkdown(report));
-      note(`Posted ${event} review on PR #${n}${posted.html_url ? ` — ${posted.html_url}` : ""}`);
+      const posted = await manager.createReview(
+        n,
+        event,
+        reviewMarkdown(report),
+      );
+      note(
+        `Posted ${event} review on PR #${n}${posted.html_url ? ` — ${posted.html_url}` : ""}`,
+      );
     } catch (e) {
-      note(`Posting review failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Posting review failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -173,7 +198,10 @@ const PRTab: React.FC<{
     if (!manager || !pendingClose) return;
     const { n, title } = pendingClose;
     if (!can("create_pr")) {
-      return note(`Role ${ops.role.toUpperCase()} cannot record lessons (create_pr)`, "unauthorized");
+      return note(
+        `Role ${ops.role.toUpperCase()} cannot record lessons (create_pr)`,
+        "unauthorized",
+      );
     }
     setBusy(`close-${n}`);
     try {
@@ -182,12 +210,20 @@ const PRTab: React.FC<{
       addLesson(lesson);
 
       // Lesson travels through the normal flow: branch → commit → PR.
-      const existing = await manager.getFileContent("AGENT_LESSONS.md", managerBranch(manager));
+      const existing = await manager.getFileContent(
+        "AGENT_LESSONS.md",
+        managerBranch(manager),
+      );
       const branch = `volt/lesson-pr-${n}-${Date.now().toString(36)}`;
       await manager.createBranch(branch);
       await manager.commitFiles(
         branch,
-        [{ path: "AGENT_LESSONS.md", content: (existing?.content || "# Agent Lessons\n") + lesson }],
+        [
+          {
+            path: "AGENT_LESSONS.md",
+            content: (existing?.content || "# Agent Lessons\n") + lesson,
+          },
+        ],
         { message: `learn: PR #${n} rejection` },
       );
       const pr = await manager.createPullRequest(
@@ -200,7 +236,10 @@ const PRTab: React.FC<{
       setReason("");
       onRefresh();
     } catch (e) {
-      note(`Close failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Close failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -209,18 +248,27 @@ const PRTab: React.FC<{
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <button onClick={onRefresh} disabled={busy === "prs"} className={BTN_GHOST}>
-          <RefreshCw className={`w-4 h-4 ${busy === "prs" ? "animate-spin" : ""}`} />
+        <button
+          onClick={onRefresh}
+          disabled={busy === "prs"}
+          className={BTN_GHOST}
+        >
+          <RefreshCw
+            className={`w-4 h-4 ${busy === "prs" ? "animate-spin" : ""}`}
+          />
           REFRESH PRs
         </button>
         <span className="text-[11px] vol-t2 self-center">
-          Review runs locally: secrets, workflow injection, debug leftovers, tests, lockfile.
+          Review runs locally: secrets, workflow injection, debug leftovers,
+          tests, lockfile.
         </span>
       </div>
 
       <div className="space-y-2">
         {prs.length === 0 ? (
-          <p className="text-xs vol-t2">No PRs loaded. Press REFRESH PRs with repo + token set.</p>
+          <p className="text-xs vol-t2">
+            No PRs loaded. Press REFRESH PRs with repo + token set.
+          </p>
         ) : (
           prs.map((pr) => {
             const n = Number(pr.number);
@@ -229,7 +277,10 @@ const PRTab: React.FC<{
             const base = (pr.base as { ref?: string })?.ref || "main";
             const report = reports[n];
             return (
-              <div key={n} className="p-3 rounded-2xl vol-panel border vol-ring space-y-2">
+              <div
+                key={n}
+                className="p-3 rounded-2xl vol-panel border vol-ring space-y-2"
+              >
                 <div className="flex flex-wrap items-center gap-2">
                   <GitPullRequest className="w-4 h-4 vol-accent shrink-0" />
                   <span className="text-xs font-bold vol-t1 flex-1 min-w-[140px]">
@@ -241,7 +292,11 @@ const PRTab: React.FC<{
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => review(n)} disabled={busy === `review-${n}`} className={BTN_GHOST}>
+                  <button
+                    onClick={() => review(n)}
+                    disabled={busy === `review-${n}`}
+                    className={BTN_GHOST}
+                  >
                     <Search className="w-4 h-4" /> REVIEW
                   </button>
                   <button
@@ -262,15 +317,26 @@ const PRTab: React.FC<{
                     onClick={async () => {
                       if (!manager) return;
                       if (!can("merge_pr")) {
-                        return note(`Merge blocked for role ${ops.role.toUpperCase()} (merge_pr)`, "unauthorized");
+                        return note(
+                          `Merge blocked for role ${ops.role.toUpperCase()} (merge_pr)`,
+                          "unauthorized",
+                        );
                       }
                       setBusy(`merge-${n}`);
                       try {
-                        await manager.mergePullRequest(n, undefined, undefined, true);
+                        await manager.mergePullRequest(
+                          n,
+                          undefined,
+                          undefined,
+                          true,
+                        );
                         note(`Merged PR #${n} (squash)`);
                         onRefresh();
                       } catch (e) {
-                        note(`Merge failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+                        note(
+                          `Merge failed: ${e instanceof Error ? e.message : String(e)}`,
+                          "failed",
+                        );
                       } finally {
                         setBusy(null);
                       }
@@ -292,10 +358,18 @@ const PRTab: React.FC<{
                       className="w-full vol-well border vol-ring p-2 rounded-xl text-xs vol-t1 outline-none"
                     />
                     <div className="flex flex-wrap gap-2">
-                      <button onClick={closeWithLesson} disabled={busy === `close-${n}`} className={BTN_PRIMARY}>
-                        <CheckCircle2 className="w-4 h-4" /> CLOSE + RECORD LESSON
+                      <button
+                        onClick={closeWithLesson}
+                        disabled={busy === `close-${n}`}
+                        className={BTN_PRIMARY}
+                      >
+                        <CheckCircle2 className="w-4 h-4" /> CLOSE + RECORD
+                        LESSON
                       </button>
-                      <button onClick={() => setPendingClose(null)} className={BTN_GHOST}>
+                      <button
+                        onClick={() => setPendingClose(null)}
+                        className={BTN_GHOST}
+                      >
                         CANCEL
                       </button>
                     </div>
@@ -305,15 +379,20 @@ const PRTab: React.FC<{
                 {report && (
                   <div className="p-2 rounded-xl vol-well border vol-ring space-y-1">
                     <div className="text-[10px] font-black uppercase vol-t2">
-                      {report.verdict.replace("_", " ")} · {report.blocks} blocking · {report.warns} warning ·{" "}
-                      {report.filesReviewed} file(s)
+                      {report.verdict.replace("_", " ")} · {report.blocks}{" "}
+                      blocking · {report.warns} warning · {report.filesReviewed}{" "}
+                      file(s)
                     </div>
                     {report.findings.length === 0 && (
-                      <p className="text-[11px] text-green-600 font-semibold">No issues found.</p>
+                      <p className="text-[11px] text-green-600 font-semibold">
+                        No issues found.
+                      </p>
                     )}
                     {report.findings.map((f, i) => (
                       <div key={i} className="text-[11px] leading-snug">
-                        <span className={`font-black uppercase ${severityColor(f.severity)}`}>
+                        <span
+                          className={`font-black uppercase ${severityColor(f.severity)}`}
+                        >
                           [{f.severity}]
                         </span>{" "}
                         <span className="font-mono vol-t2">{f.file}</span>{" "}
@@ -328,11 +407,19 @@ const PRTab: React.FC<{
         )}
       </div>
 
-      <Panel title={`Lesson log (${lessons.length})`} hint="Rejected PRs. Each one is also committed through a lesson PR.">
+      <Panel
+        title={`Lesson log (${lessons.length})`}
+        hint="Rejected PRs. Each one is also committed through a lesson PR."
+      >
         <div className="max-h-48 overflow-y-auto space-y-1">
-          {lessons.length === 0 && <p className="text-[11px] vol-t2">No lessons recorded yet.</p>}
+          {lessons.length === 0 && (
+            <p className="text-[11px] vol-t2">No lessons recorded yet.</p>
+          )}
           {lessons.map((l, i) => (
-            <pre key={i} className="text-[10px] font-mono vol-t2 whitespace-pre-wrap">
+            <pre
+              key={i}
+              className="text-[10px] font-mono vol-t2 whitespace-pre-wrap"
+            >
               {l.trim()}
             </pre>
           ))}
@@ -342,7 +429,8 @@ const PRTab: React.FC<{
   );
 };
 
-const managerBranch = (manager: GitHubManager | null) => manager?.branchName || "main";
+const managerBranch = (manager: GitHubManager | null) =>
+  manager?.branchName || "main";
 
 /* ------------------------------------------------------------------ */
 /* Conflicts                                                           */
@@ -358,18 +446,22 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
   const run = useCallback(async () => {
     if (!manager) return note("Set owner/repo in config first.", "failed");
     const n = Number(prNumber);
-    if (!Number.isInteger(n) || n <= 0) return note("Enter a PR number.", "failed");
+    if (!Number.isInteger(n) || n <= 0)
+      return note("Enter a PR number.", "failed");
     setBusyKey("scan");
     setOutcomes(null);
     try {
       const pr = await manager.getPullRequest(n);
-      const head = pr.head as { ref?: string; repo?: { full_name?: string } } | undefined;
+      const head = pr.head as
+        { ref?: string; repo?: { full_name?: string } } | undefined;
       const base = pr.base as { ref?: string } | undefined;
       const headName = head?.ref || "";
       setHeadRef(headName);
 
       if (pr.mergeable !== false) {
-        note(`PR #${n} has no merge conflict (mergeable: ${String(pr.mergeable)}).`);
+        note(
+          `PR #${n} has no merge conflict (mergeable: ${String(pr.mergeable)}).`,
+        );
         return;
       }
       const repoFull = `${ops.repoKey}`;
@@ -380,14 +472,23 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
         );
       }
 
-      const prSide = await manager.getCompare(String(base?.ref || "main"), headName);
-      const targetSide = await manager.getCompare(prSide.mergeBase || "", String(base?.ref || "main"));
+      const prSide = await manager.getCompare(
+        String(base?.ref || "main"),
+        headName,
+      );
+      const targetSide = await manager.getCompare(
+        prSide.mergeBase || "",
+        String(base?.ref || "main"),
+      );
       const candidates = findConflictCandidates(
         prSide.files.map((f) => f.filename),
         targetSide.files.map((f) => f.filename),
       );
       if (candidates.length === 0) {
-        return note(`PR #${n} is not mergeable but no overlapping file was found. Resolve manually on GitHub.`, "failed");
+        return note(
+          `PR #${n} is not mergeable but no overlapping file was found. Resolve manually on GitHub.`,
+          "failed",
+        );
       }
 
       // Cap the work: a conflict across 40 files is a human job.
@@ -395,7 +496,9 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
       const resolved: MergeOutcome[] = [];
       for (const path of slice) {
         const [baseFile, ours, theirs] = await Promise.all([
-          prSide.mergeBase ? manager.getFileContent(path, prSide.mergeBase) : Promise.resolve(null),
+          prSide.mergeBase
+            ? manager.getFileContent(path, prSide.mergeBase)
+            : Promise.resolve(null),
           manager.getFileContent(path, String(base?.ref || "main")),
           manager.getFileContent(path, headName),
         ]);
@@ -409,13 +512,18 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
         );
       }
       setOutcomes(resolved);
-      const auto = resolved.filter((o) => o.status === "auto" || o.status === "identical").length;
+      const auto = resolved.filter(
+        (o) => o.status === "auto" || o.status === "identical",
+      ).length;
       note(
         `PR #${n}: ${candidates.length} candidate file(s), ${auto} auto-resolvable, ${resolved.length - auto} need a human.`,
         auto > 0 ? "success" : "failed",
       );
     } catch (e) {
-      note(`Conflict scan failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Conflict scan failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusyKey(null);
     }
@@ -423,15 +531,24 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
 
   const apply = async () => {
     if (!manager || !outcomes) return;
-    if (!can("edit_code")) return note(`Role ${ops.role.toUpperCase()} cannot write branches (edit_code)`, "unauthorized");
-    const files = outcomes.filter((o) => o.status === "auto" || o.status === "identical");
-    if (files.length === 0) return note("No auto-resolvable file to apply.", "failed");
+    if (!can("edit_code"))
+      return note(
+        `Role ${ops.role.toUpperCase()} cannot write branches (edit_code)`,
+        "unauthorized",
+      );
+    const files = outcomes.filter(
+      (o) => o.status === "auto" || o.status === "identical",
+    );
+    if (files.length === 0)
+      return note("No auto-resolvable file to apply.", "failed");
     setBusyKey("apply");
     try {
       await manager.commitFiles(
         headRef,
         files.map((f) => ({ path: f.path, content: f.content ?? "" })),
-        { message: `fix: auto-resolve merge conflicts (${files.length} file(s))` },
+        {
+          message: `fix: auto-resolve merge conflicts (${files.length} file(s))`,
+        },
       );
       const pr = await manager.getPullRequest(Number(prNumber));
       note(
@@ -439,7 +556,10 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
         pr.mergeable ? "success" : "failed",
       );
     } catch (e) {
-      note(`Applying fixes failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Applying fixes failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusyKey(null);
     }
@@ -459,10 +579,18 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
             inputMode="numeric"
             className={`${INPUT} flex-1 min-w-[120px]`}
           />
-          <button onClick={run} disabled={busyKey === "scan"} className={BTN_GHOST}>
+          <button
+            onClick={run}
+            disabled={busyKey === "scan"}
+            className={BTN_GHOST}
+          >
             <Search className="w-4 h-4" /> FIND CONFLICTS
           </button>
-          <button onClick={apply} disabled={!outcomes || busyKey === "apply"} className={BTN_PRIMARY}>
+          <button
+            onClick={apply}
+            disabled={!outcomes || busyKey === "apply"}
+            className={BTN_PRIMARY}
+          >
             <CheckCircle2 className="w-4 h-4" /> APPLY AUTO FIXES
           </button>
         </div>
@@ -471,7 +599,10 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
       {outcomes && (
         <Panel title={`Result (${outcomes.length} candidate file(s))`}>
           {outcomes.map((o) => (
-            <div key={o.path} className="text-[11px] leading-snug flex flex-wrap gap-2">
+            <div
+              key={o.path}
+              className="text-[11px] leading-snug flex flex-wrap gap-2"
+            >
               <span
                 className={`font-black uppercase ${
                   o.status === "auto" || o.status === "identical"
@@ -522,24 +653,34 @@ const SecurityTab: React.FC<{ ops: Ops; token: string }> = ({ ops, token }) => {
         s.critical ? "failed" : "success",
       );
     } catch (e) {
-      note(`Sweep failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Sweep failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusyKey(null);
     }
   };
 
   const scanAll = async () => {
-    if (!token) return note("A GitHub token is needed to list repos.", "failed");
+    if (!token)
+      return note("A GitHub token is needed to list repos.", "failed");
     setBusyKey("all");
     try {
       const [ownerName] = ops.repoKey.split("/");
       const repos = await GitHubManager.listRepos(token, ownerName);
-      if (repos.length === 0) return note(`No repo visible for ${ownerName}.`, "failed");
+      if (repos.length === 0)
+        return note(`No repo visible for ${ownerName}.`, "failed");
       const target = repos.slice(0, 15);
       const results: RepoSweep[] = [];
       for (const repo of target) {
         const [owner, name] = repo.full_name.split("/");
-        const m = new GitHubManager({ owner, repo: name, token, branch: repo.default_branch });
+        const m = new GitHubManager({
+          owner,
+          repo: name,
+          token,
+          branch: repo.default_branch,
+        });
         const workflows = await m.getWorkflows(repo.default_branch);
         const found = workflows.flatMap((w) =>
           scanWorkflow(`${repo.full_name}/${w.path}`, w.content),
@@ -557,17 +698,20 @@ const SecurityTab: React.FC<{ ops: Ops; token: string }> = ({ ops, token }) => {
         failing ? "failed" : "success",
       );
     } catch (e) {
-      note(`Multi-repo sweep failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Multi-repo sweep failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusyKey(null);
     }
   };
 
   const exportFindings = () => {
-    const payload = sweeps
-      ? sweeps.flatMap((s) => s.findings)
-      : findings || [];
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const payload = sweeps ? sweeps.flatMap((s) => s.findings) : findings || [];
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -588,17 +732,30 @@ const SecurityTab: React.FC<{ ops: Ops; token: string }> = ({ ops, token }) => {
         hint="Checks CI workflows for pwn-request checkout, untrusted text in run:, unpinned actions, write-all tokens, curl | sh, secret echo."
       >
         <div className="flex flex-wrap gap-2">
-          <button onClick={scanOne} disabled={!canScan || busyKey === "one"} className={BTN_GHOST}>
+          <button
+            onClick={scanOne}
+            disabled={!canScan || busyKey === "one"}
+            className={BTN_GHOST}
+          >
             <ShieldAlert className="w-4 h-4" /> SWEEP THIS REPO
           </button>
-          <button onClick={scanAll} disabled={!canScan || busyKey === "all"} className={BTN_GHOST}>
+          <button
+            onClick={scanAll}
+            disabled={!canScan || busyKey === "all"}
+            className={BTN_GHOST}
+          >
             <Search className="w-4 h-4" /> SWEEP ALL MY REPOS
           </button>
-          <button onClick={exportFindings} disabled={all.length === 0} className={BTN_PRIMARY}>
+          <button
+            onClick={exportFindings}
+            disabled={all.length === 0}
+            className={BTN_PRIMARY}
+          >
             <Download className="w-4 h-4" /> findings.json
           </button>
           <span className="text-[11px] vol-t2 self-center">
-            Role {role.toUpperCase()} · {canScan ? "scan allowed" : "scan blocked (view_code)"}
+            Role {role.toUpperCase()} ·{" "}
+            {canScan ? "scan allowed" : "scan blocked (view_code)"}
           </span>
         </div>
       </Panel>
@@ -609,7 +766,11 @@ const SecurityTab: React.FC<{ ops: Ops; token: string }> = ({ ops, token }) => {
             <div key={s.repo} className="text-[11px] flex flex-wrap gap-2">
               <span
                 className={`font-black uppercase ${
-                  s.verdict === "fail" ? "text-red-500" : s.verdict === "review" ? "vol-accent" : "text-green-600"
+                  s.verdict === "fail"
+                    ? "text-red-500"
+                    : s.verdict === "review"
+                      ? "vol-accent"
+                      : "text-green-600"
                 }`}
               >
                 [{s.verdict}]
@@ -629,7 +790,11 @@ const SecurityTab: React.FC<{ ops: Ops; token: string }> = ({ ops, token }) => {
           <div className="max-h-72 overflow-y-auto space-y-1">
             {all.map((f, i) => (
               <div key={i} className="text-[11px] leading-snug">
-                <span className={`font-black uppercase ${severityColor(f.severity)}`}>[{f.severity}]</span>{" "}
+                <span
+                  className={`font-black uppercase ${severityColor(f.severity)}`}
+                >
+                  [{f.severity}]
+                </span>{" "}
                 <span className="font-mono vol-t2">
                   {f.file}
                   {f.line ? `:${f.line}` : ""}
@@ -648,8 +813,13 @@ const SecurityTab: React.FC<{ ops: Ops; token: string }> = ({ ops, token }) => {
 /* Team + per-repo permissions                                         */
 /* ------------------------------------------------------------------ */
 
-const TeamTab: React.FC<{ ops: Ops; permissions: PermissionSystem }> = ({ ops, permissions }) => {
-  const [policy, setPolicy] = useState<RepoPolicy>(() => permissions.getRepoPolicy(ops.repoKey));
+const TeamTab: React.FC<{ ops: Ops; permissions: PermissionSystem }> = ({
+  ops,
+  permissions,
+}) => {
+  const [policy, setPolicy] = useState<RepoPolicy>(() =>
+    permissions.getRepoPolicy(ops.repoKey),
+  );
   const [editRole, setEditRole] = useState<UserRole>("agent");
   const [name, setName] = useState("");
   const [newRole, setNewRole] = useState<UserRole>("agent");
@@ -665,20 +835,29 @@ const TeamTab: React.FC<{ ops: Ops; permissions: PermissionSystem }> = ({ ops, p
 
   const save = () => {
     if (!can("manage_permissions")) {
-      return note(`Role ${role.toUpperCase()} cannot change permissions (manage_permissions)`, "unauthorized");
+      return note(
+        `Role ${role.toUpperCase()} cannot change permissions (manage_permissions)`,
+        "unauthorized",
+      );
     }
     try {
       const saved = permissions.saveRepoPolicy(repoKey, policy);
       setPolicy(saved);
       note(`Saved team + permissions for ${repoKey}`);
     } catch (e) {
-      note(`Save failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Save failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     }
   };
 
   return (
     <>
-      <Panel title={`Team for ${repoKey}`} hint="Members assigned to this repo. Roles decide what the cockpit lets them do.">
+      <Panel
+        title={`Team for ${repoKey}`}
+        hint="Members assigned to this repo. Roles decide what the cockpit lets them do."
+      >
         <div className="flex flex-wrap gap-2">
           <input
             value={name}
@@ -704,7 +883,11 @@ const TeamTab: React.FC<{ ops: Ops; permissions: PermissionSystem }> = ({ ops, p
                 ...policy,
                 members: [
                   ...policy.members,
-                  { id: `${name.trim().toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`, name: name.trim(), role: newRole },
+                  {
+                    id: `${name.trim().toLowerCase().replace(/\s+/g, "-")}-${Date.now().toString(36)}`,
+                    name: name.trim(),
+                    role: newRole,
+                  },
                 ],
               });
               setName("");
@@ -715,13 +898,25 @@ const TeamTab: React.FC<{ ops: Ops; permissions: PermissionSystem }> = ({ ops, p
           </button>
         </div>
         <div className="space-y-1">
-          {policy.members.length === 0 && <p className="text-[11px] vol-t2">No member yet.</p>}
+          {policy.members.length === 0 && (
+            <p className="text-[11px] vol-t2">No member yet.</p>
+          )}
           {policy.members.map((m) => (
-            <div key={m.id} className="flex flex-wrap items-center gap-2 text-[11px]">
-              <span className="vol-t1 font-bold flex-1 min-w-[120px]">{m.name}</span>
+            <div
+              key={m.id}
+              className="flex flex-wrap items-center gap-2 text-[11px]"
+            >
+              <span className="vol-t1 font-bold flex-1 min-w-[120px]">
+                {m.name}
+              </span>
               <span className="vol-accent font-black uppercase">{m.role}</span>
               <button
-                onClick={() => setPolicy({ ...policy, members: policy.members.filter((x) => x.id !== m.id) })}
+                onClick={() =>
+                  setPolicy({
+                    ...policy,
+                    members: policy.members.filter((x) => x.id !== m.id),
+                  })
+                }
                 className="min-h-[40px] px-2 rounded-lg vol-well border vol-ring vol-t2 cursor-pointer"
                 aria-label={`Remove ${m.name}`}
               >
@@ -732,14 +927,19 @@ const TeamTab: React.FC<{ ops: Ops; permissions: PermissionSystem }> = ({ ops, p
         </div>
       </Panel>
 
-      <Panel title="Role permissions for this repo" hint="Click to toggle. Saving applies to the cockpit gating for this repo only.">
+      <Panel
+        title="Role permissions for this repo"
+        hint="Click to toggle. Saving applies to the cockpit gating for this repo only."
+      >
         <div className="flex flex-wrap gap-2 mb-2">
           {ROLES.map((r) => (
             <button
               key={r}
               onClick={() => setEditRole(r)}
               className={`px-3 py-2 min-h-[44px] rounded-lg text-[10px] font-black uppercase cursor-pointer ${
-                editRole === r ? "vol-acc-bg text-black" : "vol-well vol-t2 border vol-ring"
+                editRole === r
+                  ? "vol-acc-bg text-black"
+                  : "vol-well vol-t2 border vol-ring"
               }`}
             >
               {r}
@@ -790,18 +990,26 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
     const saved = localStorage.getItem("volt_github_repo") || "";
     return saved.includes("/") ? saved.split("/")[1] : saved;
   });
-  const [branch, setBranch] = useState(() => localStorage.getItem("volt_github_branch") || "main");
-  const [token, setToken] = useState(() => localStorage.getItem("volt_github_token") || "");
+  const [branch, setBranch] = useState(
+    () => localStorage.getItem("volt_github_branch") || "main",
+  );
+  const [token, setToken] = useState(
+    () => localStorage.getItem("volt_github_token") || "",
+  );
   const [showConfig, setShowConfig] = useState(false);
 
   const [role, setRole] = useState<UserRole>("owner");
   const [tab, setTab] = useState<TabId>("prs");
-  const [log, setLog] = useState<Array<{ t: string; msg: string; status: string }>>([]);
+  const [log, setLog] = useState<
+    Array<{ t: string; msg: string; status: string }>
+  >([]);
   const [prs, setPrs] = useState<Record<string, unknown>[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [lessons, setLessons] = useState<string[]>(() => {
     try {
-      return JSON.parse(localStorage.getItem("volt_agent_lessons") || "[]") as string[];
+      return JSON.parse(
+        localStorage.getItem("volt_agent_lessons") || "[]",
+      ) as string[];
     } catch {
       return [];
     }
@@ -809,7 +1017,8 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
   const permissions = useMemo(() => new PermissionSystem(), []);
   const manager = useMemo(
-    () => (owner && repo ? new GitHubManager({ owner, repo, token, branch }) : null),
+    () =>
+      owner && repo ? new GitHubManager({ owner, repo, token, branch }) : null,
     [owner, repo, token, branch],
   );
   const repoKey = owner && repo ? `${owner}/${repo}` : "";
@@ -824,8 +1033,14 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
   }, [permissions]);
 
   const note = useCallback(
-    (msg: string, status: "success" | "failed" | "unauthorized" = "success") => {
-      setLog((prev) => [{ t: new Date().toLocaleTimeString(), msg, status }, ...prev.slice(0, 24)]);
+    (
+      msg: string,
+      status: "success" | "failed" | "unauthorized" = "success",
+    ) => {
+      setLog((prev) => [
+        { t: new Date().toLocaleTimeString(), msg, status },
+        ...prev.slice(0, 24),
+      ]);
       addLog?.(`[REPO OPS] ${msg}`, status === "success" ? "success" : "error");
     },
     [addLog],
@@ -864,7 +1079,10 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       setPrs(list);
       note(`Loaded ${list.length} open PR(s)`);
     } catch (e) {
-      note(`Failed to load PRs: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Failed to load PRs: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -872,14 +1090,21 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
   const newBranch = async () => {
     if (!manager) return note("Set owner/repo first.", "failed");
-    if (!can("create_pr")) return note(`Role ${role.toUpperCase()} cannot create branches (create_pr)`, "unauthorized");
+    if (!can("create_pr"))
+      return note(
+        `Role ${role.toUpperCase()} cannot create branches (create_pr)`,
+        "unauthorized",
+      );
     const name = `volt/fix-${Date.now().toString(36)}`;
     setBusy("branch");
     try {
       await manager.createBranch(name);
       note(`Branch created: ${name}`);
     } catch (e) {
-      note(`Branch failed: ${e instanceof Error ? e.message : String(e)}`, "failed");
+      note(
+        `Branch failed: ${e instanceof Error ? e.message : String(e)}`,
+        "failed",
+      );
     } finally {
       setBusy(null);
     }
@@ -887,10 +1112,15 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
   const exportAudit = (format: "json" | "csv") => {
     if (!can("view_audit_log")) {
-      return note(`Role ${role.toUpperCase()} cannot read the audit log`, "unauthorized");
+      return note(
+        `Role ${role.toUpperCase()} cannot read the audit log`,
+        "unauthorized",
+      );
     }
     const data = permissions.exportAuditLogs(format);
-    const blob = new Blob([data], { type: format === "csv" ? "text/csv" : "application/json" });
+    const blob = new Blob([data], {
+      type: format === "csv" ? "text/csv" : "application/json",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -900,14 +1130,18 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
     note(`Audit exported (${format.toUpperCase()})`);
   };
 
-  const auditLogs: AuditLog[] = can("view_audit_log") ? permissions.getAuditLogs() : [];
+  const auditLogs: AuditLog[] = can("view_audit_log")
+    ? permissions.getAuditLogs()
+    : [];
   const canMerge = can("merge_pr");
 
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto space-y-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-xl font-black tracking-widest vol-t1">REPO OPS</h1>
+          <h1 className="text-xl font-black tracking-widest vol-t1">
+            REPO OPS
+          </h1>
           <p className="text-[11px] vol-accent-soft font-semibold">
             Review PRs · fix conflicts · sweep workflows · set the team
           </p>
@@ -920,9 +1154,24 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       {showConfig && (
         <div className="p-3 rounded-2xl vol-panel border vol-ring space-y-2">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="owner" className={INPUT} />
-            <input value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="repo" className={INPUT} />
-            <input value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" className={INPUT} />
+            <input
+              value={owner}
+              onChange={(e) => setOwner(e.target.value)}
+              placeholder="owner"
+              className={INPUT}
+            />
+            <input
+              value={repo}
+              onChange={(e) => setRepo(e.target.value)}
+              placeholder="repo"
+              className={INPUT}
+            />
+            <input
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              placeholder="main"
+              className={INPUT}
+            />
           </div>
           <div className="flex items-center gap-2">
             <KeyRound className="w-4 h-4 vol-accent shrink-0" />
@@ -951,7 +1200,9 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       {/* Permission strip */}
       <div className="p-3 rounded-2xl vol-panel border vol-ring flex flex-wrap items-center gap-2">
         <ShieldCheck className="w-4 h-4 vol-accent" />
-        <span className="text-[10px] font-black tracking-wider vol-t2 uppercase">Acting as</span>
+        <span className="text-[10px] font-black tracking-wider vol-t2 uppercase">
+          Acting as
+        </span>
         {ROLES.map((r) => (
           <button
             key={r}
@@ -981,7 +1232,9 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`min-h-[44px] px-3 rounded-xl text-[10px] font-black uppercase cursor-pointer flex items-center gap-2 border vol-ring ${
-                tab === t.id ? "vol-acc-bg text-black border-transparent" : "vol-well vol-t2"
+                tab === t.id
+                  ? "vol-acc-bg text-black border-transparent"
+                  : "vol-well vol-t2"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -994,7 +1247,11 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
       {tab === "prs" && (
         <>
           <div className="flex flex-wrap gap-2">
-            <button onClick={newBranch} disabled={busy === "branch"} className={BTN_GHOST}>
+            <button
+              onClick={newBranch}
+              disabled={busy === "branch"}
+              className={BTN_GHOST}
+            >
               <GitBranch className="w-4 h-4" /> NEW FIX BRANCH
             </button>
             <button onClick={() => exportAudit("csv")} className={BTN_GHOST}>
@@ -1018,15 +1275,20 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
       {tab === "conflicts" && <ConflictTab ops={ops} />}
       {tab === "security" && <SecurityTab ops={ops} token={token} />}
-      {tab === "team" && <TeamTab key={repoKey} ops={ops} permissions={permissions} />}
+      {tab === "team" && (
+        <TeamTab key={repoKey} ops={ops} permissions={permissions} />
+      )}
 
       {/* Activity + audit */}
       <div className="p-3 rounded-2xl vol-panel border vol-ring">
         <div className="text-[10px] font-black tracking-wider vol-t2 uppercase mb-2">
-          Action log ({log.length}) · audit trail {auditLogs.length ? `(${auditLogs.length})` : ""}
+          Action log ({log.length}) · audit trail{" "}
+          {auditLogs.length ? `(${auditLogs.length})` : ""}
         </div>
         <div className="space-y-1 max-h-56 overflow-y-auto">
-          {log.length === 0 && <p className="text-xs vol-t2">No actions yet.</p>}
+          {log.length === 0 && (
+            <p className="text-xs vol-t2">No actions yet.</p>
+          )}
           {log.map((l, i) => (
             <div key={i} className="text-[11px] font-mono flex gap-2">
               <span className="vol-t2">{l.t}</span>
@@ -1049,8 +1311,8 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
       {tab === "security" && (
         <p className="text-[10px] vol-t2 flex items-center gap-1">
-          <AlertTriangle className="w-3 h-3 vol-accent shrink-0" /> Findings are static analysis, not a
-          guarantee. Confirm before rotating keys.
+          <AlertTriangle className="w-3 h-3 vol-accent shrink-0" /> Findings are
+          static analysis, not a guarantee. Confirm before rotating keys.
         </p>
       )}
     </div>

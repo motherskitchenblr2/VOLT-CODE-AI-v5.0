@@ -108,7 +108,6 @@ function readPolicies(): Record<string, RepoPolicy> {
   }
 }
 
-
 // Default Permission Mappings
 const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   owner: [
@@ -427,7 +426,9 @@ export class PermissionSystem {
    * built-in defaults, so a new repo never starts with no permissions.
    */
   getRepoPolicy(repoKey: string): RepoPolicy {
-    return readPolicies()[repoKey] ?? { roles: cloneRolePermissions(), members: [] };
+    return (
+      readPolicies()[repoKey] ?? { roles: cloneRolePermissions(), members: [] }
+    );
   }
 
   /** Persist a repo policy. Unknown permission strings are dropped. */
