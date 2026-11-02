@@ -34,7 +34,7 @@ function runBlocks(yaml: string): Array<{ start: number; text: string }> {
     if (!m) continue;
     const keyIndent = m[1].length;
     const inline = m[2].trim();
-    if (inline && inline !== "|" && inline !== ">" && !inline.startsWith("|")) {
+    if (inline && !/^[|>]/.test(inline)) {
       blocks.push({ start: i + 1, text: inline });
       continue;
     }

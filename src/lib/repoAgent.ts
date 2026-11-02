@@ -43,6 +43,13 @@ const toFinding = (
   message: `${f.message}${f.line ? ` (line ${f.line})` : ""}`,
 });
 
+/** Strip unified-diff `+` prefixes so `scanWorkflow` sees real YAML lines. */
+const normalizeWorkflowPatch = (patch: string): string =>
+  patch
+    .split("\n")
+    .filter((l) => l.startsWith("+") && !l.startsWith("+++"))
+    .map((l) => l.slice(1))
+    .join("\n");
 /** Code smells that are cheap to spot in a patch and worth stopping. */
 const PATCH_RULES: Array<{
   rule: string;
@@ -59,7 +66,7 @@ const PATCH_RULES: Array<{
   {
     rule: "eval-usage",
     severity: "block",
-    re: /^\+\s*(?:eval\(|new Function\()/m,
+    re: /^\+[^+].*?\b(?:eval|new Function)\s*\(/m,
     message:
       "Dynamic code execution (eval / new Function). Removes the safety of the bundle; use a map of handlers.",
   },
@@ -123,7 +130,7 @@ export function reviewPullRequest(files: PRFile[]): ReviewReport {
       );
     }
     if (/^\.github\/workflows\/.+\.ya?ml$/.test(file.filename)) {
-      for (const f of scanWorkflow(file.filename, patch)) {
+      for (const f of scanWorkflow(file.filename, normalizeWorkflowPatch(patch))) {
         findings.push(
           toFinding(
             f.severity === "critical" || f.severity === "high"

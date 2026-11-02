@@ -184,4 +184,5 @@ fs.writeFileSync(path.join(outDir, "REPORT.md"), lines.join("\n"));
 console.log(
   `\nWrote ${path.relative(process.cwd(), outDir)}/findings.json + REPORT.md`,
 );
-process.exit(totals.critical > 0 ? 1 : 0);
+const failedScans = results.some((r) => r.error != null);
+process.exit(totals.critical > 0 || failedScans ? 1 : 0);

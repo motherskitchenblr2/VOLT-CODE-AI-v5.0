@@ -407,9 +407,18 @@ export class GitHubManager {
   async getPullRequestFiles(
     prNumber: number,
   ): Promise<Record<string, unknown>[]> {
-    return this.gh<Record<string, unknown>[]>(
-      `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/files?per_page=100`,
-    );
+    const files: Record<string, unknown>[] = [];
+    let page = 1;
+    for (;;) {
+      const batch = await this.gh<Record<string, unknown>[]>(
+        `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/files?per_page=100&page=${page}`,
+      );
+      if (!batch || batch.length === 0) break;
+      files.push(...batch);
+      if (batch.length < 100) break;
+      page++;
+    }
+    return files;
   }
 
   /** Post a real GitHub review (not a local log line). */
@@ -417,12 +426,13 @@ export class GitHubManager {
     prNumber: number,
     event: "APPROVE" | "REQUEST_CHANGES" | "COMMENT",
     body: string,
+    commit_id?: string,
   ): Promise<{ id: number; html_url: string }> {
     if (!body.trim())
       throw new Error("Review body is empty — nothing to post.");
     return this.gh<{ id: number; html_url: string }>(
       `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/reviews`,
-      { method: "POST", body: { event, body } },
+      { method: "POST", body: { event, body, ...(commit_id ? { commit_id } : {}) } },
     );
   }
 
@@ -461,8 +471,9 @@ export class GitHubManager {
       );
       const raw = data.content || "";
       // atob exists in browsers and in Node >= 16, so one path covers both.
-      const content =
-        data.encoding === "base64" ? atob(raw.replace(/\s/g, "")) : raw;
+      const binary = atob(raw.replace(/\s/g, ""));
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      const content = new TextDecoder("utf-8").decode(bytes);
       return { content, sha: data.sha };
     } catch (error) {
       if (error instanceof Error && /GitHub 404/.test(error.message))

@@ -121,6 +121,7 @@ const PRTab: React.FC<{
   addLesson: (text: string) => void;
 }> = ({ ops, prs, busy, onRefresh, setBusy, lessons, addLesson }) => {
   const [reports, setReports] = useState<Record<number, ReviewReport>>({});
+  const [scannedHeadShas, setScannedHeadShas] = useState<Record<number, string>>({});
   const [pendingClose, setPendingClose] = useState<{
     n: number;
     title: string;
@@ -145,6 +146,10 @@ const PRTab: React.FC<{
     try {
       const report = reviewPullRequest(await loadFiles(n));
       setReports((prev) => ({ ...prev, [n]: report }));
+      // Bind the review to the scanned head SHA so a stale review can't be posted.
+      const pr = await manager?.getPullRequest(n);
+      const headSha = (pr?.head as { sha?: string })?.sha || "";
+      setScannedHeadShas((prev) => ({ ...prev, [n]: headSha }));
       note(
         `Reviewed PR #${n}: ${report.blocks} blocking, ${report.warns} warning → ${report.verdict.toUpperCase()}`,
         report.blocks ? "failed" : "success",
@@ -168,6 +173,16 @@ const PRTab: React.FC<{
         `Role ${ops.role.toUpperCase()} cannot post reviews (approve_pr)`,
         "unauthorized",
       );
+    // Abort if the PR head moved since the scan — never review stale code.
+    const scanned = scannedHeadShas[n];
+    const pr = await manager.getPullRequest(n);
+    const currentHead = (pr?.head as { sha?: string })?.sha || "";
+    if (scanned && scanned !== currentHead) {
+      return note(
+        `PR #${n} head moved since scan (${scanned.slice(0, 7)} → ${currentHead.slice(0, 7)}). Run REVIEW again before posting.`,
+        "failed",
+      );
+    }
     setBusy(`post-${n}`);
     try {
       const event =
@@ -180,6 +195,7 @@ const PRTab: React.FC<{
         n,
         event,
         reviewMarkdown(report),
+        currentHead,
       );
       note(
         `Posted ${event} review on PR #${n}${posted.html_url ? ` — ${posted.html_url}` : ""}`,
@@ -206,10 +222,9 @@ const PRTab: React.FC<{
     setBusy(`close-${n}`);
     try {
       const lesson = lessonMarkdown({ prNumber: n, title, reason });
-      await manager.closePullRequest(n);
-      addLesson(lesson);
 
-      // Lesson travels through the normal flow: branch → commit → PR.
+      // Lesson first: branch → commit → PR. Only close the original PR once the
+      // lesson PR exists, so a rejected PR is never orphaned without a record.
       const existing = await manager.getFileContent(
         "AGENT_LESSONS.md",
         managerBranch(manager),
@@ -226,18 +241,22 @@ const PRTab: React.FC<{
         ],
         { message: `learn: PR #${n} rejection` },
       );
-      const pr = await manager.createPullRequest(
+      const lessonPr = await manager.createPullRequest(
         branch,
         `learn: lesson from rejected PR #${n}`,
         `Records why PR #${n} ("${title}") was rejected.\n\n${lesson}`,
       );
-      note(`PR #${n} closed, lesson PR #${pr.prNumber} opened`);
+      addLesson(lesson);
+
+      // Now it's safe to close the original PR.
+      await manager.closePullRequest(n);
+      note(`Lesson PR #${lessonPr.prNumber} opened, PR #${n} closed`);
       setPendingClose(null);
       setReason("");
       onRefresh();
     } catch (e) {
       note(
-        `Close failed: ${e instanceof Error ? e.message : String(e)}`,
+        `Lesson failed: ${e instanceof Error ? e.message : String(e)} (PR #${n} left open)`,
         "failed",
       );
     } finally {
@@ -441,6 +460,7 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
   const [busyKey, setBusyKey] = useState<string | null>(null);
   const [outcomes, setOutcomes] = useState<MergeOutcome[] | null>(null);
   const [headRef, setHeadRef] = useState("");
+  const [scannedBaseSha, setScannedBaseSha] = useState("");
   const { manager, can, note } = ops;
 
   const run = useCallback(async () => {
@@ -452,12 +472,19 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
     setOutcomes(null);
     try {
       const pr = await manager.getPullRequest(n);
+      setScannedBaseSha((pr.base as { sha?: string } | undefined)?.sha || "");
       const head = pr.head as
         { ref?: string; repo?: { full_name?: string } } | undefined;
       const base = pr.base as { ref?: string } | undefined;
       const headName = head?.ref || "";
       setHeadRef(headName);
 
+      if (pr.mergeable === null) {
+        return note(
+          `PR #${n} mergeability check is still pending from GitHub — retry in a moment.`,
+          "failed",
+        );
+      }
       if (pr.mergeable !== false) {
         note(
           `PR #${n} has no merge conflict (mergeable: ${String(pr.mergeable)}).`,
@@ -541,6 +568,15 @@ const ConflictTab: React.FC<{ ops: Ops }> = ({ ops }) => {
     );
     if (files.length === 0)
       return note("No auto-resolvable file to apply.", "failed");
+    // Reject stale outcomes: target branch head must match scan time.
+    const currentPr = await manager.getPullRequest(Number(prNumber));
+    const currentBaseSha = (currentPr.base as { sha?: string })?.sha || "";
+    if (scannedBaseSha && scannedBaseSha !== currentBaseSha) {
+      return note(
+        `Target branch head moved since conflict scan. Rescan before applying fixes.`,
+        "failed",
+      );
+    }
     setBusyKey("apply");
     try {
       await manager.commitFiles(
