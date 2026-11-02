@@ -28,6 +28,7 @@ import {
   Search,
   HelpCircle,
   Send,
+  Activity,
   GitBranch,
   AlertCircle,
   RefreshCw,
@@ -350,6 +351,47 @@ const getErrorMessage = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
 };
 
+/**
+ * Collapsible control section for the horizontal editor rail.
+ * Groups related controls into an accordion so the toolbar stays compact
+ * on small screens while keeping everything reachable.
+ * ponytail: inline component, single use — keep here rather than a new file.
+ */
+const ControlAccordion: React.FC<{
+  title: string;
+  icon: React.ReactNode;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}> = ({ title, icon, defaultOpen = false, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border vol-ring-strong rounded-xl vol-panel overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 px-3 py-2 vol-surface text-left cursor-pointer"
+        aria-expanded={open}
+      >
+        {icon}
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] vol-accent tracking-widest uppercase font-bold">
+            {title}
+          </div>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 shrink-0 vol-accent-soft transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="px-3 py-2 vol-surface border-t vol-line">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>("editor");
   const [code, setCode] = useState(
@@ -384,6 +426,20 @@ const App: React.FC = () => {
   const [, setCurrentModelName] = useState("");
   const [autoApplyFixes, setAutoApplyFixes] = useState(false);
   const [enableSentinel, setEnableSentinel] = useState(false);
+
+  // Sticky line-number gutter refs (synced scroll with the editor textarea)
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gutterRef = useRef<HTMLDivElement>(null);
+  const handleEditorScroll = (e: React.UIEvent) => {
+    if (!textareaRef.current || !gutterRef.current) return;
+    const target = e.target as HTMLElement;
+    const scrollTop = target.scrollTop;
+    if (target === textareaRef.current) {
+      gutterRef.current.scrollTop = scrollTop;
+    } else {
+      textareaRef.current.scrollTop = scrollTop;
+    }
+  };
 
   // v5.0 Added States
   const [aboutDocPage, setAboutDocPage] = useState<
@@ -446,8 +502,6 @@ const App: React.FC = () => {
   const modelGroups: Array<[string, ModelConfig[]]> = [
     ...new Set(modelOptionsAll.map((m) => m.provider)),
   ].map((prov) => [prov, modelOptionsAll.filter((m) => m.provider === prov)]);
-  const selectedTier =
-    modelOptionsAll.find((m) => m.id === selectedModel.id)?.tier || "FREE";
 
   useEffect(() => {
     if (
@@ -3787,133 +3841,114 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 mt-3">
-            {renderModelSelect()}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-3">
-              {renderSelect(
-                "Plugin",
-                selectedPlugin,
-                setSelectedPlugin,
-                pluginOptions,
-              )}
-              {renderSelect(
-                "Skill",
-                selectedSkill,
-                setSelectedSkill,
-                skillOptions,
-              )}
-              {renderSelect(
-                "Mode",
-                agentMode,
-                (v) => setAgentMode(v as AgentMode),
-                modeOptions,
-              )}
+          {/* Horizontal control rail — collapsible accordion sections */}
+          <div className="space-y-2">
+            <ControlAccordion title="ENGINE & MODEL" icon={<Zap className="w-4 h-4" />} defaultOpen={true}>
+              {renderModelSelect()}
+            </ControlAccordion>
 
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                title={`Language: ${languages.find((l) => l.value === language)?.label ?? language}`}
-                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0 w-[120px] sm:w-auto max-w-[120px] sm:max-w-none truncate"
-              >
-                {languages.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
-
-              <div
-                title={`Detected language: ${detectedLanguage.toUpperCase()}`}
-                className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0 whitespace-nowrap"
-              >
-                DETECTED: {detectedLanguage.toUpperCase()}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-wrap gap-4 items-center">
-            <div className="px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl border vol-ring-strong vol-panel inline-flex items-center gap-2 sm:gap-3 select-none">
-              <Zap className="w-4 h-4 vol-accent animate-pulse" />
-              <div className="flex flex-col">
-                <div className="vol-accent text-[9px] tracking-widest font-bold uppercase">
-                  Active Engine
-                </div>
-                <div className="font-extrabold text-sm vol-t1">
-                  {selectedModel.name}
+            <ControlAccordion title="CONFIG" icon={<Settings className="w-4 h-4" />} defaultOpen={false}>
+              {/* Mode / Language aligned grid (4 cols on desktop, 2 on mobile) */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {renderSelect(
+                  "Plugin",
+                  selectedPlugin,
+                  setSelectedPlugin,
+                  pluginOptions,
+                )}
+                {renderSelect(
+                  "Skill",
+                  selectedSkill,
+                  setSelectedSkill,
+                  skillOptions,
+                )}
+                {renderSelect(
+                  "Mode",
+                  agentMode,
+                  (v) => setAgentMode(v as AgentMode),
+                  modeOptions,
+                )}
+                <div className="flex flex-col gap-1">
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    title={`Language: ${languages.find((l) => l.value === language)?.label ?? language}`}
+                    className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0 w-full max-w-[120px] truncate"
+                  >
+                    {languages.map((l) => (
+                      <option key={l.value} value={l.value}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div
+                    title={`Detected language: ${detectedLanguage.toUpperCase()}`}
+                    className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0 whitespace-nowrap"
+                  >
+                    DETECTED: {detectedLanguage.toUpperCase()}
+                  </div>
                 </div>
               </div>
-              <div className="h-6 w-px hidden sm:block vol-line"></div>
-              <div className="hidden sm:flex flex-col items-start">
-                <div className="text-[10px] vol-t2 uppercase font-semibold">
-                  {selectedModel.provider} • {selectedModel.tag} •{" "}
-                  {selectedModel.ctx}
-                </div>
-                <span
-                  className={
-                    selectedTier === "FREE"
-                      ? "mt-0.5 w-fit rounded px-1.5 py-0.5 bg-green-600 text-black text-[9px] font-black tracking-wider uppercase"
-                      : "mt-0.5 w-fit rounded px-1.5 py-0.5 vol-acc-wash vol-accent text-[9px] font-black tracking-wider uppercase"
-                  }
-                >
-                  {selectedTier === "FREE" ? "★ Free Tier" : "Paid"}
-                </span>
-              </div>
-            </div>
+            </ControlAccordion>
 
-            <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
-              <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
-                Operation Mode
+            <ControlAccordion title="OPERATION MODE" icon={<Activity className="w-4 h-4" />} defaultOpen={false}>
+              <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
+                <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
+                  Operation Mode
+                </div>
+                <div className="flex items-center gap-1.5 vol-well rounded-lg p-1">
+                  <button
+                    onClick={() => {
+                      setAgentMode("manual");
+                      addLog("Switched operation mode to MANUAL", "info");
+                    }}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                      agentMode === "manual"
+                        ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
+                        : "vol-t2 hover:vol-t1"
+                    }`}
+                  >
+                    Manual Mode
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAgentMode("assist");
+                      addLog(
+                        "Switched operation mode to AUTONOMOUS (ASSIST)",
+                        "info",
+                      );
+                    }}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                      agentMode !== "manual"
+                        ? "vol-acc-wash vol-accent border vol-ring-strong shadow-sm shadow-[#FF5F00]/10"
+                        : "vol-t2 hover:vol-t1"
+                    }`}
+                  >
+                    Autonomous Mode
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 vol-well rounded-lg p-1">
-                <button
-                  onClick={() => {
-                    setAgentMode("manual");
-                    addLog("Switched operation mode to MANUAL", "info");
-                  }}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    agentMode === "manual"
-                      ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
-                      : "vol-t2 hover:vol-t1"
-                  }`}
-                >
-                  Manual Mode
-                </button>
-                <button
-                  onClick={() => {
-                    setAgentMode("assist");
-                    addLog(
-                      "Switched operation mode to AUTONOMOUS (ASSIST)",
-                      "info",
-                    );
-                  }}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    agentMode !== "manual"
-                      ? "vol-acc-wash vol-accent border vol-ring-strong shadow-sm shadow-[#FF5F00]/10"
-                      : "vol-t2 hover:vol-t1"
-                  }`}
-                >
-                  Autonomous Mode
-                </button>
-              </div>
-            </div>
+            </ControlAccordion>
 
             {showTokenUsage && tokensUsed > 0 && (
-              <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
-                <div>
-                  <div className="vol-accent text-[10px] tracking-wider font-bold">
-                    TOTAL CONSUMPTION
+              <ControlAccordion title="TOKEN USAGE" icon={<GitPullRequest className="w-4 h-4" />} defaultOpen={false}>
+                <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
+                  <div>
+                    <div className="vol-accent text-[10px] tracking-wider font-bold">
+                      TOTAL CONSUMPTION
+                    </div>
+                    <div className="vol-t1 font-extrabold text-lg">
+                      {tokensUsed}{" "}
+                      <span className="text-xs vol-t2 font-normal">tokens</span>
+                    </div>
                   </div>
-                  <div className="vol-t1 font-extrabold text-lg">
-                    {tokensUsed}{" "}
-                    <span className="text-xs vol-t2 font-normal">tokens</span>
+                  <div className="h-8 w-px vol-wash"></div>
+                  <div className="text-xs vol-t2 space-y-0.5 select-none">
+                    <div>Prompt: {promptTokens}</div>
+                    <div>Completion: {completionTokens}</div>
                   </div>
                 </div>
-                <div className="h-8 w-px vol-wash"></div>
-                <div className="text-xs vol-t2 space-y-0.5 select-none">
-                  <div>Prompt: {promptTokens}</div>
-                  <div>Completion: {completionTokens}</div>
-                </div>
-              </div>
+              </ControlAccordion>
             )}
           </div>
         </div>
@@ -3950,18 +3985,49 @@ const App: React.FC = () => {
               />
             </div>
           ) : (
-            <textarea
-              value={code}
-              onChange={(e) => handleCodeChange(e.target.value)}
-              spellCheck={false}
-              autoCorrect="off"
-              className="w-full flex-1 resize-none bg-transparent p-4 sm:p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00]"
-              style={{
-                fontFamily:
-                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
-              }}
-            />
+            <div
+              className="flex-1 relative overflow-hidden vol-surface min-h-[44vh]"
+            >
+              {/* Sticky line-number gutter — scroll-synced with the editor */}
+              <div
+                ref={gutterRef}
+                className="absolute inset-y-0 left-0 w-12 shrink-0 overflow-y-scroll no-scrollbar text-right pr-2 select-none"
+                onScroll={handleEditorScroll}
+                style={{
+                  fontFamily:
+                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  fontSize: "14px",
+                  lineHeight: "1.65",
+                  paddingTop: "1rem", /* matches textarea p-4 */
+                  color: "var(--t2, #505c6e)",
+                }}
+              >
+                {Array.from(
+                  { length: code.split("\n").length },
+                  (_, i) => i + 1,
+                ).map((n) => (
+                  <div key={n} className="mb-[1.65em] font-bold">
+                    {n}
+                  </div>
+                ))}
+              </div>
+
+              <textarea
+                ref={textareaRef}
+                value={code}
+                onChange={(e) => handleCodeChange(e.target.value)}
+                onScroll={handleEditorScroll}
+                spellCheck={false}
+                autoCorrect="off"
+                wrap="off"
+                className="w-full flex-1 resize-none pl-12 sm:pl-20 p-4 sm:p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00] overflow-y-scroll overflow-x-auto"
+                style={{
+                  fontFamily:
+                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                  boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
+                }}
+              />
+            </div>
           )}
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
