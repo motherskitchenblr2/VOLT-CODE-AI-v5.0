@@ -16,9 +16,9 @@ describe("detectLanguage", () => {
     expect(detectLanguage(".btn.primary { padding: 4px; }")).toBe("css");
     expect(detectLanguage("nav > ul li { display: block; }")).toBe("css");
     expect(detectLanguage('[data-state="open"] { opacity: 1; }')).toBe("css");
-    expect(detectLanguage("@media (max-width: 600px) { .x { color: red; } }")).toBe(
-      "css",
-    );
+    expect(
+      detectLanguage("@media (max-width: 600px) { .x { color: red; } }"),
+    ).toBe("css");
     expect(detectLanguage(".card {\n  color: red;\n}")).toBe("css");
   });
 
