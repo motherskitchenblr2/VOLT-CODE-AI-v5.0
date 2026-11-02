@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { classifyTask, smartRoute } from "./lib/smartRouter";
+import { detectLanguage } from "./lib/detectLanguage";
 import { RepoOpsPanel } from "./components/RepoOpsPanel";
 import { SplitEditorLayout } from "./components/SplitEditorLayout";
 import { AIProviderSelector } from "./components/AIProviderSelector";
@@ -345,70 +346,6 @@ const modeOptions: AgentMode[] = [
   "team-review",
 ];
 
-const detectLanguage = (codeStr: string, filePath?: string): string => {
-  if (filePath) {
-    const ext = filePath.split(".").pop()?.toLowerCase();
-    if (ext === "yaml" || ext === "yml") return "yaml";
-    if (ext === "py") return "python";
-    if (ext === "cpp" || ext === "cc" || ext === "h") return "cpp";
-    if (ext === "html" || ext === "htm") return "html";
-    if (ext === "css") return "css";
-    if (ext === "js" || ext === "jsx") return "javascript";
-    if (ext === "ts" || ext === "tsx") return "typescript";
-  }
-
-  if (!codeStr || !codeStr.trim()) return "unknown";
-
-  // YAML detection (run this first before any JS/TS triggers since YAML config might contain scripts/commands)
-  if (
-    codeStr.includes("yaml-language-server") ||
-    codeStr.includes("rules:") ||
-    codeStr.includes("reviews:") ||
-    codeStr.includes("early_access:") ||
-    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) &&
-      !codeStr.includes("{") &&
-      !codeStr.includes("}"))
-  ) {
-    return "yaml";
-  }
-
-  if (
-    (codeStr.includes("def ") || codeStr.includes("import ")) &&
-    codeStr.includes(":")
-  )
-    return "python";
-  if (codeStr.includes("#include") || codeStr.includes("int main"))
-    return "cpp";
-  if (
-    codeStr.includes("<html") ||
-    codeStr.includes("<div") ||
-    codeStr.includes("<!DOCTYPE html>")
-  )
-    return "html";
-
-  // TypeScript detection (interface/type declarations, TS syntax)
-  if (
-    /^\s*(interface|type)\s+\w+\s*[={]/m.test(codeStr) ||
-    /:\s*(string|number|boolean|any|unknown|void)\b/.test(codeStr) ||
-    /\s*as\s+\w+/m.test(codeStr)
-  )
-    return "typescript";
-
-  // JavaScript detection (ES6+, includes arrow functions)
-  if (
-    codeStr.includes("const ") ||
-    codeStr.includes("let ") ||
-    codeStr.includes("function ") ||
-    codeStr.includes("console.log") ||
-    codeStr.includes("=>")
-  )
-    return "javascript";
-
-  // CSS detection (look for CSS-specific patterns, not just braces)
-  if (/(^|\n)\s*[.#]?\w+\s*{[^}]*:\s*[^;{}]+;/.test(codeStr)) return "css";
-
-  return "unknown";
-};
 
 const getErrorMessage = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
