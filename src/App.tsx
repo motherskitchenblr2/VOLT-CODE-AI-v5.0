@@ -9,10 +9,7 @@ import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
 import { BossGuidancePanel } from "./components/BossGuidancePanel";
 import { useApiGateway } from "./hooks/useApiGateway";
 import {
-  Play,
-  History,
   Settings,
-  User,
   Copy,
   Download,
   X,
@@ -20,7 +17,6 @@ import {
   Zap,
   Bug,
   Shield,
-  Wrench,
   Sparkles,
   ChevronDown,
   Bot,
@@ -1703,20 +1699,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth?action=logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch {
-      // Best-effort: still clear local session.
-    }
-    setIsLoggedIn(false);
-    setUsername("dev_user");
-    setLoginPassword("");
-  };
-
   useEffect(() => {
     (async () => {
       try {
@@ -2490,211 +2472,6 @@ const App: React.FC = () => {
   // ==========================================
   // v6.0 RC2 RENDER HELPER METHODS
   // ==========================================
-
-  const renderSidebar = () => {
-    return (
-      <div className="p-6 flex flex-col h-full vol-elev">
-        <div className="mb-12 select-none">
-          <div className="vol-accent text-3xl font-black tracking-tighter">
-            VOLT
-          </div>
-          <div className="vol-t1 text-2xl font-extrabold tracking-tight">
-            CODE AI
-          </div>
-          <div className="vol-accent text-[10px] mt-1 font-bold tracking-[3px]">
-            v6.0 ENTERPRISE
-          </div>
-        </div>
-
-        {!isLoggedIn ? (
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl vol-acc-bg hover:vol-accbg-hi text-black font-extrabold transition-all active:scale-[0.985] cursor-pointer"
-          >
-            <User className="w-4 h-4" />
-            LOGIN TO SAVE
-          </button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <div className="vol-accent font-semibold truncate max-w-[120px]">
-              {username}
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg vol-wash hover:vol-wash vol-t2 hover:vol-t1 text-[10px] font-bold transition-all cursor-pointer"
-              title="Sign out"
-            >
-              <X className="w-3.5 h-3.5" />
-              LOGOUT
-            </button>
-          </div>
-        )}
-
-        <div className="mt-12 space-y-1 select-none">
-          <div
-            onClick={() => setCurrentView("editor")}
-            data-view="editor"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "editor"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Play className="w-5 h-5" />
-            NEW ANALYSIS
-          </div>
-
-          <div
-            onClick={() => setCurrentView("ide")}
-            data-view="ide"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "ide"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Sparkles className="w-5 h-5" />
-            IDE CANVAS
-          </div>
-
-          <div
-            onClick={() => setCurrentView("swarm")}
-            data-view="swarm"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "swarm"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Bot className="w-5 h-5" />
-            AGENT SWARM
-          </div>
-
-          <div
-            onClick={() => setCurrentView("history")}
-            data-view="history"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "history"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <History className="w-5 h-5" />
-            SESSION HISTORY
-          </div>
-
-          <div
-            onClick={() => setCurrentView("sentinel")}
-            data-view="sentinel"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "sentinel"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Shield className="w-5 h-5" />
-            SENTINEL
-          </div>
-
-          <div
-            onClick={() => setCurrentView("meeting")}
-            data-view="meeting"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "meeting"
-                ? "bg-blue-600 vol-t1 font-bold"
-                : "hover:vol-wash text-blue-400"
-            }`}
-          >
-            <Users className="w-5 h-5" />
-            MEETING PANEL
-          </div>
-
-          <div
-            onClick={() => setCurrentView("pr-review")}
-            data-view="pr-review"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "pr-review"
-                ? "bg-orange-600 vol-t1 font-bold"
-                : "hover:vol-wash text-orange-400"
-            }`}
-          >
-            <GitPullRequest className="w-5 h-5" />
-            PR REVIEW
-          </div>
-
-          <div
-            onClick={() => setCurrentView("settings")}
-            data-view="settings"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "settings"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Settings className="w-5 h-5" />
-            SETTINGS
-          </div>
-
-          <div
-            onClick={() => setCurrentView("repo-ops")}
-            data-view="repo-ops"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "repo-ops"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <GitPullRequest className="w-5 h-5" />
-            REPO OPS
-          </div>
-
-          <div
-            onClick={() => setCurrentView("github")}
-            data-view="github"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "github"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <GitBranch className="w-5 h-5" />
-            GITHUB WORKSPACE
-          </div>
-
-          <div
-            onClick={() => setCurrentView("admin")}
-            data-view="admin"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer mb-1 transition-all ${
-              currentView === "admin"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <Wrench className="w-5 h-5" />
-            ADMIN COCKPIT
-          </div>
-
-          <div
-            onClick={() => setCurrentView("about")}
-            data-view="about"
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
-              currentView === "about"
-                ? "vol-acc-bg text-black font-bold"
-                : "hover:vol-wash vol-accent"
-            }`}
-          >
-            <HelpCircle className="w-5 h-5" />
-            ABOUT / WHITE PAPER
-          </div>
-        </div>
-
-        <div className="mt-auto pt-8 text-xs opacity-40 space-y-1 select-none">
-          <div>HIGH-VOLTAGE AGENT CORE</div>
-          <div>NEON ORANGE #FF5F00</div>
-        </div>
-      </div>
-    );
-  };
 
   const renderContent = () => {
     if (currentView === "history") {
@@ -3673,7 +3450,7 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16">
         {/* Editor Toolbar Header */}
-        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
+        <div className="hidden md:block border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
           <div className="mb-1 flex justify-between items-start">
             <div>
               <div className="text-lg sm:text-2xl font-bold leading-tight">
@@ -4032,7 +3809,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Textarea Area */}
-        <div className="flex-1 relative flex flex-col vol-surface min-h-[44vh]">
+        <div className="flex-1 relative flex flex-col vol-surface min-h-[60dvh]">
           {isScanning && (
             <motion.div
               initial={{ width: 0 }}
@@ -4865,7 +4642,6 @@ const App: React.FC = () => {
         </div>
       )}
       <ResponsiveContainer
-        sidebar={renderSidebar()}
         content={renderContent()}
         terminal={renderTerminalPanel()}
         diagnostics={renderDiagnosticsColumn()}
