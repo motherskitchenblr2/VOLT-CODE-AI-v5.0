@@ -1,7 +1,11 @@
 /**
- * SkillSpector analyzer composition.
+ * Sentinel analyzer composition.
  * Runs every rule subset, de-duplicates by rule_id (one finding per rule per
  * scan to avoid noise), and computes the composite risk score.
+ *
+ * Two rule sources:
+ *   - SkillSpector subset: astExecution, credentialLeak, promptInjection.
+ *   - Cloudflare security-audit attack classes: attackClasses (cf-* rules).
  *
  * Weighting (SkillSpector): CRITICAL +50, HIGH +25, MEDIUM +10, LOW +5.
  * Score capped at 100.
@@ -9,6 +13,7 @@
 import { astExecution } from "./astExecution";
 import { credentialLeak } from "./credentialLeak";
 import { promptInjection } from "./promptInjection";
+import { attackClasses } from "./attackClasses";
 
 export interface ScanLocation {
   line: number;
@@ -41,7 +46,12 @@ const WEIGHT: Record<string, number> = {
   LOW: 5,
 };
 
-const ANALYZERS = [astExecution, credentialLeak, promptInjection];
+const ANALYZERS = [
+  astExecution,
+  credentialLeak,
+  promptInjection,
+  attackClasses,
+];
 
 export type RiskLevel = "green" | "yellow" | "red";
 
