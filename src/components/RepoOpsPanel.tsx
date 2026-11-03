@@ -126,6 +126,12 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
 
   const closePr = async (prNumber: number) => {
     if (!manager) return;
+    if (!permissions.can("merge_pr")) {
+      return note(
+        `Close blocked for role ${role.toUpperCase()} (no merge_pr)`,
+        "unauthorized",
+      );
+    }
     setBusy(`close-${prNumber}`);
     try {
       await manager.closePullRequest(prNumber);
@@ -159,7 +165,26 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
   };
 
   const exportAudit = (format: "json" | "csv") => {
-    const data = permissions.exportAuditLogs(format);
+    if (!can("view_audit_log")) {
+      return note(
+        `Role ${role.toUpperCase()} cannot read the audit log`,
+        "unauthorized",
+      );
+    }
+    const permLog = permissions.getAuditLogs();
+    const repoLog = log.map((l) => ({
+      id: l.t,
+      userId: "operator",
+      action: l.msg,
+      resource: "repo",
+      status: l.status === "success" ? "success" : "failed",
+      createdAt: new Date().toISOString(),
+    }));
+    const allLogs = [...permLog, ...repoLog];
+    const data =
+      format === "csv"
+        ? permissions.exportAuditLogs(format, allLogs)
+        : JSON.stringify(allLogs, null, 2);
     const blob = new Blob([data], {
       type: format === "csv" ? "text/csv" : "application/json",
     });

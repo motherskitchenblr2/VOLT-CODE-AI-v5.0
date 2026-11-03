@@ -329,16 +329,29 @@ export class PermissionSystem {
   /**
    * Export audit logs
    */
-  exportAuditLogs(format: "json" | "csv" = "json"): string {
+  exportAuditLogs(
+    format: "json" | "csv" = "json",
+    externalLogs?: Array<{
+      id: string;
+      userId: string;
+      action: string;
+      resource: string;
+      timestamp: Date;
+      details: Record<string, unknown>;
+      status: "success" | "failed" | "unauthorized";
+    }>,
+  ): string {
     this.enforcePermission("view_audit_log");
 
+    const allLogs = [...this.auditLogs, ...(externalLogs || [])];
+
     if (format === "json") {
-      return JSON.stringify(this.auditLogs, null, 2);
+      return JSON.stringify(allLogs, null, 2);
     }
 
     // CSV format
     const headers = ["Timestamp", "User", "Action", "Resource", "Status"];
-    const rows = this.auditLogs.map((log) => [
+    const rows = allLogs.map((log) => [
       log.timestamp.toISOString(),
       log.userId,
       log.action,

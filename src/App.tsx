@@ -876,6 +876,9 @@ const App: React.FC = () => {
       try {
         const recoveredCode = await recovery.undoLastRepair(checkpointId);
         setCode(recoveredCode);
+        setLoadedFilePath(
+          loadedFilePath !== "" ? loadedFilePath : "editor_buffer.txt",
+        );
         showToast(
           `Checkpoint ${checkpointId} restored successfully!`,
           "success",
@@ -1233,8 +1236,9 @@ const App: React.FC = () => {
       // manual selection when no live catalog is available.
       const taskKind = classifyTask(agentMode, activeSkill);
       const route = smartRoute(taskKind, liveProviderAvailability || []);
-      const useModelId = route ? route.model.id : selectedModel.id;
-      const useProvider = route ? route.provider : selectedModel.provider;
+      // User's picker selection takes precedence over smart route
+      const useModelId = selectedModel.id;
+      const useProvider = selectedModel.provider;
       if (route) {
         addLog(
           `Smart Router → ${route.provider} ${route.model.id} (${taskKind}, FREE)`,
