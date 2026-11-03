@@ -155,9 +155,7 @@ describe("Cloudflare security-audit attack classes", () => {
       "cf-cloud-iam-wildcard-action",
     );
     expect(ids('{ acl: "public-read" }')).toContain("cf-cloud-public-acl");
-    expect(ids("privileged: true")).toContain(
-      "cf-cloud-privileged-container",
-    );
+    expect(ids("privileged: true")).toContain("cf-cloud-privileged-container");
   });
 
   it("flags unsafe deserialization and file handling", () => {
@@ -184,8 +182,8 @@ describe("Cloudflare security-audit attack classes", () => {
       "const sum = (a: number, b: number) => a + b;",
       "export function addOne(n: number) { return n + 1; }",
     ].join("\n");
-    expect(analyzeCodeBuffer(clean).filter((f) => f.rule_id.startsWith("cf-"))).toEqual(
-      [],
-    );
+    expect(
+      analyzeCodeBuffer(clean).filter((f) => f.rule_id.startsWith("cf-")),
+    ).toEqual([]);
   });
 });
