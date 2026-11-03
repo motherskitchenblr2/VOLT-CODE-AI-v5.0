@@ -3500,8 +3500,8 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Desktop: collapsible accordion sections */}
-          <div className="hidden md:block space-y-2">
+          {/* Horizontal control rail — collapsible accordion sections */}
+          <div className="space-y-2">
             <ControlAccordion
               title="ENGINE & MODEL"
               icon={<Zap className="w-4 h-4" />}
@@ -3562,6 +3562,7 @@ const App: React.FC = () => {
               title="OPERATION MODE"
               icon={<Activity className="w-4 h-4" />}
               defaultOpen={false}
+              className="hidden md:block"
             >
               <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
                 <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
