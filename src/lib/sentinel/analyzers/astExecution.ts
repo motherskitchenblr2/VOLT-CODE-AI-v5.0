@@ -21,13 +21,15 @@ const DANGEROUS_CALLS: Array<{
     re: /\bnew\s+Function\s*\(/g,
     rule: "ast-execution-new-function",
     label: "new Function()",
-    message: "Dynamic code execution via new Function() is blocked by Sentinel.",
+    message:
+      "Dynamic code execution via new Function() is blocked by Sentinel.",
   },
   {
     re: /\bvm\.runInContext\s*\(/g,
     rule: "ast-execution-vm-runincontext",
     label: "vm.runInContext()",
-    message: "Dynamic code execution via vm.runInContext() is blocked by Sentinel.",
+    message:
+      "Dynamic code execution via vm.runInContext() is blocked by Sentinel.",
   },
 ];
 

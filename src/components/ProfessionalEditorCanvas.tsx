@@ -184,11 +184,11 @@ export const ProfessionalEditorCanvas: React.FC<
                           className={`inline-block text-xs px-2 py-1 rounded mt-1 ${
                             suggestion.type === "bug"
                               ? "bg-red-900/30 text-red-400"
-                            : suggestion.type === "performance"
-                              ? "bg-yellow-900/30 text-yellow-400"
-                              : suggestion.type === "optimization"
-                                ? "bg-green-900/30 text-green-400"
-                                : "bg-blue-900/30 text-blue-400"
+                              : suggestion.type === "performance"
+                                ? "bg-yellow-900/30 text-yellow-400"
+                                : suggestion.type === "optimization"
+                                  ? "bg-green-900/30 text-green-400"
+                                  : "bg-blue-900/30 text-blue-400"
                           }`}
                         >
                           {suggestion.type}

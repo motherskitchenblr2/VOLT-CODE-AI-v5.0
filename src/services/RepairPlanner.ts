@@ -13,7 +13,12 @@ export interface PriorityReport {
   recommendedFixOrder: string[];
 }
 
-const WEIGHT: Record<string, number> = { Critical: 100, High: 40, Medium: 10, Cosmetic: 0 };
+const WEIGHT: Record<string, number> = {
+  Critical: 100,
+  High: 40,
+  Medium: 10,
+  Cosmetic: 0,
+};
 
 export function planRepairs(issues: DiagnosticIssue[]): PriorityReport {
   const report: PriorityReport = {
@@ -34,7 +39,10 @@ export function planRepairs(issues: DiagnosticIssue[]): PriorityReport {
   // Weight priority files (Critical first, then High, then Medium).
   const fileWeight = new Map<string, number>();
   for (const issue of issues) {
-    fileWeight.set(issue.filePath, (fileWeight.get(issue.filePath) || 0) + WEIGHT[issue.severity]);
+    fileWeight.set(
+      issue.filePath,
+      (fileWeight.get(issue.filePath) || 0) + WEIGHT[issue.severity],
+    );
   }
   report.recommendedFixOrder = Array.from(fileWeight.entries())
     .sort((a, b) => b[1] - a[1])

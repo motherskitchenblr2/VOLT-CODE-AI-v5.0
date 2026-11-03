@@ -130,7 +130,10 @@ export function reviewPullRequest(files: PRFile[]): ReviewReport {
       );
     }
     if (/^\.github\/workflows\/.+\.ya?ml$/.test(file.filename)) {
-      for (const f of scanWorkflow(file.filename, normalizeWorkflowPatch(patch))) {
+      for (const f of scanWorkflow(
+        file.filename,
+        normalizeWorkflowPatch(patch),
+      )) {
         findings.push(
           toFinding(
             f.severity === "critical" || f.severity === "high"
