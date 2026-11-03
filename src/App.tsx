@@ -1,18 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { classifyTask, smartRoute } from "./lib/smartRouter";
+import { detectLanguage } from "./lib/detectLanguage";
 import { RepoOpsPanel } from "./components/RepoOpsPanel";
 import { SplitEditorLayout } from "./components/SplitEditorLayout";
 import { AIProviderSelector } from "./components/AIProviderSelector";
 import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
 import { BossGuidancePanel } from "./components/BossGuidancePanel";
-import { useGitBackup } from "./hooks/useGitBackup";
 import { useApiGateway } from "./hooks/useApiGateway";
 import {
-  Play,
-  History,
   Settings,
-  User,
   Copy,
   Download,
   X,
@@ -20,13 +17,13 @@ import {
   Zap,
   Bug,
   Shield,
-  Wrench,
   Sparkles,
   ChevronDown,
   Bot,
   Search,
   HelpCircle,
   Send,
+  Activity,
   GitBranch,
   AlertCircle,
   RefreshCw,
@@ -52,18 +49,9 @@ import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas"
 import { TODOListWidget, type TodoItem } from "./components/TODOListWidget";
 import { SwarmPanel } from "./components/SwarmPanel";
 
-import {
-  PerformanceOptimizer,
-  OptimizerReport,
-} from "./services/PerformanceOptimizer";
-import { ProviderRegistry, ProviderState } from "./services/ProviderRegistry";
 import { RecoveryCenter } from "./services/RecoveryCenter";
-import { RepairPlanner } from "./services/RepairPlanner";
-import {
-  RepoIntelligence,
-  HealthScoreDetails,
-} from "./services/RepoIntelligence";
-import { SentinelWatcher } from "./services/SentinelWatcher";
+import { inspectBuffer } from "./services/sentinelService";
+import { riskLevel, levelLabel } from "./lib/sentinel/analyzers";
 import {
   ConsensusEngine,
   MultiAgentOrchestrator,
@@ -345,60 +333,52 @@ const modeOptions: AgentMode[] = [
   "team-review",
 ];
 
-const detectLanguage = (codeStr: string, filePath?: string): string => {
-  if (filePath) {
-    const ext = filePath.split(".").pop()?.toLowerCase();
-    if (ext === "yaml" || ext === "yml") return "yaml";
-    if (ext === "py") return "python";
-    if (ext === "cpp" || ext === "cc" || ext === "h") return "cpp";
-    if (ext === "html" || ext === "htm") return "html";
-    if (ext === "css") return "css";
-    if (ext === "js" || ext === "jsx") return "javascript";
-    if (ext === "ts" || ext === "tsx") return "typescript";
-  }
-
-  if (!codeStr || !codeStr.trim()) return "unknown";
-
-  // YAML detection (run this first before any JS/TS triggers since YAML config might contain scripts/commands)
-  if (
-    codeStr.includes("yaml-language-server") ||
-    codeStr.includes("rules:") ||
-    codeStr.includes("reviews:") ||
-    codeStr.includes("early_access:") ||
-    (/^[a-zA-Z0-9_-]+:\s+/m.test(codeStr) &&
-      !codeStr.includes("{") &&
-      !codeStr.includes("}"))
-  ) {
-    return "yaml";
-  }
-
-  if (
-    (codeStr.includes("def ") || codeStr.includes("import ")) &&
-    codeStr.includes(":")
-  )
-    return "python";
-  if (codeStr.includes("#include") || codeStr.includes("int main"))
-    return "cpp";
-  if (
-    codeStr.includes("<html") ||
-    codeStr.includes("<div") ||
-    codeStr.includes("<!DOCTYPE html>")
-  )
-    return "html";
-  if (codeStr.includes("{") && codeStr.includes("}") && codeStr.includes(":"))
-    return "css";
-  if (
-    codeStr.includes("const ") ||
-    codeStr.includes("let ") ||
-    codeStr.includes("function ") ||
-    codeStr.includes("console.log")
-  )
-    return "javascript";
-  return "unknown";
-};
-
 const getErrorMessage = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
+};
+
+/**
+ * Collapsible control section for the horizontal editor rail.
+ * Groups related controls into an accordion so the toolbar stays compact
+ * on small screens while keeping everything reachable.
+ * ponytail: inline component, single use — keep here rather than a new file.
+ */
+const ControlAccordion: React.FC<{
+  title: string;
+  icon: React.ReactNode;
+  defaultOpen?: boolean;
+  className?: string;
+  children: React.ReactNode;
+}> = ({ title, icon, defaultOpen = false, className, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div
+      className={`border vol-ring-strong rounded-xl vol-panel overflow-hidden ${className ?? ""}`}
+    >
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 px-3 py-2 vol-surface text-left cursor-pointer"
+        aria-expanded={open}
+      >
+        {icon}
+        <div className="flex-1 min-w-0">
+          <div className="text-[10px] vol-accent tracking-widest uppercase font-bold">
+            {title}
+          </div>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 shrink-0 vol-accent-soft transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open && (
+        <div className="px-3 py-2 vol-surface border-t vol-line">
+          {children}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const App: React.FC = () => {
@@ -436,6 +416,20 @@ const App: React.FC = () => {
   const [autoApplyFixes, setAutoApplyFixes] = useState(false);
   const [enableSentinel, setEnableSentinel] = useState(false);
 
+  // Sticky line-number gutter refs (synced scroll with the editor textarea)
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gutterRef = useRef<HTMLDivElement>(null);
+  const handleEditorScroll = (e: React.UIEvent) => {
+    if (!textareaRef.current || !gutterRef.current) return;
+    const target = e.target as HTMLElement;
+    const scrollTop = target.scrollTop;
+    if (target === textareaRef.current) {
+      gutterRef.current.scrollTop = scrollTop;
+    } else {
+      textareaRef.current.scrollTop = scrollTop;
+    }
+  };
+
   // v5.0 Added States
   const [aboutDocPage, setAboutDocPage] = useState<
     "whitepaper" | "changelog" | "comparison"
@@ -444,7 +438,7 @@ const App: React.FC = () => {
     `[SYSTEM] Volt Diagnostic Engine initialized. Ready for v5.0 operations.`,
   ]);
   const [historySearch, setHistorySearch] = useState("");
-  const [debounceDelay, setDebounceDelay] = useState(800);
+  const [debounceDelay, setDebounceDelay] = useState(2500);
   const [showTokenUsage, setShowTokenUsage] = useState(true);
   const [showShortcutsCheatSheet, setShowShortcutsCheatSheet] = useState(false);
 
@@ -497,8 +491,6 @@ const App: React.FC = () => {
   const modelGroups: Array<[string, ModelConfig[]]> = [
     ...new Set(modelOptionsAll.map((m) => m.provider)),
   ].map((prov) => [prov, modelOptionsAll.filter((m) => m.provider === prov)]);
-  const selectedTier =
-    modelOptionsAll.find((m) => m.id === selectedModel.id)?.tier || "FREE";
 
   useEffect(() => {
     if (
@@ -511,13 +503,13 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelOptionsAll]);
 
-  // Secure vault: which secrets are stored encrypted in MongoDB
-  // Revived dormant module: workspace checkpoints (local + GitHub-backed)
+  // Revived dormant module: provider gateway with automatic fallback + logs
   const {
-    createCheckpoint: createWorkspaceCheckpoint,
-    restoreCheckpoint,
-    backingUp,
-  } = useGitBackup();
+    executeQuery: gatewayQuery,
+    loading: gatewayLoading,
+    logs: gatewayLogs,
+  } = useApiGateway();
+
   const [lastCheckpointId, setLastCheckpointId] = useState<string | null>(null);
   const [splitView, setSplitView] = useState(false);
   // Revived dormant module: provider gateway with automatic fallback + logs
@@ -587,17 +579,6 @@ const App: React.FC = () => {
   const [showLangAlert, setShowLangAlert] = useState(false);
 
   // RC2 Upgraded states
-  const [providers, setProviders] = useState<ProviderState[]>(() => {
-    const reg = new ProviderRegistry();
-    return reg.getAllProviders();
-  });
-
-  const [optimizerReport, setOptimizerReport] = useState<OptimizerReport>(() =>
-    PerformanceOptimizer.generateReport(
-      'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}',
-    ),
-  );
-
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [acceptedHunkIds, setAcceptedHunkIds] = useState<number[]>([]);
   const [consensusPassed, setConsensusPassed] = useState<boolean | null>(null);
@@ -606,14 +587,6 @@ const App: React.FC = () => {
   const [agentBreakdown, setAgentBreakdown] = useState<Record<string, number>>(
     {},
   );
-
-  const [repoHealth, setRepoHealth] = useState<HealthScoreDetails>({
-    totalScore: 98,
-    lintWarnings: 2,
-    complexityPenalty: 0,
-    circularCyclesCount: 0,
-    testPassRate: 100,
-  });
 
   const [isMaintenanceActive, setIsMaintenanceActive] = useState(false);
   const [isSystemHalted, setIsSystemHalted] = useState(false);
@@ -647,10 +620,6 @@ const App: React.FC = () => {
 
   // Instantiating hooks/refs
   const consensusEngine = useRef(new ConsensusEngine());
-  const repoIntelligence = useRef(new RepoIntelligence());
-  const sentinelWatcher = useRef(
-    new SentinelWatcher((msg, type) => addLog(msg, type)),
-  );
 
   // GitHub Workspace State
   const [repoPath, setRepoPath] = useState(
@@ -684,6 +653,11 @@ const App: React.FC = () => {
     timeSavedMinutes: 0,
     tokensConsumed: 0,
   });
+  const [sentinelRiskScore, setSentinelRiskScore] = useState(0);
+
+  const sentinelLevel = riskLevel(sentinelRiskScore);
+  const sentinelLabel = levelLabel(sentinelLevel, sentinelIssues.length);
+  const sentinelSummary = `SkillSpector risk ${sentinelRiskScore}/100 · ${sentinelIssues.length} issue(s)`;
 
   // Boss Chat State (v6.1 Boss of the App Cockpit)
   const [bossMessages, setBossMessages] = useState<
@@ -887,72 +861,6 @@ const App: React.FC = () => {
     [username, addLog],
   );
 
-  const onRefreshProviderHealth = useCallback(
-    async (providerName: string) => {
-      const reg = new ProviderRegistry();
-      const targetKey = providerName.toLowerCase();
-      let keyRaw = "";
-      if (targetKey === "groq") keyRaw = groqKey;
-      else if (targetKey === "openrouter") keyRaw = openrouterKey;
-      else if (targetKey === "nvidia") keyRaw = nvidiaKey;
-      else if (targetKey === "huggingface") keyRaw = huggingfaceKey;
-
-      const start = performance.now();
-      const checkFn = async () => {
-        if (keyRaw) {
-          const response = await fetch("/api/provider-validate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, provider: targetKey, keyRaw }),
-          });
-          if (!response.ok) throw new Error("Unresponsive");
-        } else {
-          let testUrl = "https://api.groq.com";
-          if (targetKey === "openrouter") testUrl = "https://openrouter.ai";
-          else if (targetKey === "nvidia")
-            testUrl = "https://integrate.api.nvidia.com";
-          else if (targetKey === "huggingface")
-            testUrl = "https://huggingface.co";
-
-          await fetch(testUrl, { mode: "no-cors" });
-        }
-        return Math.round(performance.now() - start);
-      };
-
-      try {
-        const updated = await reg.refreshProviderHealth(providerName, checkFn);
-        setProviders((prev) =>
-          prev.map((p) =>
-            p.name.toLowerCase() === targetKey ? { ...p, ...updated } : p,
-          ),
-        );
-        addLog(
-          `AI Provider health checked for ${providerName}. Status: ${updated.status}, Latency: ${updated.latencyMs}ms`,
-          "success",
-        );
-      } catch {
-        const latencyFallback = Math.round(performance.now() - start);
-        setProviders((prev) =>
-          prev.map((p) =>
-            p.name.toLowerCase() === targetKey
-              ? {
-                  ...p,
-                  status: "RED",
-                  latencyMs: latencyFallback,
-                  connected: false,
-                }
-              : p,
-          ),
-        );
-        addLog(
-          `AI Provider health check failed or timed out for ${providerName}.`,
-          "error",
-        );
-      }
-    },
-    [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, addLog],
-  );
-
   const onToggleHunk = useCallback((id: number) => {
     setAcceptedHunkIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
@@ -982,47 +890,6 @@ const App: React.FC = () => {
     loadCheckpoints();
   }, [loadedFilePath]);
 
-  // Real-time optimizer & graph updates
-  useEffect(() => {
-    const report = PerformanceOptimizer.generateReport(code);
-    setOptimizerReport(report);
-
-    const fileList = [
-      { path: loadedFilePath || "editor_buffer.ts", content: code },
-      ...githubFiles.map((f) => ({ path: f.path, content: "" })),
-    ];
-    repoIntelligence.current.buildKnowledgeGraph(fileList, [
-      "react",
-      "lucide-react",
-      "framer-motion",
-    ]);
-
-    const cycles = repoIntelligence.current.detectCircularDependencies();
-    const health = repoIntelligence.current.calculateHealthScore(
-      fileList.length,
-      issues.length + (enableSentinel ? sentinelIssues.length : 0),
-      100,
-      cycles.length,
-    );
-    setRepoHealth(health);
-  }, [
-    code,
-    loadedFilePath,
-    githubFiles,
-    issues,
-    sentinelIssues,
-    enableSentinel,
-  ]);
-
-  useEffect(() => {
-    if (enableSentinel) {
-      sentinelWatcher.current.startFpsMonitor();
-    }
-    return () => {
-      sentinelWatcher.current.stopFpsMonitor();
-    };
-  }, [enableSentinel]);
-
   useEffect(() => {
     if (terminalEndRef.current) {
       terminalEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -1048,41 +915,34 @@ const App: React.FC = () => {
         "info",
       );
       try {
-        const res = await fetch("/api/openrouter", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            code,
-            language: language === "auto" ? detectedLanguage : language,
-            model: "mistralai/mistral-7b-instruct:free", // use fastest
-            agentMode: "manual",
-            skill: "Syntax Repair",
-            plugin: selectedPlugin,
-          }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (active && data && data.issues) {
-            setSentinelIssues(data.issues);
-            setSentinelStats((prev) => ({
-              ...prev,
-              totalRuns: prev.totalRuns + 1,
-              tokensConsumed: prev.tokensConsumed + (data.tokensUsed || 0),
-            }));
-            addLog(
-              `[SENTINEL] Passive scan completed. Found ${data.issues.length} potential issue(s).`,
-              data.issues.length > 0 ? "warn" : "success",
-            );
-            setLastSentinelScan(new Date().toLocaleTimeString());
-          }
-        } else {
-          if (active) {
-            addLog(
-              `[SENTINEL] Passive scan failed with HTTP ${res.status}`,
-              "error",
-            );
-          }
+        const scan = await inspectBuffer(
+          code,
+          language === "auto" ? detectedLanguage : language,
+        );
+        const issues: Issue[] = scan.findings.map((f, i) => ({
+          id: Date.now() + i,
+          type: f.rule_id,
+          severity: mapSentinelSeverity(f.severity),
+          description: f.message,
+          explanation: f.message,
+          original: f.original,
+          fixed: f.fixed,
+        }));
+        if (active && scan.findings.length > 0) {
+          setSentinelIssues(issues);
+        } else if (active) {
+          setSentinelIssues([]);
         }
+        setSentinelStats((prev) => ({
+          ...prev,
+          totalRuns: prev.totalRuns + 1,
+        }));
+        setSentinelRiskScore(scan.riskScore);
+        addLog(
+          `[SENTINEL] Passive scan completed. Found ${scan.findings.length} issue(s) (risk ${scan.riskScore}/100).`,
+          scan.findings.length > 0 ? "warn" : "success",
+        );
+        setLastSentinelScan(new Date().toLocaleTimeString());
       } catch (err) {
         console.error(err);
       } finally {
@@ -1121,6 +981,22 @@ const App: React.FC = () => {
 
   const escapeRegExp = (str: string) => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  };
+
+  const mapSentinelSeverity = (
+    s: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
+  ): Issue["severity"] => {
+    switch (s) {
+      case "CRITICAL":
+        return "Critical";
+      case "HIGH":
+        return "High";
+      case "MEDIUM":
+        return "Medium";
+      case "LOW":
+      default:
+        return "Low";
+    }
   };
 
   const analyzeCode = useCallback(async () => {
@@ -1177,8 +1053,7 @@ const App: React.FC = () => {
           {
             language: activeLanguage,
             filePath: loadedFilePath,
-            circularCycles:
-              repoIntelligence.current.detectCircularDependencies().length,
+            circularCycles: 0,
           },
         );
 
@@ -1314,11 +1189,10 @@ const App: React.FC = () => {
         return;
       }
 
-      const cycles = repoIntelligence.current.detectCircularDependencies();
       const evalResult = await consensusEngine.current.evaluateCodePatch(
         data.fixedCode || code,
         {
-          circularCycles: cycles.length,
+          circularCycles: 0,
           filePath: loadedFilePath,
           language: activeLanguage,
         },
@@ -1831,20 +1705,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth?action=logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch {
-      // Best-effort: still clear local session.
-    }
-    setIsLoggedIn(false);
-    setUsername("dev_user");
-    setLoginPassword("");
-  };
-
   useEffect(() => {
     (async () => {
       try {
@@ -1868,9 +1728,13 @@ const App: React.FC = () => {
   const languages = [
     { value: "auto", label: "Auto Detect" },
     { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
     { value: "python", label: "Python" },
     { value: "cpp", label: "C++" },
     { value: "html", label: "HTML" },
+    { value: "css", label: "CSS" },
+    { value: "yaml", label: "YAML" },
+    { value: "unknown", label: "Plain Text" },
   ];
 
   const filteredSessions = sessions.filter(
@@ -1933,18 +1797,22 @@ const App: React.FC = () => {
     onChange: (value: string) => void,
     options: string[],
   ) => (
-    <div className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
-      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
+    <div
+      className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4"
+      title={`${label}: ${value}`}
+    >
+      <div className="shrink-0 vol-accent-soft text-[10px] sm:text-xs tracking-wider">
         {label}
       </div>
-      <ChevronDown className="w-4 h-4 vol-accent-soft" />
+      <ChevronDown className="w-4 h-4 shrink-0 vol-accent-soft" />
+      {/* narrow screens: cap chip width and ellipsize instead of pushing the rail */}
       <select
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
           addLog(`Updated config: ${label} -> ${e.target.value}`, "info");
         }}
-        className="bg-transparent vol-t1 outline-none min-w-[130px] text-xs cursor-pointer"
+        className="bg-transparent vol-t1 outline-none w-[92px] sm:w-auto sm:min-w-[130px] max-w-[92px] sm:max-w-none truncate text-xs cursor-pointer"
       >
         {options.map((option) => (
           <option key={option} value={option} className="vol-elev vol-t1">
@@ -2880,9 +2748,11 @@ const App: React.FC = () => {
     }
 
     if (currentView === "settings") {
+      // one scroller only: the shell section already scrolls; a nested
+      // h-full overflow-y-auto here froze touch scrolling on phones
       return (
-        <div className="p-8 max-w-2xl overflow-y-auto h-full pb-20">
-          <h1 className="text-3xl font-bold mb-8">SETTINGS</h1>
+        <div className="p-4 sm:p-8 max-w-2xl mx-auto pb-24">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-8">SETTINGS</h1>
           <div className="space-y-6">
             <div className="border vol-ring rounded-xl p-6 vol-panel">
               <div className="text-lg font-bold mb-1">Workspace Backup</div>
@@ -3119,19 +2989,17 @@ const App: React.FC = () => {
               </p>
               <div className="flex flex-wrap gap-2">
                 <button
-                  disabled={backingUp}
                   onClick={async () => {
-                    const id = await createWorkspaceCheckpoint(
+                    const id = await createCheckpoint(
                       loadedFilePath || "editor.txt",
                       code,
-                      undefined,
                     );
                     setLastCheckpointId(id);
                     addLog(`Checkpoint created: ${id}`, "success");
                   }}
                   className="px-3 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-black cursor-pointer disabled:opacity-60"
                 >
-                  {backingUp ? "SNAPSHOTTING..." : "CREATE CHECKPOINT"}
+                  CREATE CHECKPOINT
                 </button>
                 <button
                   disabled={!lastCheckpointId}
@@ -3428,7 +3296,6 @@ const App: React.FC = () => {
                   }
                 }}
                 selectedFilePath={loadedFilePath}
-                healthScore={repoHealth.totalScore}
               />
             </div>
 
@@ -3593,9 +3460,6 @@ const App: React.FC = () => {
           onRefreshLogs={fetchAuditLogs}
           onMaintenanceToggle={setIsMaintenanceActive}
           isMaintenanceActive={isMaintenanceActive}
-          providers={providers}
-          onRefreshProviderHealth={onRefreshProviderHealth}
-          optimizerReport={optimizerReport}
           checkpoints={checkpoints}
           onRestoreCheckpoint={onRestoreCheckpoint}
           enableSentinel={enableSentinel}
@@ -3798,9 +3662,9 @@ const App: React.FC = () => {
 
     // Default Editor View
     return (
-      <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16">
         {/* Editor Toolbar Header */}
-        <div className="border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
+        <div className="hidden md:block border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
           <div className="mb-1 flex justify-between items-start">
             <div>
               <div className="text-lg sm:text-2xl font-bold leading-tight">
@@ -3825,138 +3689,342 @@ const App: React.FC = () => {
               >
                 SHORTCUTS [?]
               </button>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 mt-3">
-            {renderModelSelect()}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar sm:flex-wrap sm:gap-3">
-              {renderSelect(
-                "Plugin",
-                selectedPlugin,
-                setSelectedPlugin,
-                pluginOptions,
-              )}
-              {renderSelect(
-                "Skill",
-                selectedSkill,
-                setSelectedSkill,
-                skillOptions,
-              )}
-              {renderSelect(
-                "Mode",
-                agentMode,
-                (v) => setAgentMode(v as AgentMode),
-                modeOptions,
-              )}
-
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0"
+              {/* Sentinel status pill — persistent across editor view */}
+              <div
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border vol-ring text-xs font-bold cursor-pointer ${
+                  sentinelLevel === "green"
+                    ? "vol-well vol-t1"
+                    : sentinelLevel === "yellow"
+                      ? "vol-acc-wash vol-accent"
+                      : "bg-red-500/20 border-red-500/40 text-red-400"
+                }`}
+                title={sentinelSummary}
               >
-                {languages.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
-
-              <div className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0">
-                DETECTED: {detectedLanguage.toUpperCase()}
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    sentinelLevel === "green"
+                      ? "bg-green-500"
+                      : sentinelLevel === "yellow"
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                  }`}
+                ></span>
+                {sentinelLabel}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-4 items-center">
-            <div className="px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl border vol-ring-strong vol-panel inline-flex items-center gap-2 sm:gap-3 select-none">
-              <Zap className="w-4 h-4 vol-accent animate-pulse" />
-              <div className="flex flex-col">
-                <div className="vol-accent text-[9px] tracking-widest font-bold uppercase">
-                  Active Engine
-                </div>
-                <div className="font-extrabold text-sm vol-t1">
-                  {selectedModel.name}
-                </div>
-              </div>
-              <div className="h-6 w-px hidden sm:block vol-line"></div>
-              <div className="hidden sm:flex flex-col items-start">
-                <div className="text-[10px] vol-t2 uppercase font-semibold">
-                  {selectedModel.provider} • {selectedModel.tag} •{" "}
-                  {selectedModel.ctx}
-                </div>
-                <span
-                  className={
-                    selectedTier === "FREE"
-                      ? "mt-0.5 w-fit rounded px-1.5 py-0.5 bg-green-600 text-black text-[9px] font-black tracking-wider uppercase"
-                      : "mt-0.5 w-fit rounded px-1.5 py-0.5 vol-acc-wash vol-accent text-[9px] font-black tracking-wider uppercase"
-                  }
-                >
-                  {selectedTier === "FREE" ? "★ Free Tier" : "Paid"}
-                </span>
-              </div>
-            </div>
+          {/* Horizontal control rail — collapsible accordion sections */}
+          <div className="space-y-2">
+            <ControlAccordion
+              title="ENGINE & MODEL"
+              icon={<Zap className="w-4 h-4" />}
+              defaultOpen={true}
+            >
+              {renderModelSelect()}
+            </ControlAccordion>
 
-            <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
-              <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
-                Operation Mode
+            <ControlAccordion
+              title="CONFIG"
+              icon={<Settings className="w-4 h-4" />}
+              defaultOpen={false}
+            >
+              {/* Mode / Language aligned grid — horizontal scroll rail on mobile */}
+              <div className="flex flex-row gap-2 overflow-x-auto no-scrollbar py-1">
+                {renderSelect(
+                  "Plugin",
+                  selectedPlugin,
+                  setSelectedPlugin,
+                  pluginOptions,
+                )}
+                {renderSelect(
+                  "Skill",
+                  selectedSkill,
+                  setSelectedSkill,
+                  skillOptions,
+                )}
+                {renderSelect(
+                  "Mode",
+                  agentMode,
+                  (v) => setAgentMode(v as AgentMode),
+                  modeOptions,
+                )}
+                <div className="flex flex-col gap-1 shrink-0">
+                  <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    title={`Language: ${languages.find((l) => l.value === language)?.label ?? language}`}
+                    className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0 w-full max-w-[120px] truncate"
+                  >
+                    {languages.map((l) => (
+                      <option key={l.value} value={l.value}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div
+                    title={`Detected language: ${detectedLanguage.toUpperCase()}`}
+                    className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0 whitespace-nowrap"
+                  >
+                    DETECTED: {detectedLanguage.toUpperCase()}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 vol-well rounded-lg p-1">
-                <button
-                  onClick={() => {
-                    setAgentMode("manual");
-                    addLog("Switched operation mode to MANUAL", "info");
+            </ControlAccordion>
+
+            <ControlAccordion
+              title="OPERATION MODE"
+              icon={<Activity className="w-4 h-4" />}
+              defaultOpen={false}
+              className="hidden md:block"
+            >
+              <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
+                <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
+                  Operation Mode
+                </div>
+                <div className="flex items-center gap-1.5 vol-well rounded-lg p-1">
+                  <button
+                    onClick={() => {
+                      setAgentMode("manual");
+                      addLog("Switched operation mode to MANUAL", "info");
+                    }}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                      agentMode === "manual"
+                        ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
+                        : "vol-t2 hover:vol-t1"
+                    }`}
+                  >
+                    Manual Mode
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAgentMode("assist");
+                      addLog(
+                        "Switched operation mode to AUTONOMOUS (ASSIST)",
+                        "info",
+                      );
+                    }}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                      agentMode !== "manual"
+                        ? "vol-acc-wash vol-accent border vol-ring-strong shadow-sm shadow-[#FF5F00]/10"
+                        : "vol-t2 hover:vol-t1"
+                    }`}
+                  >
+                    Autonomous Mode
+                  </button>
+                </div>
+              </div>
+            </ControlAccordion>
+
+            {showTokenUsage && tokensUsed > 0 && (
+              <ControlAccordion
+                title="TOKEN USAGE"
+                icon={<GitPullRequest className="w-4 h-4" />}
+                defaultOpen={false}
+              >
+                <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
+                  <div>
+                    <div className="vol-accent text-[10px] tracking-wider font-bold">
+                      TOTAL CONSUMPTION
+                    </div>
+                    <div className="vol-t1 font-extrabold text-lg">
+                      {tokensUsed}{" "}
+                      <span className="text-xs vol-t2 font-normal">tokens</span>
+                    </div>
+                  </div>
+                  <div className="h-8 w-px vol-wash"></div>
+                  <div className="text-xs vol-t2 space-y-0.5 select-none">
+                    <div>Prompt: {promptTokens}</div>
+                    <div>Completion: {completionTokens}</div>
+                  </div>
+                </div>
+              </ControlAccordion>
+            )}
+          </div>
+
+          {/* Mobile: slim horizontal slider rail */}
+          <div className="block md:hidden overflow-x-auto no-scrollbar scroll-smooth border-b border-neutral-800 bg-neutral-950/90 px-2 py-1.5 backdrop-blur z-20">
+            <div className="flex items-center gap-1.5 min-w-max">
+              {/* Engine Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  ENGINE
+                </span>
+                <select
+                  value={selectedModel.id}
+                  onChange={(e) => {
+                    const model = modelOptionsAll.find(
+                      (m) => m.id === e.target.value,
+                    );
+                    if (model) {
+                      setSelectedModel(model);
+                      addLog(
+                        `Selected execution model: ${model.name} (${model.provider}${model.tier === "FREE" ? " · FREE" : ""})`,
+                        "info",
+                      );
+                    }
                   }}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    agentMode === "manual"
-                      ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
-                      : "vol-t2 hover:vol-t1"
-                  }`}
+                  className="h-7 w-[140px] max-w-[140px] text-xs font-mono bg-transparent border border-neutral-700 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
-                  Manual Mode
-                </button>
-                <button
-                  onClick={() => {
-                    setAgentMode("assist");
+                  {modelGroups.map(([provider, models]) => (
+                    <optgroup
+                      key={provider}
+                      label={`${provider}${models.some((m) => m.tier === "FREE") ? " · free" : ""}`}
+                    >
+                      {models.map((model) => (
+                        <option
+                          key={model.id}
+                          value={model.id}
+                          className="bg-neutral-900 text-neutral-200"
+                        >
+                          {model.tier === "FREE" ? "★ " : ""}
+                          {model.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {/* Plugin Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  PLUGIN
+                </span>
+                <select
+                  value={selectedPlugin}
+                  onChange={(e) => {
+                    setSelectedPlugin(e.target.value);
                     addLog(
-                      "Switched operation mode to AUTONOMOUS (ASSIST)",
+                      `Updated config: Plugin -> ${e.target.value}`,
                       "info",
                     );
                   }}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                    agentMode !== "manual"
-                      ? "vol-acc-wash vol-accent border vol-ring-strong shadow-sm shadow-[#FF5F00]/10"
-                      : "vol-t2 hover:vol-t1"
-                  }`}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
                 >
-                  Autonomous Mode
-                </button>
+                  {pluginOptions.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            {showTokenUsage && tokensUsed > 0 && (
-              <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
-                <div>
-                  <div className="vol-accent text-[10px] tracking-wider font-bold">
-                    TOTAL CONSUMPTION
-                  </div>
-                  <div className="vol-t1 font-extrabold text-lg">
-                    {tokensUsed}{" "}
-                    <span className="text-xs vol-t2 font-normal">tokens</span>
-                  </div>
-                </div>
-                <div className="h-8 w-px vol-wash"></div>
-                <div className="text-xs vol-t2 space-y-0.5 select-none">
-                  <div>Prompt: {promptTokens}</div>
-                  <div>Completion: {completionTokens}</div>
-                </div>
+              {/* Skill Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  SKILL
+                </span>
+                <select
+                  value={selectedSkill}
+                  onChange={(e) => {
+                    setSelectedSkill(e.target.value);
+                    addLog(
+                      `Updated config: Skill -> ${e.target.value}`,
+                      "info",
+                    );
+                  }}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {skillOptions.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
+
+              {/* Mode Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  MODE
+                </span>
+                <select
+                  value={agentMode}
+                  onChange={(e) => {
+                    setAgentMode(e.target.value as AgentMode);
+                    addLog(`Updated config: Mode -> ${e.target.value}`, "info");
+                  }}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {modeOptions.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Language Pill */}
+              <div className="flex flex-col items-start gap-0.5">
+                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
+                  LANG
+                </span>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
+                >
+                  {languages.map((l) => (
+                    <option
+                      key={l.value}
+                      value={l.value}
+                      className="bg-neutral-900 text-neutral-200"
+                    >
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mode Toggle */}
+              <button
+                onClick={() =>
+                  setAgentMode(agentMode === "manual" ? "assist" : "manual")
+                }
+                className="h-7 px-2.5 text-[11px] font-mono rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 whitespace-nowrap active:scale-95 transition-transform"
+              >
+                {agentMode === "manual" ? "MANUAL" : "AUTO"}
+              </button>
+
+              {/* Detected Language Tag */}
+              <span className="text-[10px] font-mono text-neutral-400 px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 whitespace-nowrap">
+                {detectedLanguage.toUpperCase()}
+              </span>
+
+              {/* Split & Shortcuts Triggers */}
+              <button
+                onClick={() => setSplitView((v) => !v)}
+                className="h-7 px-2.5 text-[10px] font-mono text-neutral-400 bg-transparent border border-neutral-700 rounded-full cursor-pointer hover:bg-neutral-800/50"
+                title={splitView ? "Split view: OFF" : "Split view: ON"}
+              >
+                {splitView ? "SPLIT ON" : "SPLIT OFF"}
+              </button>
+              <button
+                onClick={() => setShowShortcutsCheatSheet(true)}
+                className="h-7 px-2.5 text-[10px] font-mono text-neutral-400 bg-transparent border border-neutral-700 rounded-full cursor-pointer hover:bg-neutral-800/50"
+                title="Keyboard shortcuts"
+              >
+                [?]
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Textarea Area */}
-        <div className="flex-1 relative overflow-hidden flex flex-col vol-surface min-h-[44vh]">
+        <div className="flex-1 relative flex flex-col vol-surface min-h-[60dvh]">
           {isScanning && (
             <motion.div
               initial={{ width: 0 }}
@@ -4002,8 +4070,8 @@ const App: React.FC = () => {
           )}
 
           {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
-          <div className="md:hidden p-4 border-t vol-ring vol-wash flex flex-col gap-2 select-none w-full shrink-0">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="md:hidden sticky bottom-14 z-40 flex items-center justify-end gap-2 px-3 py-2 w-full border-t vol-ring vol-surface backdrop-blur-md select-none">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               <button
                 onClick={analyzeCode}
                 disabled={isAnalyzing || isSystemHalted}
@@ -4024,18 +4092,18 @@ const App: React.FC = () => {
                 <Users className="w-4 h-4" />
                 AGENT CHAT
               </button>
-            </div>
 
-            {fixedCode && (
-              <button
-                id="fix-all-btn-mobile"
-                onClick={applyAllFixes}
-                className="w-full py-3.5 flex items-center justify-center gap-2 rounded-xl vol-acc-bg text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
-              >
-                <Zap className="w-4 h-4" />
-                APPLY ALL PATCHES ({issues.length})
-              </button>
-            )}
+              {fixedCode && (
+                <button
+                  id="fix-all-btn-mobile"
+                  onClick={applyAllFixes}
+                  className="py-3.5 flex items-center justify-center gap-2 rounded-xl vol-acc-bg text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
+                >
+                  <Zap className="w-4 h-4" />
+                  APPLY ALL PATCHES ({issues.length})
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Action Overlay buttons */}
@@ -4179,49 +4247,27 @@ const App: React.FC = () => {
   };
 
   const renderDiagnosticsColumn = () => {
-    const roadmap = RepairPlanner.planRepairs(
-      [...issues, ...(enableSentinel ? sentinelIssues : [])].map(
-        (iss: Issue) => ({
-          filePath: loadedFilePath || "editor_buffer.ts",
-          line: 0,
-          severity:
-            (iss.severity === "Low" ? "Cosmetic" : iss.severity) || "Medium",
-          description: iss.description,
-        }),
-      ),
-    );
-
     return (
       <div className="space-y-6 select-none">
-        {/* REPO HEALTH SCORE */}
+        {/* ACTIVE SENTINEL FINDINGS */}
         <div className="border vol-line vol-elev rounded-2xl p-4 space-y-3">
           <div className="text-[10px] vol-t2 uppercase font-black tracking-wider">
-            Repository Health Metric
+            Sentinel Findings
           </div>
-          <div className="flex items-end justify-between">
-            <div className="text-3xl font-black vol-t1">
-              {repoHealth.totalScore}
-              <span className="text-xs vol-t2 font-normal">/100</span>
-            </div>
-            <span
-              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                repoHealth.totalScore > 85
-                  ? "bg-green-500/10 text-green-400"
-                  : "bg-yellow-500/10 text-yellow-400"
-              }`}
-            >
-              {repoHealth.totalScore > 85 ? "EXCELLENT" : "DEGRADED"}
-            </span>
+          <div className="text-3xl font-black vol-t1">
+            {sentinelIssues.length}
+            <span className="text-xs vol-t2 font-normal">/100</span>
           </div>
           <div className="w-full vol-wash h-1.5 rounded-full overflow-hidden">
             <div
               className="vol-acc-bg h-full"
-              style={{ width: `${repoHealth.totalScore}%` }}
+              style={{ width: `${Math.min(sentinelIssues.length, 5) * 20}%` }}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-2 text-[10px] vol-t2">
-            <div>Complexity Penalty: -{repoHealth.complexityPenalty}</div>
-            <div>Circular Dependencies: {repoHealth.circularCyclesCount}</div>
+          <div className="text-[10px] vol-t2">
+            {sentinelIssues.length === 0
+              ? "No active findings."
+              : `${sentinelIssues.length} issue(s) flagged by SkillSpector.`}
           </div>
         </div>
 
@@ -4278,45 +4324,44 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* REPAIR PRIORITY PLANNER ROADMAP */}
+        {/* SENTINEL FINDINGS BY SEVERITY */}
         <div className="border vol-line vol-elev rounded-2xl p-4 space-y-4">
           <div className="text-[10px] vol-t2 uppercase font-black tracking-wider font-semibold">
-            Repair Priority Roadmap
+            Findings by Severity
           </div>
-
           <div className="space-y-3">
             {[
               {
-                label: "Critical Fixing Items",
-                list: roadmap.critical,
+                label: "Critical",
+                items: sentinelIssues.filter((i) => i.severity === "Critical"),
                 color: "text-red-400",
               },
               {
-                label: "High Fixing Items",
-                list: roadmap.high,
+                label: "High",
+                items: sentinelIssues.filter((i) => i.severity === "High"),
                 color: "text-orange-400",
               },
               {
-                label: "Medium Fixing Items",
-                list: roadmap.medium,
+                label: "Medium",
+                items: sentinelIssues.filter((i) => i.severity === "Medium"),
                 color: "text-yellow-400",
               },
               {
-                label: "Cosmetic Fixing Items",
-                list: roadmap.cosmetic,
+                label: "Low",
+                items: sentinelIssues.filter((i) => i.severity === "Low"),
                 color: "text-blue-400",
               },
             ].map((group) => {
-              if (group.list.length === 0) return null;
+              if (group.items.length === 0) return null;
               return (
                 <div key={group.label} className="space-y-1.5">
                   <div
                     className={`text-[9px] font-black uppercase ${group.color}`}
                   >
-                    {group.label} ({group.list.length})
+                    {group.label} ({group.items.length})
                   </div>
                   <div className="space-y-1">
-                    {group.list.map((iss, idx) => (
+                    {group.items.map((iss, idx) => (
                       <div
                         key={idx}
                         className="p-2 vol-panel border vol-line rounded-lg text-[10px] vol-t1"
@@ -4329,12 +4374,11 @@ const App: React.FC = () => {
               );
             })}
 
-            {issues.length === 0 &&
-              (!enableSentinel || sentinelIssues.length === 0) && (
-                <div className="text-center vol-t2 py-8 text-[10px] font-mono">
-                  No detected defects. Repository roadmap is clear.
-                </div>
-              )}
+            {sentinelIssues.length === 0 && (
+              <div className="text-center vol-t2 py-8 text-[10px] font-mono">
+                No sentinel findings. Repository is clean.
+              </div>
+            )}
           </div>
         </div>
 
@@ -4784,12 +4828,13 @@ const App: React.FC = () => {
         </div>
       )}
       <ResponsiveContainer
-        sidebar={renderSidebar()}
         content={renderContent()}
         terminal={renderTerminalPanel()}
         diagnostics={renderDiagnosticsColumn()}
         currentView={currentView}
         setCurrentView={setCurrentView as (v: string) => void}
+        sentinelLevel={sentinelLevel}
+        sentinelLabel={sentinelLabel}
       />
 
       {renderDiffModal()}

@@ -111,8 +111,7 @@ export function useLiveProviderModels(keys: ProviderKeys, username?: string) {
     }, 300);
     // Auto-refresh: every 30 minutes + on tab focus, so the catalog tracks
     // provider changes without the user pressing Refresh.
-    const isTest =
-      typeof process !== "undefined" && process.env?.NODE_ENV === "test";
+    const isTest = import.meta.env?.MODE === "test";
     let interval: ReturnType<typeof setInterval> | undefined;
     let onVisible: (() => void) | undefined;
     if (!isTest) {

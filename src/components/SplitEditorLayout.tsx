@@ -27,7 +27,8 @@ export function SplitEditorLayout({
     "preview" | "comparison" | "notepad" | "review"
   >("preview");
   const [notes, setNotes] = useState("");
-  const [dividerPos, setDividerPos] = useState(50);
+  // 70/30 focal split: editor gets 70%, results panel 30%. Draggable 30–70%.
+  const [dividerPos, setDividerPos] = useState(70);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleMouseDown = () => setIsDragging(true);

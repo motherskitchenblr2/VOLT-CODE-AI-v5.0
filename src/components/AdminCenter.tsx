@@ -8,18 +8,10 @@ import {
   ShieldCheck,
   RefreshCw,
   Key,
-  Cpu,
-  Eye,
-  Sparkles,
-  Layers,
-  Flame,
-  AlertCircle,
   Sliders,
   Lock,
   GitBranch,
 } from "lucide-react";
-import { ProviderState } from "../services/ProviderRegistry";
-import { OptimizerReport } from "../services/PerformanceOptimizer";
 
 interface AuditLog {
   action: string;
@@ -54,11 +46,6 @@ interface AdminCenterProps {
   onRefreshLogs: () => void;
   onMaintenanceToggle: (maintenance: boolean) => void;
   isMaintenanceActive: boolean;
-
-  // RC2 upgrades
-  providers: ProviderState[];
-  onRefreshProviderHealth: (providerName: string) => Promise<void>;
-  optimizerReport: OptimizerReport;
   checkpoints: Checkpoint[];
   onRestoreCheckpoint: (checkpointId: string) => Promise<void>;
   enableSentinel: boolean;
@@ -75,9 +62,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   onRefreshLogs,
   onMaintenanceToggle,
   isMaintenanceActive,
-  providers,
-  onRefreshProviderHealth,
-  optimizerReport,
   checkpoints,
   onRestoreCheckpoint,
   enableSentinel,
@@ -86,7 +70,7 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
 }) => {
   // Navigation
   const [activeAdminTab, setActiveAdminTab] = useState<
-    "status" | "providers" | "performance" | "audit" | "secret" | "deployment"
+    "status" | "audit" | "secret" | "deployment"
   >("status");
 
   // Security Credentials Access Lock — the passcode is verified on the
@@ -101,9 +85,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   // Local Admin Config States (persisted to localStorage)
   const [maxThreads, setMaxThreads] = useState(() => {
     return Number(localStorage.getItem("volt_admin_max_threads") || "4");
-  });
-  const [autoRefreshRate, setAutoRefreshRate] = useState(() => {
-    return localStorage.getItem("volt_admin_auto_refresh") || "off";
   });
 
   const [consensusWeights, setConsensusWeights] = useState(() => {
@@ -122,7 +103,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
   });
 
   const [selectedCheckpointId, setSelectedCheckpointId] = useState("");
-  const [isPinging, setIsPinging] = useState<Record<string, boolean>>({});
 
   const [deployments, setDeployments] = useState<Deployment[]>([]);
   const [isDeploying, setIsDeploying] = useState(false);
@@ -191,27 +171,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     }
   };
 
-  // Auto-Refresh loop for AI providers
-  useEffect(() => {
-    if (autoRefreshRate === "off") return;
-    const intervalMs =
-      autoRefreshRate === "10s"
-        ? 10000
-        : autoRefreshRate === "30s"
-          ? 30000
-          : autoRefreshRate === "60s"
-            ? 60000
-            : 300000;
-
-    const interval = setInterval(() => {
-      providers.forEach((p) => {
-        onRefreshProviderHealth(p.name).catch(() => {});
-      });
-    }, intervalMs);
-
-    return () => clearInterval(interval);
-  }, [autoRefreshRate, providers, onRefreshProviderHealth]);
-
   // Auth operations
   const handleUnlock = async () => {
     if (!enteredKey.trim()) {
@@ -253,19 +212,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
       "Administrator passcode recorded for this session. The server will validate it on your next deployment request.",
     );
   };
-
-  // Provider Ping trigger
-  const handlePing = async (name: string) => {
-    setIsPinging((prev) => ({ ...prev, [name]: true }));
-    try {
-      await onRefreshProviderHealth(name);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsPinging((prev) => ({ ...prev, [name]: false }));
-    }
-  };
-
   // Checkpoint restore
   const handleRollback = async () => {
     if (!selectedCheckpointId) return;
@@ -340,13 +286,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
     consensusWeights.ui;
   const isWeightValid = sumWeights === 100;
 
-  // Unused CSS mock parsing
-  const mockUnusedCssRules = optimizerReport.unusedCssRules || [
-    ".editor-overlay-deprecated",
-    ".sidebar-menu-item-v2",
-    "#legacy-sentinel-loader",
-  ];
-
   // Lock Screen Render
   if (!isUnlocked) {
     return (
@@ -412,12 +351,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
           {(
             [
               { id: "status", label: "Status Dashboard", icon: Activity },
-              { id: "providers", label: "AI Provider Registry", icon: Cpu },
-              {
-                id: "performance",
-                label: "Performance Optimizer",
-                icon: Sparkles,
-              },
               { id: "audit", label: "Audit Logs", icon: Database },
               { id: "secret", label: "Secret Console", icon: Key },
               {
@@ -520,283 +453,6 @@ export const AdminCenter: React.FC<AdminCenterProps> = ({
         </div>
       )}
 
-      {/* 2. AI Provider Registry Tab */}
-      {activeAdminTab === "providers" && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center flex-wrap gap-4 border-b vol-line pb-4">
-            <div>
-              <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
-                Registered Model Catalogs
-              </h3>
-              <p className="text-[10px] vol-t2 mt-1 uppercase">
-                Health LEDs show actual latencies to provider gateway endpoints
-              </p>
-            </div>
-
-            {/* Auto-Refresh Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] vol-t2 uppercase font-bold">
-                Auto-Refresh LEDs:
-              </span>
-              <select
-                value={autoRefreshRate}
-                onChange={(e) => {
-                  setAutoRefreshRate(e.target.value);
-                  localStorage.setItem(
-                    "volt_admin_auto_refresh",
-                    e.target.value,
-                  );
-                }}
-                className="vol-well border vol-line px-2 py-1 rounded text-xs vol-t1 focus:outline-none focus:vol-ring-hi"
-              >
-                <option value="off">Disabled</option>
-                <option value="10s">10 seconds</option>
-                <option value="30s">30 seconds</option>
-                <option value="60s">1 minute</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {providers.map((p) => (
-              <div
-                key={p.name}
-                className="border vol-line vol-elev rounded-2xl p-5 space-y-4 relative overflow-hidden"
-              >
-                {/* Background glow matching LED status */}
-                <div
-                  className={`absolute top-0 right-0 w-24 h-24 rounded-full filter blur-[40px] opacity-10 ${
-                    p.status === "GREEN"
-                      ? "bg-green-500"
-                      : p.status === "YELLOW"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                  }`}
-                />
-
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-black text-base vol-t1 flex items-center gap-2">
-                      {p.name}
-                      <span
-                        className={`inline-block w-2.5 h-2.5 rounded-full ${
-                          p.status === "GREEN"
-                            ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
-                            : p.status === "YELLOW"
-                              ? "bg-yellow-500 shadow-[0_0_8px_#eab308]"
-                              : "bg-red-500 shadow-[0_0_8px_#ef4444]"
-                        }`}
-                        title={`Health Status: ${p.status}`}
-                      />
-                    </h4>
-                    <p className="text-[10px] vol-t2 mt-1 uppercase font-bold tracking-wider">
-                      {p.connected
-                        ? "✓ Connected to Gateway"
-                        : "✗ Credentials Staged Offline"}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => handlePing(p.name)}
-                    disabled={isPinging[p.name]}
-                    className="p-1.5 rounded-lg border vol-line hover:vol-wash text-[10px] vol-accent font-black uppercase flex items-center gap-1 cursor-pointer transition-all disabled:opacity-50"
-                  >
-                    <RefreshCw
-                      className={`w-3 h-3 ${isPinging[p.name] ? "animate-spin" : ""}`}
-                    />
-                    {isPinging[p.name]
-                      ? "PINGING"
-                      : `${p.latencyMs ? `${p.latencyMs}ms` : "PING"}`}
-                  </button>
-                </div>
-
-                <div className="border-t vol-line pt-3 space-y-2">
-                  <div className="text-[10px] vol-t2 uppercase font-black tracking-wider">
-                    Staged Models
-                  </div>
-                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                    {p.models.map((m) => (
-                      <div
-                        key={m.id}
-                        className="p-2.5 vol-panel border vol-line rounded-xl text-xs space-y-1.5"
-                      >
-                        <div className="flex justify-between font-bold vol-t1 text-[11px]">
-                          <span>{m.name}</span>
-                          <span className="vol-accent-soft">
-                            {m.contextWindow.toLocaleString()} CTX
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-[10px] vol-t2">
-                          <span className="flex items-center gap-1.5 flex-wrap">
-                            <span
-                              className={
-                                m.capabilities.streaming
-                                  ? "text-green-400 font-semibold"
-                                  : "vol-t2"
-                              }
-                            >
-                              STREAMING
-                            </span>
-                            <span className="w-1 h-1 bg-white/20 rounded-full" />
-                            <span
-                              className={
-                                m.capabilities.vision
-                                  ? "text-green-400 font-semibold"
-                                  : "vol-t2"
-                              }
-                            >
-                              VISION
-                            </span>
-                            <span className="w-1 h-1 bg-white/20 rounded-full" />
-                            <span
-                              className={
-                                m.capabilities.toolCalling
-                                  ? "text-green-400 font-semibold"
-                                  : "vol-t2"
-                              }
-                            >
-                              TOOLS
-                            </span>
-                          </span>
-                          <span className="font-mono vol-t2">
-                            ${m.tokenCostPerMillionInput.toFixed(2)} / $
-                            {(m.tokenCostPerMillionOutput || 0).toFixed(2)} M
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 3. Performance Optimizer Tab */}
-      {activeAdminTab === "performance" && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="font-extrabold text-sm vol-accent uppercase tracking-wider">
-              Performance Audit Telemetry
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* React renders and size */}
-            <div className="border vol-line vol-elev rounded-2xl p-5 space-y-4 col-span-1">
-              <h4 className="font-black text-sm vol-t1 uppercase tracking-wider flex items-center gap-2">
-                <Layers className="w-4 h-4 vol-accent" />
-                React Render Tracking
-              </h4>
-              <div className="space-y-2">
-                {Object.entries(optimizerReport.reRenderCounts).map(
-                  ([comp, count]) => (
-                    <div
-                      key={comp}
-                      className="flex justify-between items-center text-xs p-2 vol-panel border vol-line rounded-xl"
-                    >
-                      <span className="font-semibold vol-t1">
-                        {comp} Component
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-lg bg-orange-600/10 text-orange-400 font-black text-[10px]">
-                        {count} Renders
-                      </span>
-                    </div>
-                  ),
-                )}
-              </div>
-              <div className="flex justify-between text-xs font-mono vol-t2 pt-2 border-t vol-line">
-                <span>EST. BUNDLE SIZE</span>
-                <span className="vol-t1 font-bold">
-                  {optimizerReport.bundleSizeKb} KB
-                </span>
-              </div>
-            </div>
-
-            {/* Warnings and Optimization */}
-            <div className="border vol-line vol-elev rounded-2xl p-5 space-y-4 col-span-1">
-              <h4 className="font-black text-sm vol-t1 uppercase tracking-wider flex items-center gap-2">
-                <Flame className="w-4 h-4 text-red-500" />
-                Performance Alerts & Leaks
-              </h4>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {optimizerReport.memoryLeakAlerts.map((leak, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-red-950/20 border border-red-500/30 rounded-xl text-xs text-red-400 flex items-start gap-2"
-                  >
-                    <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{leak}</span>
-                  </div>
-                ))}
-                {optimizerReport.lazyLoadingOpportunities.map(
-                  (opportunity, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 bg-yellow-950/20 border border-yellow-500/30 rounded-xl text-xs text-yellow-400 flex items-start gap-2"
-                    >
-                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                      <span>{opportunity}</span>
-                    </div>
-                  ),
-                )}
-                {optimizerReport.duplicateDependencies.map((dep, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-blue-950/20 border border-blue-500/30 rounded-xl text-xs text-blue-400 flex items-start gap-2"
-                  >
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                    <span>{dep}</span>
-                  </div>
-                ))}
-                {optimizerReport.unusedImports.map((imp, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 vol-panel border vol-line rounded-xl text-xs vol-t2 flex items-start gap-2"
-                  >
-                    <Eye className="w-4 h-4 shrink-0 mt-0.5 vol-t2" />
-                    <span>
-                      Unused import: <strong className="vol-t1">{imp}</strong>
-                    </span>
-                  </div>
-                ))}
-                {optimizerReport.memoryLeakAlerts.length === 0 &&
-                  optimizerReport.lazyLoadingOpportunities.length === 0 &&
-                  optimizerReport.duplicateDependencies.length === 0 &&
-                  optimizerReport.unusedImports.length === 0 && (
-                    <div className="text-center vol-t2 py-12 text-xs">
-                      No active memory leaks or dependency alerts detected.
-                    </div>
-                  )}
-              </div>
-            </div>
-
-            {/* Unused CSS rules analyzer */}
-            <div className="border vol-line vol-elev rounded-2xl p-5 space-y-4 col-span-1">
-              <h4 className="font-black text-sm vol-t1 uppercase tracking-wider flex items-center gap-2">
-                <Sliders className="w-4 h-4 vol-accent" />
-                Unused CSS Rules Check
-              </h4>
-              <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {mockUnusedCssRules.map((rule, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 vol-elev/60 border border-zinc-700/30 rounded-xl text-xs text-zinc-400 flex items-center justify-between"
-                  >
-                    <span className="font-mono">{rule}</span>
-                    <span className="px-2 py-0.5 rounded text-[8px] bg-red-600/10 text-red-500 font-bold uppercase">
-                      Unreferenced
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Audit Logs Tab */}
       {activeAdminTab === "audit" && (
         <div className="border vol-ring vol-elev p-6 rounded-2xl space-y-4">
           <div className="flex justify-between items-center">
