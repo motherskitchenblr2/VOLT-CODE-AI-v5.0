@@ -1155,7 +1155,34 @@ export const RepoOpsPanel: React.FC<RepoOpsPanelProps> = ({ addLog }) => {
         "unauthorized",
       );
     }
-    const data = permissions.exportAuditLogs(format);
+    // Codex: the export only read PermissionSystem entries (permission checks),
+    // omitting the merges/closes/branch ops it is presented as auditing. Merge
+    // the panel's own repo-operation log into the export.
+    const rows = [
+      ...permissions.getAuditLogs().map((l) => ({
+        action: l.action,
+        details: JSON.stringify(l.details),
+        status: l.status.toUpperCase(),
+        createdAt: new Date(l.timestamp).toISOString(),
+      })),
+      ...log.map((l) => ({
+        action: "repo-operation",
+        details: l.msg,
+        status: l.status.toUpperCase(),
+        createdAt: l.t,
+      })),
+    ];
+    const csvCell = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const data =
+      format === "csv"
+        ? [
+            "action,details,status,createdAt",
+            ...rows.map(
+              (r) =>
+                `${csvCell(r.action)},${csvCell(r.details)},${csvCell(r.status)},${csvCell(r.createdAt)}`,
+            ),
+          ].join("\n")
+        : JSON.stringify(rows, null, 2);
     const blob = new Blob([data], {
       type: format === "csv" ? "text/csv" : "application/json",
     });
