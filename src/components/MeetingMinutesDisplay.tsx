@@ -64,6 +64,36 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
       : 0;
   };
 
+  // Codex: the Export button had no handler. Export a self-contained HTML file
+  // (open it and "Save as PDF"); no PDF library dependency needed.
+  const exportMinutes = () => {
+    const esc = (s: string) =>
+      s.replace(/[&<>]/g, (c) =>
+        c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;",
+      );
+    const list = (items: string[]) =>
+      items.map((i) => `<li>${esc(i)}</li>`).join("");
+    const html = [
+      "<!doctype html><meta charset='utf-8'>",
+      `<title>${esc(meeting.title)}</title>`,
+      "<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:32px auto;line-height:1.5}ul{padding-left:1.2em}</style>",
+      `<h1>${esc(meeting.title)}</h1>`,
+      `<p>${esc(meeting.date.toLocaleString())}</p>`,
+      `<h2>Participants</h2><ul>${list(meeting.participants)}</ul>`,
+      `<h2>Agenda</h2><ul>${list(meeting.agenda)}</ul>`,
+      `<h2>Decisions</h2><ul>${list(meeting.decisions.map((d) => `${d.title}: ${d.description}`))}</ul>`,
+      `<h2>Action Items</h2><ul>${list(meeting.actionItems.map((a) => `${a.description} — ${a.assignedTo} (${a.status})`))}</ul>`,
+      `<h2>Notes</h2><p>${esc(meeting.notes)}</p>`,
+    ].join("\n");
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "meeting-minutes.html";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-6">
       {/* Header */}
@@ -83,9 +113,12 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
               </div>
             </div>
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 vol-acc-wash hover:vol-acc-wash vol-accent rounded-lg transition-all">
+          <button
+            onClick={exportMinutes}
+            className="flex items-center gap-2 px-4 py-2 vol-acc-wash hover:vol-acc-wash vol-accent rounded-lg transition-all cursor-pointer"
+          >
             <Download className="w-4 h-4" />
-            Export PDF
+            Export
           </button>
         </div>
 

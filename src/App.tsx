@@ -576,6 +576,9 @@ const App: React.FC = () => {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [acceptedHunkIds, setAcceptedHunkIds] = useState<number[]>([]);
   const [consensusPassed, setConsensusPassed] = useState<boolean | null>(null);
+  // Guidance panel visibility — the panel's own buttons need a parent state to
+  // actually dismiss it (Codex: handlers were omitted, so X/Accept/Confirm did nothing).
+  const [guidanceDismissed, setGuidanceDismissed] = useState(false);
   const [consensusScore, setConsensusScore] = useState<number | null>(null);
   const [consensusFeedback, setConsensusFeedback] = useState<string[]>([]);
   const [agentBreakdown, setAgentBreakdown] = useState<Record<string, number>>(
@@ -844,6 +847,17 @@ const App: React.FC = () => {
       try {
         const recoveredCode = await recovery.undoLastRepair(checkpointId);
         setCode(recoveredCode);
+        // Restore the checkpoint's file path too, otherwise later analysis or
+        // commits would apply this file's code to whatever path is loaded now.
+        const raw = localStorage.getItem(`backup_${checkpointId}`);
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw) as { filePath?: string };
+            if (parsed.filePath) setLoadedFilePath(parsed.filePath);
+          } catch {
+            // corrupt cache entry — keep the current path
+          }
+        }
         showToast(
           `Checkpoint ${checkpointId} restored successfully!`,
           "success",
@@ -998,6 +1012,7 @@ const App: React.FC = () => {
     setIsScanning(true);
     setScanProgress(0);
     setAgentStatus("analyzing");
+    setGuidanceDismissed(false);
     setCurrentModelName(selectedModel.name);
 
     addLog(
@@ -3356,8 +3371,9 @@ const App: React.FC = () => {
           description: `Apply fixes approved by ${name}`,
           assignedTo: name,
           dueDate: new Date(),
-          status: (consensusPassed ? "completed" : "pending") as
-            "pending" | "in-progress" | "completed",
+          // Consensus passing only approves the patch; the edit is applied
+          // later in applyAllFixes, so keep these pending until then.
+          status: "pending" as "pending" | "in-progress" | "completed",
           priority: "medium" as const,
         })),
         notes:
@@ -3394,7 +3410,14 @@ const App: React.FC = () => {
         <div className="w-full h-full overflow-y-auto">
           <MeetingPanel onClose={() => setCurrentView("editor")} />
           <div className="p-4 md:p-6 space-y-4">
-            {guidance && <BossGuidancePanel guidance={guidance} />}
+            {guidance && !guidanceDismissed && (
+              <BossGuidancePanel
+                guidance={guidance}
+                onDismiss={() => setGuidanceDismissed(true)}
+                onAccept={() => setGuidanceDismissed(true)}
+                onConfirm={() => setGuidanceDismissed(true)}
+              />
+            )}
             <MeetingMinutesDisplay meeting={minutes} />
           </div>
         </div>
