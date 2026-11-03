@@ -27,6 +27,7 @@ export const ProfessionalEditorCanvas: React.FC<
   enableAgentSuggestions,
   onToggleSuggestions,
   agentSuggestions = [],
+  issues: _issues,
   isAnalyzing = false,
 }) => {
   const [copiedSuggestion, setCopiedSuggestion] = useState<number | null>(null);
@@ -80,9 +81,9 @@ export const ProfessionalEditorCanvas: React.FC<
   const lineNumbers = code.split("\n").map((_, i) => i + 1);
 
   return (
-    <div className="flex h-full gap-0 vol-surface">
-      {/* Line Numbers */}
-      <div className="flex flex-col vol-surface border-r vol-line py-4 px-2 select-none overflow-hidden">
+    <div className="flex flex-col h-full gap-0 vol-surface">
+      {/* Line Numbers — hidden on mobile */}
+      <div className="hidden sm:flex flex-col vol-surface border-r vol-line py-4 px-2 select-none overflow-y-auto">
         {lineNumbers.map((num) => (
           <div
             key={num}
@@ -94,7 +95,7 @@ export const ProfessionalEditorCanvas: React.FC<
       </div>
 
       {/* Editor with Column Lines */}
-      <div className="flex-1 flex flex-col vol-surface relative">
+      <div className="flex-1 flex flex-col vol-surface relative min-w-0">
         {/* Column Guidelines */}
         <div
           className="absolute inset-0 pointer-events-none"
@@ -111,7 +112,7 @@ export const ProfessionalEditorCanvas: React.FC<
         />
 
         {/* Editor Header with Toggle */}
-        <div className="flex items-center justify-between px-4 py-2 vol-surface border-b vol-line z-10">
+        <div className="flex items-center justify-between px-4 py-2 vol-surface border-b vol-line z-10 flex-shrink-0">
           <div className="text-xs vol-t2 font-mono">
             {language.toUpperCase()} • {code.split("\n").length} lines
           </div>
@@ -134,7 +135,7 @@ export const ProfessionalEditorCanvas: React.FC<
           ref={textareaRef}
           value={code}
           onChange={(e) => onCodeChange(e.target.value)}
-          className="flex-1 vol-surface vol-t1 font-mono text-sm resize-none outline-none px-4 py-4 relative z-20 overflow-hidden"
+          className="flex-1 vol-surface vol-t1 font-mono text-sm resize-none outline-none px-4 py-4 relative z-20 overflow-y-auto overflow-x-auto"
           style={{
             backgroundAttachment: "local",
             backgroundImage: `linear-gradient(
@@ -151,9 +152,9 @@ export const ProfessionalEditorCanvas: React.FC<
         />
       </div>
 
-      {/* Agent Suggestions Panel - AMOLED Black */}
+      {/* Agent Suggestions Panel — hidden on mobile, sidebar on desktop */}
       {enableAgentSuggestions && (
-        <div className="w-96 vol-surface border-l vol-line flex flex-col overflow-hidden">
+        <div className="hidden lg:flex w-96 vol-surface border-l vol-line flex flex-col overflow-hidden flex-shrink-0">
           {/* Suggestions Header */}
           <div className="px-4 py-3 border-b vol-line vol-surface">
             <h3 className="text-sm font-semibold vol-t1 flex items-center gap-2">
@@ -183,11 +184,11 @@ export const ProfessionalEditorCanvas: React.FC<
                           className={`inline-block text-xs px-2 py-1 rounded mt-1 ${
                             suggestion.type === "bug"
                               ? "bg-red-900/30 text-red-400"
-                              : suggestion.type === "performance"
-                                ? "bg-yellow-900/30 text-yellow-400"
-                                : suggestion.type === "optimization"
-                                  ? "bg-green-900/30 text-green-400"
-                                  : "bg-blue-900/30 text-blue-400"
+                            : suggestion.type === "performance"
+                              ? "bg-yellow-900/30 text-yellow-400"
+                              : suggestion.type === "optimization"
+                                ? "bg-green-900/30 text-green-400"
+                                : "bg-blue-900/30 text-blue-400"
                           }`}
                         >
                           {suggestion.type}
