@@ -432,7 +432,10 @@ export class GitHubManager {
       throw new Error("Review body is empty — nothing to post.");
     return this.gh<{ id: number; html_url: string }>(
       `/repos/${this.config.owner}/${this.config.repo}/pulls/${prNumber}/reviews`,
-      { method: "POST", body: { event, body, ...(commit_id ? { commit_id } : {}) } },
+      {
+        method: "POST",
+        body: { event, body, ...(commit_id ? { commit_id } : {}) },
+      },
     );
   }
 

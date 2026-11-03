@@ -169,9 +169,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1 min-w-0">
-            <span
-              className="block text-sm font-bold tracking-widest vol-t1 truncate uppercase"
-            >
+            <span className="block text-sm font-bold tracking-widest vol-t1 truncate uppercase">
               {title.toUpperCase()}
             </span>
             <span className="block text-[10px] vol-t2 font-semibold tracking-wider">

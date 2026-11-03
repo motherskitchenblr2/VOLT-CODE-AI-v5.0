@@ -21,16 +21,16 @@ describe("SkillSpector sentinel analyzers", () => {
     ).toBe(true);
 
     const byVm = analyzeCodeBuffer("vm.runInContext(code, ctx);");
-    expect(byVm.some((f) => f.rule_id === "ast-execution-vm-runincontext")).toBe(
-      true,
-    );
+    expect(
+      byVm.some((f) => f.rule_id === "ast-execution-vm-runincontext"),
+    ).toBe(true);
   });
 
   it("detects hardcoded LLM API keys (credentialLeak)", () => {
-    const findings = analyzeCodeBuffer("const key = 'sk-or-v1-abcdef1234567890ABCDEF';");
-    expect(
-      findings.some((f) => f.rule_id === "credential-llm-key"),
-    ).toBe(true);
+    const findings = analyzeCodeBuffer(
+      "const key = 'sk-or-v1-abcdef1234567890ABCDEF';",
+    );
+    expect(findings.some((f) => f.rule_id === "credential-llm-key")).toBe(true);
   });
 
   it("detects prompt injection overrides", () => {
@@ -43,17 +43,51 @@ describe("SkillSpector sentinel analyzers", () => {
   });
 
   it("returns no findings for clean code", () => {
-    const findings = analyzeCodeBuffer("const sum = (a: number, b: number) => a + b;");
+    const findings = analyzeCodeBuffer(
+      "const sum = (a: number, b: number) => a + b;",
+    );
     expect(findings.length).toBe(0);
   });
 
   it("computes weighted risk score capped at 100", () => {
     // One CRITICAL (+50) + one HIGH (+25) + one MEDIUM (+10) + one LOW (+5) = 90
     const findings: ScanFinding[] = [
-      { rule_id: "a", severity: "CRITICAL", confidence: 1, location: { line: 1, column: 1 }, message: "m", original: "x", fixed: "x" },
-      { rule_id: "b", severity: "HIGH", confidence: 1, location: { line: 1, column: 1 }, message: "m", original: "x", fixed: "x" },
-      { rule_id: "c", severity: "MEDIUM", confidence: 1, location: { line: 1, column: 1 }, message: "m", original: "x", fixed: "x" },
-      { rule_id: "d", severity: "LOW", confidence: 1, location: { line: 1, column: 1 }, message: "m", original: "x", fixed: "x" },
+      {
+        rule_id: "a",
+        severity: "CRITICAL",
+        confidence: 1,
+        location: { line: 1, column: 1 },
+        message: "m",
+        original: "x",
+        fixed: "x",
+      },
+      {
+        rule_id: "b",
+        severity: "HIGH",
+        confidence: 1,
+        location: { line: 1, column: 1 },
+        message: "m",
+        original: "x",
+        fixed: "x",
+      },
+      {
+        rule_id: "c",
+        severity: "MEDIUM",
+        confidence: 1,
+        location: { line: 1, column: 1 },
+        message: "m",
+        original: "x",
+        fixed: "x",
+      },
+      {
+        rule_id: "d",
+        severity: "LOW",
+        confidence: 1,
+        location: { line: 1, column: 1 },
+        message: "m",
+        original: "x",
+        fixed: "x",
+      },
     ];
     expect(computeRiskScore(findings)).toBe(90);
 
