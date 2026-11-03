@@ -71,7 +71,8 @@ export function MeetingMinutesDisplay({ meeting }: MeetingMinutesDisplayProps) {
       s.replace(/[&<>]/g, (c) =>
         c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;",
       );
-    const list = (items: string[]) => items.map((i) => `<li>${esc(i)}</li>`).join("");
+    const list = (items: string[]) =>
+      items.map((i) => `<li>${esc(i)}</li>`).join("");
     const html = [
       "<!doctype html><meta charset='utf-8'>",
       `<title>${esc(meeting.title)}</title>`,
