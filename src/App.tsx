@@ -1900,7 +1900,7 @@ const App: React.FC = () => {
     );
   };
 
-  const renderDiffModal = () => {
+  const _renderDiffModal = () => {
     return (
       <AnimatePresence>
         {showDiff && (
@@ -1964,7 +1964,7 @@ const App: React.FC = () => {
     );
   };
 
-  const renderReportDrawer = () => {
+  const _renderReportDrawer = () => {
     return (
       <AnimatePresence>
         {showReport && (
@@ -2046,7 +2046,7 @@ const App: React.FC = () => {
     );
   };
 
-  const renderShortcutsModal = () => {
+  const _renderShortcutsModal = () => {
     return (
       <AnimatePresence>
         {showShortcutsCheatSheet && (
@@ -2099,7 +2099,7 @@ const App: React.FC = () => {
     );
   };
 
-  const renderLangAlertModal = () => {
+  const _renderLangAlertModal = () => {
     return (
       <AnimatePresence>
         {showLangAlert && (
@@ -2335,11 +2335,45 @@ const App: React.FC = () => {
         sentinelLabel={sentinelLabel}
       />
 
-      {renderDiffModal()}
-      {renderReportDrawer()}
-      {renderShortcutsModal()}
-      {renderLangAlertModal()}
-      {renderLoginModal()}
+      <DiffModal
+        showDiff={showDiff}
+        setShowDiff={setShowDiff}
+        issues={issues}
+        acceptedHunkIds={acceptedHunkIds}
+        onToggleHunk={onToggleHunk}
+        fixedCode={fixedCode}
+        copyToClipboard={copyToClipboard}
+        applyAllFixes={applyAllFixes}
+      />
+      <ReportDrawer
+        showReport={showReport}
+        setShowReport={setShowReport}
+        issues={issues}
+        fixedCode={fixedCode}
+        copyToClipboard={copyToClipboard}
+        downloadCode={downloadCode}
+      />
+      <ShortcutsModal
+        showShortcutsCheatSheet={showShortcutsCheatSheet}
+        setShowShortcutsCheatSheet={setShowShortcutsCheatSheet}
+      />
+      <LangAlertModal
+        showLangAlert={showLangAlert}
+        setShowLangAlert={setShowLangAlert}
+      />
+      <LoginModal
+        showLoginModal={showLoginModal}
+        setShowLoginModal={setShowLoginModal}
+        loginMode={loginMode}
+        setLoginMode={setLoginMode}
+        loginError={loginError}
+        setLoginError={setLoginError}
+        username={username}
+        setUsername={setUsername}
+        loginPassword={loginPassword}
+        setLoginPassword={setLoginPassword}
+        handleLogin={handleLogin}
+      />
       <Analytics />
     </div>
   );

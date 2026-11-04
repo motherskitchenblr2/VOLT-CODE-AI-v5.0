@@ -2,14 +2,23 @@
  * Modals — all modal/drawer components extracted from App.tsx.
  * Each modal receives its required state/handlers as props.
  */
-import React, { AnimatePresence, motion } from "react";
-import { AlertTriangle, Copy, Download, HelpCircle, X, Zap } from "lucide-react";
+import React from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertTriangle, Copy, Download, HelpCircle, X } from "lucide-react";
 import { VisualDiff } from "../VisualDiff";
 
 interface DiffModalProps {
   showDiff: boolean;
   setShowDiff: (v: boolean) => void;
-  issues: any[];
+  issues: Array<{
+    id: number;
+    type: string;
+    severity: "Critical" | "High" | "Medium" | "Low";
+    description: string;
+    original: string;
+    fixed: string;
+    explanation: string;
+  }>;
   acceptedHunkIds: number[];
   onToggleHunk: (id: number) => void;
   fixedCode: string;
@@ -43,10 +52,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                 <AlertTriangle className="vol-accent" />
                 SELECTIVE HUNK DIFF PREVIEW & QUALITY CONSENSUS
               </div>
-              <button
-                onClick={() => setShowDiff(false)}
-                className="cursor-pointer"
-              >
+              <button onClick={() => setShowDiff(false)} className="cursor-pointer">
                 <X />
               </button>
             </div>
@@ -82,15 +88,23 @@ export const DiffModal: React.FC<DiffModalProps> = ({
             </div>
           </motion.div>
         </div>
-      </AnimatePresence>
-    );
-  };
+      )}
+    </AnimatePresence>
+  );
 };
 
 interface ReportDrawerProps {
   showReport: boolean;
   setShowReport: (v: boolean) => void;
-  issues: any[];
+  issues: Array<{
+    id: number;
+    type: string;
+    severity: "Critical" | "High" | "Medium" | "Low";
+    description: string;
+    original: string;
+    fixed: string;
+    explanation: string;
+  }>;
   fixedCode: string;
   copyToClipboard: (text: string) => void;
   downloadCode: (text: string, filename: string) => void;
@@ -115,7 +129,7 @@ export const ReportDrawer: React.FC<ReportDrawerProps> = ({
             initial={{ x: 80 }}
             animate={{ x: 0 }}
             exit={{ x: 80 }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
             className="w-full max-w-lg vol-elev h-full border-l vol-ring-strong overflow-auto flex flex-col"
           >
             <div className="sticky top-0 vol-elev p-8 border-b vol-ring-strong flex justify-between select-none">
@@ -125,10 +139,7 @@ export const ReportDrawer: React.FC<ReportDrawerProps> = ({
                   ALL PATCHES APPLIED TO CODEBASE
                 </div>
               </div>
-              <button
-                onClick={() => setShowReport(false)}
-                className="cursor-pointer"
-              >
+              <button onClick={() => setShowReport(false)} className="cursor-pointer">
                 <X />
               </button>
             </div>
@@ -176,9 +187,9 @@ export const ReportDrawer: React.FC<ReportDrawerProps> = ({
             </div>
           </motion.div>
         </div>
-      </AnimatePresence>
-    );
-  };
+      )}
+    </AnimatePresence>
+  );
 };
 
 interface ShortcutsModalProps {
@@ -221,10 +232,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                 { keys: "Escape", action: "Close Modals / Panels" },
                 { keys: "?", action: "Toggle this Shortcuts Guide" },
               ].map((s, idx) => (
-                <div
-                  key={idx}
-                  className="flex justify-between py-1.5 border-b vol-line"
-                >
+                <div key={idx} className="flex justify-between py-1.5 border-b vol-line">
                   <span className="vol-t2">{s.action}</span>
                   <kbd className="px-2 py-0.5 vol-acc-wash border vol-ring-strong vol-accent font-mono text-xs rounded-md">
                     {s.keys}
@@ -234,9 +242,9 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
             </div>
           </motion.div>
         </div>
-      </AnimatePresence>
-    );
-  };
+      )}
+    </AnimatePresence>
+  );
 };
 
 interface LangAlertModalProps {
@@ -286,9 +294,9 @@ export const LangAlertModal: React.FC<LangAlertModalProps> = ({
             </div>
           </motion.div>
         </div>
-      </AnimatePresence>
-    );
-  };
+      )}
+    </AnimatePresence>
+  );
 };
 
 interface LoginModalProps {
@@ -386,7 +394,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </button>
           </div>
         </div>
-      </AnimatePresence>
-    );
-  };
+      )}
+    </AnimatePresence>
+  );
 };
