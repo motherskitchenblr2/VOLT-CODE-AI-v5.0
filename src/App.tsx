@@ -14,7 +14,6 @@ import {
   Sparkles,
   Zap,
   Bot,
-  Search,
   HelpCircle,
   GitBranch,
   AlertCircle,
@@ -52,6 +51,7 @@ import { SwarmView } from "./components/views/SwarmView";
 import { IDECanvasView } from "./components/views/IDECanvasView";
 import { SettingsView } from "./components/views/SettingsView";
 import { AboutView } from "./components/views/AboutView";
+import { HistoryView } from "./components/views/HistoryView";
 import { SentinelView } from "./components/views/SentinelView";
 import { TodoItem } from "./components/TODOListWidget";
 
@@ -1631,59 +1631,12 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (activeTab === "history") {
       return (
-        <div className="p-8 select-text h-full overflow-y-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">
-              PREVIOUS SESSIONS
-            </h1>
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-3 w-4 h-4 vol-t2" />
-              <input
-                type="text"
-                placeholder="Search sessions..."
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                className="w-full vol-well border vol-ring py-2.5 pl-10 pr-4 rounded-xl text-sm vol-t1 focus:outline-none focus:vol-ring-hi transition-all"
-              />
-            </div>
-          </div>
-
-          {filteredSessions.length === 0 ? (
-            <div className="text-center py-24 vol-accent-soft">
-              No matching sessions. Run analysis to start history logs.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredSessions.map((session, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => loadSession(session)}
-                  className="p-5 border vol-ring hover:vol-ring-hi rounded-2xl cursor-pointer group vol-panel transition-all"
-                >
-                  <div className="flex justify-between mb-4">
-                    <div className="font-mono text-sm vol-accent">
-                      {new Date(session.timestamp).toLocaleDateString()}
-                    </div>
-                    <div className="uppercase text-xs tracking-widest px-3 py-px vol-acc-wash vol-accent rounded font-bold">
-                      {session.language}
-                    </div>
-                  </div>
-                  <div className="font-semibold line-clamp-2 text-lg mb-3 pr-2 vol-t1/95">
-                    {session.summary}
-                  </div>
-                  <div className="text-xs vol-accent-soft font-bold">
-                    {session.issues.length} FIXES COMPLETED
-                  </div>
-                  {session.modelUsed && (
-                    <div className="text-xs vol-t2 mt-2">
-                      Model: {session.modelUsed}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <HistoryView
+          filteredSessions={filteredSessions}
+          historySearch={historySearch}
+          setHistorySearch={setHistorySearch}
+          loadSession={loadSession}
+        />
       );
     }
 
