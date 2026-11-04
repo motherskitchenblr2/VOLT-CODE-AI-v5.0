@@ -3,33 +3,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import { classifyTask, smartRoute } from "./lib/smartRouter";
 import { detectLanguage } from "./lib/detectLanguage";
 import { RepoOpsPanel } from "./components/RepoOpsPanel";
-import { SplitEditorLayout } from "./components/SplitEditorLayout";
 import { AIProviderSelector } from "./components/AIProviderSelector";
 import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
 import { BossGuidancePanel } from "./components/BossGuidancePanel";
 import { useApiGateway } from "./hooks/useApiGateway";
 import {
-  Settings,
   Copy,
   Download,
   X,
   AlertTriangle,
-  Zap,
-  Bug,
   Shield,
   Sparkles,
-  ChevronDown,
+  Zap,
   Bot,
   Search,
   HelpCircle,
-  Send,
-  Activity,
   GitBranch,
   AlertCircle,
   RefreshCw,
-  Crown,
   Users,
-  GitPullRequest,
 } from "lucide-react";
 import "highlight.js/styles/atom-one-dark.css";
 import { Analytics } from "@vercel/analytics/react";
@@ -59,6 +51,7 @@ import {
 import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
 import { useToast } from "./components/Toast";
 import { useVolt } from "./context/VoltContext";
+import { EditorView } from "./components/views/EditorView";
 
 interface Session {
   id: string;
@@ -292,24 +285,6 @@ const FREE_MODELS: ModelConfig[] = [
   },
 ];
 
-const pluginOptions = [
-  "Test Runner",
-  "Console Trace",
-  "Diff Reviewer",
-  "Repo Scanner",
-  "API Schema Reader",
-  "Dependency Audit",
-];
-
-const skillOptions = [
-  "Syntax Repair",
-  "Bug Isolation",
-  "Patch Generator",
-  "Fix Verification",
-  "Root Cause Drilldown",
-  "Regression Guard",
-];
-
 const modeOptions: AgentMode[] = [
   "manual",
   "assist",
@@ -320,50 +295,6 @@ const modeOptions: AgentMode[] = [
 
 const getErrorMessage = (err: unknown): string => {
   return err instanceof Error ? err.message : String(err);
-};
-
-/**
- * Collapsible control section for the horizontal editor rail.
- * Groups related controls into an accordion so the toolbar stays compact
- * on small screens while keeping everything reachable.
- * ponytail: inline component, single use — keep here rather than a new file.
- */
-const ControlAccordion: React.FC<{
-  title: string;
-  icon: React.ReactNode;
-  defaultOpen?: boolean;
-  className?: string;
-  children: React.ReactNode;
-}> = ({ title, icon, defaultOpen = false, className, children }) => {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div
-      className={`border vol-ring-strong rounded-xl vol-panel overflow-hidden ${className ?? ""}`}
-    >
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 px-3 py-2 vol-surface text-left cursor-pointer"
-        aria-expanded={open}
-      >
-        {icon}
-        <div className="flex-1 min-w-0">
-          <div className="text-[10px] vol-accent tracking-widest uppercase font-bold">
-            {title}
-          </div>
-        </div>
-        <ChevronDown
-          className={`w-4 h-4 shrink-0 vol-accent-soft transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      {open && (
-        <div className="px-3 py-2 vol-surface border-t vol-line">
-          {children}
-        </div>
-      )}
-    </div>
-  );
 };
 
 const App: React.FC = () => {
@@ -377,9 +308,7 @@ const App: React.FC = () => {
     selectedModel,
     setSelectedModel,
     selectedPlugin,
-    setSelectedPlugin,
     selectedSkill,
-    setSelectedSkill,
     agentMode,
     setAgentMode,
     openrouterKey,
@@ -395,7 +324,6 @@ const App: React.FC = () => {
   } = useVolt();
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [fixedCode, setFixedCode] = useState("");
   const [showDiff, setShowDiff] = useState(false);
@@ -409,7 +337,6 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [scanProgress, setScanProgress] = useState(0);
   const [, setAgentStatus] = useState("idle");
   const [tokensUsed, setTokensUsed] = useState(0);
   const [promptTokens, setPromptTokens] = useState(0);
@@ -417,20 +344,6 @@ const App: React.FC = () => {
   const [, setCurrentModelName] = useState("");
   const [autoApplyFixes, setAutoApplyFixes] = useState(false);
   const [enableSentinel, setEnableSentinel] = useState(false);
-
-  // Sticky line-number gutter refs (synced scroll with the editor textarea)
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const gutterRef = useRef<HTMLDivElement>(null);
-  const handleEditorScroll = (e: React.UIEvent) => {
-    if (!textareaRef.current || !gutterRef.current) return;
-    const target = e.target as HTMLElement;
-    const scrollTop = target.scrollTop;
-    if (target === textareaRef.current) {
-      gutterRef.current.scrollTop = scrollTop;
-    } else {
-      textareaRef.current.scrollTop = scrollTop;
-    }
-  };
 
   // v5.0 Added States
   const [aboutDocPage, setAboutDocPage] = useState<
@@ -476,9 +389,6 @@ const App: React.FC = () => {
     liveModelsAll.length > 0
       ? liveModelsAll
       : FREE_MODELS.map((m) => ({ ...m, tier: "FREE" as const }));
-  const modelGroups: Array<[string, ModelConfig[]]> = [
-    ...new Set(modelOptionsAll.map((m) => m.provider)),
-  ].map((prov) => [prov, modelOptionsAll.filter((m) => m.provider === prov)]);
 
   useEffect(() => {
     if (
@@ -1722,102 +1632,12 @@ const App: React.FC = () => {
     })();
   }, []);
 
-  const languages = [
-    { value: "auto", label: "Auto Detect" },
-    { value: "javascript", label: "JavaScript" },
-    { value: "typescript", label: "TypeScript" },
-    { value: "python", label: "Python" },
-    { value: "cpp", label: "C++" },
-    { value: "html", label: "HTML" },
-    { value: "css", label: "CSS" },
-    { value: "yaml", label: "YAML" },
-    { value: "unknown", label: "Plain Text" },
-  ];
-
   const filteredSessions = sessions.filter(
     (s) =>
       s.summary.toLowerCase().includes(historySearch.toLowerCase()) ||
       s.language.toLowerCase().includes(historySearch.toLowerCase()) ||
       (s.modelUsed &&
         s.modelUsed.toLowerCase().includes(historySearch.toLowerCase())),
-  );
-
-  const renderModelSelect = () => (
-    <div className="flex shrink-0 flex-wrap items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4">
-      <div className="vol-accent-soft text-[10px] sm:text-xs tracking-wider">
-        ENGINE
-      </div>
-      <ChevronDown className="w-4 h-4 vol-accent-soft" />
-      <select
-        id="model-select-dropdown"
-        value={selectedModel.id}
-        onChange={(e) => {
-          const model = modelOptionsAll.find((m) => m.id === e.target.value);
-          if (model) {
-            setSelectedModel(model);
-            addLog(
-              `Selected execution model: ${model.name} (${model.provider}${model.tier === "FREE" ? " · FREE" : ""})`,
-              "info",
-            );
-          }
-        }}
-        className="bg-transparent vol-t1 outline-none min-w-0 w-full sm:w-auto sm:min-w-[200px] font-semibold text-xs cursor-pointer"
-      >
-        {modelGroups.map(([provider, models]) => (
-          <optgroup
-            key={provider}
-            label={`${provider}${models.some((m) => m.tier === "FREE") ? " — free tier available" : ""}`}
-          >
-            {models.map((model) => (
-              <option
-                key={model.id}
-                value={model.id}
-                className={
-                  model.tier === "FREE"
-                    ? "bg-green-600 text-black font-bold"
-                    : "vol-elev vol-t1"
-                }
-              >
-                {model.tier === "FREE" ? "★ " : ""}
-                {model.name} ({model.tag} • {model.ctx}) — {model.provider}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </div>
-  );
-
-  const renderSelect = (
-    label: string,
-    value: string,
-    onChange: (value: string) => void,
-    options: string[],
-  ) => (
-    <div
-      className="flex shrink-0 items-center gap-2 border vol-ring-strong rounded-xl px-3 py-2 vol-panel sm:gap-3 sm:px-4"
-      title={`${label}: ${value}`}
-    >
-      <div className="shrink-0 vol-accent-soft text-[10px] sm:text-xs tracking-wider">
-        {label}
-      </div>
-      <ChevronDown className="w-4 h-4 shrink-0 vol-accent-soft" />
-      {/* narrow screens: cap chip width and ellipsize instead of pushing the rail */}
-      <select
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          addLog(`Updated config: ${label} -> ${e.target.value}`, "info");
-        }}
-        className="bg-transparent vol-t1 outline-none w-[92px] sm:w-auto sm:min-w-[130px] max-w-[92px] sm:max-w-none truncate text-xs cursor-pointer"
-      >
-        {options.map((option) => (
-          <option key={option} value={option} className="vol-elev vol-t1">
-            {option}
-          </option>
-        ))}
-      </select>
-    </div>
   );
 
   const renderAboutWhitePaper = () => {
@@ -3457,607 +3277,31 @@ const App: React.FC = () => {
       );
     }
 
-    // Default Editor View
-    return (
-      <div className="flex flex-col min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16">
-        {/* Editor Toolbar Header */}
-        <div className="hidden md:block border-b vol-ring p-3 sm:p-6 shrink-0 vol-surface">
-          <div className="mb-1 flex justify-between items-start">
-            <div>
-              <div className="text-lg sm:text-2xl font-bold leading-tight">
-                MULTI-LANGUAGE EDITOR
-              </div>
-              <div className="text-[10px] sm:text-xs vol-accent-soft font-semibold tracking-wide">
-                AI Bug Finder, Agent Runner & Telemetrist
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setSplitView((v) => !v)}
-                className={`px-3 py-1.5 rounded-lg border vol-ring text-xs font-black cursor-pointer ${
-                  splitView ? "vol-acc-bg text-black" : "hover:vol-wash vol-t2"
-                }`}
-              >
-                {splitView ? "SPLIT ✓" : "SPLIT"}
-              </button>
-              <button
-                onClick={() => setShowShortcutsCheatSheet(true)}
-                className="px-3 py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
-              >
-                SHORTCUTS [?]
-              </button>
-              {/* Sentinel status pill — persistent across editor view */}
-              <div
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border vol-ring text-xs font-bold cursor-pointer ${
-                  sentinelLevel === "green"
-                    ? "vol-well vol-t1"
-                    : sentinelLevel === "yellow"
-                      ? "vol-acc-wash vol-accent"
-                      : "bg-red-500/20 border-red-500/40 text-red-400"
-                }`}
-                title={sentinelSummary}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    sentinelLevel === "green"
-                      ? "bg-green-500"
-                      : sentinelLevel === "yellow"
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                  }`}
-                ></span>
-                {sentinelLabel}
-              </div>
-            </div>
-          </div>
-
-          {/* Horizontal control rail — collapsible accordion sections */}
-          <div className="space-y-2">
-            <ControlAccordion
-              title="ENGINE & MODEL"
-              icon={<Zap className="w-4 h-4" />}
-              defaultOpen={true}
-            >
-              {renderModelSelect()}
-            </ControlAccordion>
-
-            <ControlAccordion
-              title="CONFIG"
-              icon={<Settings className="w-4 h-4" />}
-              defaultOpen={false}
-            >
-              {/* Mode / Language aligned grid — horizontal scroll rail on mobile */}
-              <div className="flex flex-row gap-2 overflow-x-auto no-scrollbar py-1">
-                {renderSelect(
-                  "Plugin",
-                  selectedPlugin,
-                  setSelectedPlugin,
-                  pluginOptions,
-                )}
-                {renderSelect(
-                  "Skill",
-                  selectedSkill,
-                  setSelectedSkill,
-                  skillOptions,
-                )}
-                {renderSelect(
-                  "Mode",
-                  agentMode,
-                  (v) => setAgentMode(v as AgentMode),
-                  modeOptions,
-                )}
-                <div className="flex flex-col gap-1 shrink-0">
-                  <select
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                    title={`Language: ${languages.find((l) => l.value === language)?.label ?? language}`}
-                    className="vol-well border vol-ring-strong px-3 py-2 text-sm rounded focus:outline-none focus:vol-ring-hi cursor-pointer vol-t1 font-semibold shrink-0 w-full max-w-[120px] truncate"
-                  >
-                    {languages.map((l) => (
-                      <option key={l.value} value={l.value}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div
-                    title={`Detected language: ${detectedLanguage.toUpperCase()}`}
-                    className="px-3 py-2 rounded vol-acc-wash vol-accent text-sm font-semibold shrink-0 whitespace-nowrap"
-                  >
-                    DETECTED: {detectedLanguage.toUpperCase()}
-                  </div>
-                </div>
-              </div>
-            </ControlAccordion>
-
-            <ControlAccordion
-              title="OPERATION MODE"
-              icon={<Activity className="w-4 h-4" />}
-              defaultOpen={false}
-              className="hidden md:block"
-            >
-              <div className="flex items-center gap-2 border vol-ring-strong rounded-xl px-2 py-1 sm:px-4 sm:py-1.5 vol-panel select-none">
-                <div className="text-[9px] vol-accent tracking-wider uppercase font-bold">
-                  Operation Mode
-                </div>
-                <div className="flex items-center gap-1.5 vol-well rounded-lg p-1">
-                  <button
-                    onClick={() => {
-                      setAgentMode("manual");
-                      addLog("Switched operation mode to MANUAL", "info");
-                    }}
-                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                      agentMode === "manual"
-                        ? "bg-red-500/20 text-red-400 border border-red-500/40 shadow-sm shadow-red-500/10"
-                        : "vol-t2 hover:vol-t1"
-                    }`}
-                  >
-                    Manual Mode
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAgentMode("assist");
-                      addLog(
-                        "Switched operation mode to AUTONOMOUS (ASSIST)",
-                        "info",
-                      );
-                    }}
-                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                      agentMode !== "manual"
-                        ? "vol-acc-wash vol-accent border vol-ring-strong shadow-sm shadow-[#FF5F00]/10"
-                        : "vol-t2 hover:vol-t1"
-                    }`}
-                  >
-                    Autonomous Mode
-                  </button>
-                </div>
-              </div>
-            </ControlAccordion>
-
-            {showTokenUsage && tokensUsed > 0 && (
-              <ControlAccordion
-                title="TOKEN USAGE"
-                icon={<GitPullRequest className="w-4 h-4" />}
-                defaultOpen={false}
-              >
-                <div className="p-2 sm:p-3 rounded-xl border vol-ring vol-panel flex items-center gap-3 sm:gap-6 flex-wrap">
-                  <div>
-                    <div className="vol-accent text-[10px] tracking-wider font-bold">
-                      TOTAL CONSUMPTION
-                    </div>
-                    <div className="vol-t1 font-extrabold text-lg">
-                      {tokensUsed}{" "}
-                      <span className="text-xs vol-t2 font-normal">tokens</span>
-                    </div>
-                  </div>
-                  <div className="h-8 w-px vol-wash"></div>
-                  <div className="text-xs vol-t2 space-y-0.5 select-none">
-                    <div>Prompt: {promptTokens}</div>
-                    <div>Completion: {completionTokens}</div>
-                  </div>
-                </div>
-              </ControlAccordion>
-            )}
-          </div>
-
-          {/* Mobile: slim horizontal slider rail */}
-          <div className="block md:hidden overflow-x-auto no-scrollbar scroll-smooth border-b border-neutral-800 bg-neutral-950/90 px-2 py-1.5 backdrop-blur z-20">
-            <div className="flex items-center gap-1.5 min-w-max">
-              {/* Engine Pill */}
-              <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
-                  ENGINE
-                </span>
-                <select
-                  value={selectedModel.id}
-                  onChange={(e) => {
-                    const model = modelOptionsAll.find(
-                      (m) => m.id === e.target.value,
-                    );
-                    if (model) {
-                      setSelectedModel(model);
-                      addLog(
-                        `Selected execution model: ${model.name} (${model.provider}${model.tier === "FREE" ? " · FREE" : ""})`,
-                        "info",
-                      );
-                    }
-                  }}
-                  className="h-7 w-[140px] max-w-[140px] text-xs font-mono bg-transparent border border-neutral-700 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
-                >
-                  {modelGroups.map(([provider, models]) => (
-                    <optgroup
-                      key={provider}
-                      label={`${provider}${models.some((m) => m.tier === "FREE") ? " · free" : ""}`}
-                    >
-                      {models.map((model) => (
-                        <option
-                          key={model.id}
-                          value={model.id}
-                          className="bg-neutral-900 text-neutral-200"
-                        >
-                          {model.tier === "FREE" ? "★ " : ""}
-                          {model.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-
-              {/* Plugin Pill */}
-              <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
-                  PLUGIN
-                </span>
-                <select
-                  value={selectedPlugin}
-                  onChange={(e) => {
-                    setSelectedPlugin(e.target.value);
-                    addLog(
-                      `Updated config: Plugin -> ${e.target.value}`,
-                      "info",
-                    );
-                  }}
-                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
-                >
-                  {pluginOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="bg-neutral-900 text-neutral-200"
-                    >
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Skill Pill */}
-              <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
-                  SKILL
-                </span>
-                <select
-                  value={selectedSkill}
-                  onChange={(e) => {
-                    setSelectedSkill(e.target.value);
-                    addLog(
-                      `Updated config: Skill -> ${e.target.value}`,
-                      "info",
-                    );
-                  }}
-                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
-                >
-                  {skillOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="bg-neutral-900 text-neutral-200"
-                    >
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Mode Pill */}
-              <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
-                  MODE
-                </span>
-                <select
-                  value={agentMode}
-                  onChange={(e) => {
-                    setAgentMode(e.target.value as AgentMode);
-                    addLog(`Updated config: Mode -> ${e.target.value}`, "info");
-                  }}
-                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
-                >
-                  {modeOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="bg-neutral-900 text-neutral-200"
-                    >
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Language Pill */}
-              <div className="flex flex-col items-start gap-0.5">
-                <span className="text-[8px] font-mono text-neutral-500 uppercase tracking-wider">
-                  LANG
-                </span>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="h-7 text-xs bg-transparent border border-neutral-800 rounded-full px-2.5 py-1 text-neutral-200 cursor-pointer truncate outline-none focus:border-neutral-500"
-                >
-                  {languages.map((l) => (
-                    <option
-                      key={l.value}
-                      value={l.value}
-                      className="bg-neutral-900 text-neutral-200"
-                    >
-                      {l.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Mode Toggle */}
-              <button
-                onClick={() =>
-                  setAgentMode(agentMode === "manual" ? "assist" : "manual")
-                }
-                className="h-7 px-2.5 text-[11px] font-mono rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-400 whitespace-nowrap active:scale-95 transition-transform"
-              >
-                {agentMode === "manual" ? "MANUAL" : "AUTO"}
-              </button>
-
-              {/* Detected Language Tag */}
-              <span className="text-[10px] font-mono text-neutral-400 px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 whitespace-nowrap">
-                {detectedLanguage.toUpperCase()}
-              </span>
-
-              {/* Split & Shortcuts Triggers */}
-              <button
-                onClick={() => setSplitView((v) => !v)}
-                className="h-7 px-2.5 text-[10px] font-mono text-neutral-400 bg-transparent border border-neutral-700 rounded-full cursor-pointer hover:bg-neutral-800/50"
-                title={splitView ? "Split view: OFF" : "Split view: ON"}
-              >
-                {splitView ? "SPLIT ON" : "SPLIT OFF"}
-              </button>
-              <button
-                onClick={() => setShowShortcutsCheatSheet(true)}
-                className="h-7 px-2.5 text-[10px] font-mono text-neutral-400 bg-transparent border border-neutral-700 rounded-full cursor-pointer hover:bg-neutral-800/50"
-                title="Keyboard shortcuts"
-              >
-                [?]
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Textarea Area */}
-        <div className="flex-1 relative flex flex-col vol-surface min-h-[60dvh]">
-          {isScanning && (
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${scanProgress}%` }}
-              className="absolute top-0 left-0 h-1 vol-acc-bg z-10"
-            />
-          )}
-
-          {/* Agent scan progress bar */}
-          {isAnalyzing && (
-            <div className="flex items-center gap-2 px-4 py-1.5 vol-acc-wash border-b vol-ring text-[10px] font-bold tracking-widest vol-accent shrink-0">
-              <span className="w-2 h-2 rounded-full vol-acc-bg animate-ping" />
-              AGENT SCAN IN PROGRESS — COMPILING DIAGNOSTICS
-            </div>
-          )}
-
-          {splitView ? (
-            <div className="flex-1 overflow-hidden">
-              <SplitEditorLayout
-                code={code}
-                onCodeChange={handleCodeChange}
-                fixedCode={fixedCode}
-                issues={issues}
-                isAnalyzing={isAnalyzing}
-                onAnalyze={analyzeCode}
-                onApplyFix={applyAllFixes}
-                language={language}
-              />
-            </div>
-          ) : (
-            <div className="flex-1 relative overflow-hidden vol-surface min-h-[45dvh]">
-              {/* Sticky line-number gutter — scroll-synced with the editor */}
-              <div
-                ref={gutterRef}
-                className="absolute inset-y-0 left-0 w-12 shrink-0 overflow-y-scroll no-scrollbar text-right pr-2 select-none"
-                onScroll={handleEditorScroll}
-                style={{
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  fontSize: "14px",
-                  lineHeight: "1.65",
-                  paddingTop: "1rem" /* matches textarea p-4 */,
-                  color: "var(--t2, #505c6e)",
-                }}
-              >
-                {Array.from(
-                  { length: code.split("\n").length },
-                  (_, i) => i + 1,
-                ).map((n) => (
-                  <div key={n} className="mb-[1.65em] font-bold">
-                    {n}
-                  </div>
-                ))}
-              </div>
-
-              <textarea
-                ref={textareaRef}
-                value={code}
-                onChange={(e) => handleCodeChange(e.target.value)}
-                onScroll={handleEditorScroll}
-                spellCheck={false}
-                autoCorrect="off"
-                wrap="off"
-                className="w-full flex-1 resize-none pl-12 sm:pl-20 p-4 sm:p-8 font-mono text-[14px] leading-[1.65] outline-none vol-t1 caret-[#FF5F00] overflow-y-scroll overflow-x-auto"
-                style={{
-                  fontFamily:
-                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                  boxShadow: "inset 0 0 0 1px rgba(255,95,0,0.05)",
-                }}
-              />
-            </div>
-          )}
-
-          {/* Mobile Action Buttons Block (Visible only on mobile/tablet) */}
-          <div className="md:hidden sticky bottom-14 z-40 flex items-center justify-end gap-2 px-3 py-2 w-full border-t vol-ring vol-surface backdrop-blur-md select-none">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <button
-                onClick={analyzeCode}
-                disabled={isAnalyzing || isSystemHalted}
-                className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl text-xs font-black tracking-wide disabled:opacity-60 transition-all cursor-pointer ${
-                  isAnalyzing
-                    ? "vol-well vol-accent shadow-[var(--neo-in)]"
-                    : "vol-acc-bg text-black shadow-none"
-                }`}
-              >
-                <Bug className="w-4 h-4" />
-                {isAnalyzing ? "ANALYZING..." : "RUN AI"}
-              </button>
-
-              <button
-                onClick={() => setActiveTab("meeting")}
-                className="flex items-center justify-center gap-2 py-3.5 rounded-2xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
-              >
-                <Users className="w-4 h-4" />
-                AGENT CHAT
-              </button>
-
-              {fixedCode && (
-                <button
-                  id="fix-all-btn-mobile"
-                  onClick={applyAllFixes}
-                  className="py-3.5 flex items-center justify-center gap-2 rounded-xl vol-acc-bg text-black text-xs font-black shadow-[0_0_15px_rgba(255,95,0,0.4)] transition-all cursor-pointer"
-                >
-                  <Zap className="w-4 h-4" />
-                  APPLY ALL PATCHES ({issues.length})
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Action Overlay buttons */}
-          {/* Agent Chat HUD (v0 restore — shares VOLT HUB chat pipeline) */}
-          <div className="hidden md:block absolute left-6 bottom-6 z-50 select-none">
-            {showAgentChat ? (
-              <div className="w-96 flex flex-col rounded-xl vol-panel border vol-ring-strong shadow-[0_0_25px_rgba(255,95,0,0.25)] overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 border-b vol-ring">
-                  <span className="text-[10px] font-bold tracking-widest vol-accent flex items-center gap-2">
-                    <Bot className="w-3.5 h-3.5" />
-                    VOLT AGENTS · {isBossLoading ? "THINKING..." : "ONLINE"}
-                  </span>
-                  <button
-                    onClick={() => setShowAgentChat(false)}
-                    className="vol-t2 hover:vol-t1"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <div className="max-h-56 overflow-y-auto p-3 space-y-2">
-                  {bossMessages.slice(-8).map((m, i) => (
-                    <div
-                      key={i}
-                      className={`text-[11px] leading-snug rounded-lg px-2.5 py-2 ${
-                        m.role === "user"
-                          ? "vol-acc-wash vol-accent-soft"
-                          : "vol-wash vol-t1/85"
-                      }`}
-                    >
-                      <span className="block text-[9px] font-bold tracking-wider opacity-60 mb-1">
-                        {m.role === "user" ? "YOU" : "VOLT CORE"}
-                      </span>
-                      {m.content}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 p-2 border-t vol-ring">
-                  <input
-                    value={bossInput}
-                    onChange={(e) => setBossInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") sendBossMessage(bossInput);
-                    }}
-                    disabled={isBossLoading}
-                    placeholder={
-                      isBossLoading
-                        ? "Agents processing..."
-                        : "Message the agent swarm..."
-                    }
-                    className="flex-1 vol-wash rounded-lg px-3 py-2 text-[11px] vol-t1 outline-none placeholder:vol-t2 disabled:opacity-50"
-                  />
-                  <button
-                    onClick={() => sendBossMessage(bossInput)}
-                    disabled={isBossLoading}
-                    className="px-3 rounded-lg vol-acc-bg text-black disabled:opacity-50 cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowAgentChat(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-panel border vol-ring-strong vol-accent text-xs font-bold hover:vol-well cursor-pointer"
-              >
-                <Bot className="w-4 h-4" />
-                AGENT CHAT
-              </button>
-            )}
-          </div>
-          <div className="hidden md:flex absolute bottom-6 right-6 gap-3 flex-wrap justify-end select-none">
-            <motion.button
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.985 }}
-              onClick={analyzeCode}
-              disabled={isAnalyzing || isSystemHalted}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-well border-2 vol-ring-strong vol-accent font-semibold disabled:opacity-60 active:vol-acc-bg active:text-black transition-all cursor-pointer"
-            >
-              <Bug className="w-5 h-5" />
-              {isAnalyzing ? "ANALYZING..." : "RUN AI ANALYSIS"}
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.985 }}
-              onClick={() => setActiveTab("meeting")}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border vol-ring-strong vol-accent font-semibold hover:vol-well transition-all cursor-pointer"
-            >
-              <Crown className="w-5 h-5" />
-              VOLT HUB
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.985 }}
-              onClick={() => setActiveTab("meeting")}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border border-blue-600/60 text-blue-400 font-semibold hover:vol-well transition-all cursor-pointer"
-            >
-              <Users className="w-5 h-5" />
-              MEETING PANEL
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.985 }}
-              onClick={() => setActiveTab("pr-review")}
-              className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border border-orange-600/60 text-orange-400 font-semibold hover:vol-well transition-all cursor-pointer"
-            >
-              <GitPullRequest className="w-5 h-5" />
-              PR REVIEW
-            </motion.button>
-
-            {fixedCode && (
-              <motion.button
-                id="fix-all-btn"
-                whileHover={{ scale: 1.015 }}
-                whileTap={{ scale: 0.985 }}
-                onClick={applyAllFixes}
-                className="flex items-center gap-3 px-9 py-3.5 rounded-xl vol-acc-bg hover:vol-accbg-hi text-black font-extrabold shadow-[0_0_25px_rgba(255,95,0,0.5)] active:scale-[0.985] transition-all cursor-pointer"
-              >
-                <Zap className="w-5 h-5" />
-                FIX ALL ({issues.length})
-              </motion.button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+    return <EditorView
+      splitView={splitView}
+      setSplitView={setSplitView}
+      isAnalyzing={isAnalyzing}
+      showAgentChat={showAgentChat}
+      setShowAgentChat={setShowAgentChat}
+      bossInput={bossInput}
+      setBossInput={setBossInput}
+      isBossLoading={isBossLoading}
+      bossMessages={bossMessages}
+      showTokenUsage={showTokenUsage}
+      tokensUsed={tokensUsed}
+      promptTokens={promptTokens}
+      completionTokens={completionTokens}
+      sentinelLevel={sentinelLevel}
+      sentinelLabel={sentinelLabel}
+      sentinelSummary={sentinelSummary}
+      issues={issues}
+      fixedCode={fixedCode}
+      addLog={addLog}
+      handleCodeChange={handleCodeChange}
+      analyzeCode={analyzeCode}
+      applyAllFixes={applyAllFixes}
+      sendBossMessage={sendBossMessage}
+    />;
   };
 
   const renderTerminalPanel = () => {
