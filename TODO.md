@@ -18,7 +18,7 @@
 - [x] B-6: Refactor IDECanvasView.tsx → design system tokens + UI components
 - [x] B-7: Refactor HubView.tsx → design system tokens + UI components
 - [x] B-8: Refactor HistoryView.tsx → design system tokens + UI components
-- [ ] B-9: Refactor SwarmView.tsx → design system tokens + UI components
+- [x] B-9: Refactor SwarmView.tsx → design system tokens + UI components
 - [ ] B-10: Refactor AboutView.tsx → design system tokens + UI components
 - [ ] B-11: Refactor ResponsiveContainer.tsx shell → design system tokens
 - [ ] B-12: Remove unused inline render* functions from App.tsx
