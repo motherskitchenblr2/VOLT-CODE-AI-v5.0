@@ -6,7 +6,8 @@
 - [x] Extract Settings view → `src/components/views/SettingsView.tsx` (API keys, model default, agent mode, debounce, auto-apply, sentinel live monitoring)
 - [x] Extract About view → `src/components/views/AboutView.tsx` (whitepaper/changelog/comparison doc)
 - [x] Extract Sentinel view → `src/components/views/SentinelView.tsx` (security risk board, findings table)
-- [ ] Extract History view → `src/components/views/HistoryView.tsx` (previous sessions list)
+- [x] Extract History view → `src/components/views/HistoryView.tsx` (previous sessions list)
+- [ ] Extract GitHub view → `src/components/views/GitHubView.tsx` (Git-Room deployment integration)
 - [ ] Extract Diagnostics column → `src/components/views/DiagnosticsView.tsx` (right-rail sentinel findings)
 - [ ] Extract Login/Onboarding modals → `src/components/views/LoginView.tsx` + `src/components/views/OnboardingView.tsx`
 - [ ] Replace `renderContent()` with simple view router switch
