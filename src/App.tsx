@@ -39,7 +39,6 @@ import { CloudAuth } from "./components/CloudAuth";
 // v0 dormant restore: IDE canvas + agent TODO widget
 import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas";
 import { TODOListWidget, type TodoItem } from "./components/TODOListWidget";
-import { SwarmPanel } from "./components/SwarmPanel";
 
 import { RecoveryCenter } from "./services/RecoveryCenter";
 import { inspectBuffer } from "./services/sentinelService";
@@ -52,6 +51,7 @@ import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
 import { useToast } from "./components/Toast";
 import { useVolt } from "./context/VoltContext";
 import { EditorView } from "./components/views/EditorView";
+import { SwarmView } from "./components/views/SwarmView";
 
 interface Session {
   id: string;
@@ -3081,7 +3081,7 @@ const App: React.FC = () => {
     if (activeTab === "swarm") {
       return (
         <div className="w-full h-full overflow-y-auto vol-surface pt-6">
-          <SwarmPanel
+          <SwarmView
             agentBreakdown={agentBreakdown}
             consensusScore={consensusScore}
             consensusPassed={consensusPassed}
