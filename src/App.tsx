@@ -318,7 +318,7 @@ const App: React.FC = () => {
   const [fixedCode, setFixedCode] = useState("");
   const [showDiff, setShowDiff] = useState(false);
   const [showReport, setShowReport] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showLoginModal, _setShowLoginModal] = useState(false);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("dev_user");
@@ -1276,7 +1276,7 @@ const App: React.FC = () => {
       }
       if (e.key === "Escape") {
         setShowDiff(false);
-        setShowLoginModal(false);
+        _setShowLoginModal(false);
         setShowShortcutsCheatSheet(false);
       }
       if (e.ctrlKey && e.key === "/") {
@@ -1596,7 +1596,7 @@ const App: React.FC = () => {
       }
       setIsLoggedIn(true);
       setUsername(data.username || username.trim());
-      setShowLoginModal(false);
+      _setShowLoginModal(false);
     } catch {
       setLoginError("Network error — could not reach the server.");
     } finally {
@@ -2143,7 +2143,7 @@ const App: React.FC = () => {
     );
   };
 
-  const renderLoginModal = () => {
+  const _renderLoginModal = () => {
     return (
       <AnimatePresence>
         {showLoginModal && (
@@ -2363,7 +2363,7 @@ const App: React.FC = () => {
       />
       <LoginModal
         showLoginModal={showLoginModal}
-        setShowLoginModal={setShowLoginModal}
+        setShowLoginModal={_setShowLoginModal}
         loginMode={loginMode}
         setLoginMode={setLoginMode}
         loginError={loginError}

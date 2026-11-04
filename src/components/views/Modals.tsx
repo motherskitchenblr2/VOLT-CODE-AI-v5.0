@@ -39,7 +39,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
   return (
     <AnimatePresence>
       {showDiff && (
-        <div className="fixed inset-0 vol-veil flex items-center justify-center z-[70] p-6 select-text">
+        <div className="fixed inset-0 vol-veil flex items-center justify-center z-[var(--ds-z-modal)] p-6 select-text">
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -122,7 +122,7 @@ export const ReportDrawer: React.FC<ReportDrawerProps> = ({
     <AnimatePresence>
       {showReport && (
         <div
-          className="fixed inset-0 vol-veil z-[80] flex justify-end select-text"
+          className="fixed inset-0 vol-veil z-[var(--ds-z-popover)] flex justify-end select-text"
           onClick={() => setShowReport(false)}
         >
           <motion.div
@@ -204,7 +204,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
   return (
     <AnimatePresence>
       {showShortcutsCheatSheet && (
-        <div className="fixed inset-0 vol-veil z-[100] flex items-center justify-center p-6 select-text">
+        <div className="fixed inset-0 vol-veil z-[var(--ds-z-tooltip)] flex items-center justify-center p-6 select-text">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -259,7 +259,7 @@ export const LangAlertModal: React.FC<LangAlertModalProps> = ({
   return (
     <AnimatePresence>
       {showLangAlert && (
-        <div className="fixed inset-0 vol-veil z-[110] flex items-center justify-center p-6 select-text">
+        <div className="fixed inset-0 vol-veil z-[var(--ds-z-popover)] flex items-center justify-center p-6 select-text">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -329,10 +329,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   return (
     <AnimatePresence>
       {showLoginModal && (
-        <div className="fixed inset-0 vol-veil z-[90] flex items-center justify-center select-text">
+        <div className="fixed inset-0 vol-veil z-[var(--ds-z-modal)] flex items-center justify-center select-text">
           <div className="vol-elev border vol-ring-strong w-full max-w-xl p-9 rounded-3xl max-h-[90vh] overflow-y-auto">
-            <div className="font-bold text-center text-2xl mb-2 select-none">
+            <div className="font-bold text-center text-2xl mb-2 select-none flex justify-between items-center">
               {loginMode === "register" ? "CREATE ACCOUNT" : "SIGN IN"}
+              <button
+                onClick={() => setShowLoginModal(false)}
+                className="cursor-pointer vol-t2 hover:vol-t1"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <div className="text-center text-sm mb-6 vol-accent-soft select-none">
               Secure login — your data and keys stay protected

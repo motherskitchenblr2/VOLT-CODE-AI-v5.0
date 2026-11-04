@@ -1,6 +1,8 @@
 /* ==========================================================================
    1. Theme Variables & Global Setup
    ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 :root {
   /* primitives (existing) */
   --charcoal: #121212;
@@ -12,7 +14,63 @@
   --orange-glow-intense: 0 0 25px rgba(255, 95, 31, 0.85);
   --text-main: #e0e0e0;
   --text-muted: #888888;
-  --font-mono: "Fira Code", "Courier New", Courier, monospace;
+  --font-mono: "JetBrains Mono", "Courier New", Courier, monospace;
+
+  /* ===== DESIGN SYSTEM TOKENS (Volt Code AI) =====
+     Source: design-system/volt-code-ai/MASTER.md
+     These are the single source of truth for colors, spacing, shadows.
+     All components MUST use these, not raw hex or Tailwind color utilities. */
+  --ds-color-primary: #1E293B;
+  --ds-color-on-primary: #FFFFFF;
+  --ds-color-secondary: #334155;
+  --ds-color-on-secondary: #FFFFFF;
+  --ds-color-accent: #22C55E;
+  --ds-color-on-accent: #0F172A;
+  --ds-color-background: #0F172A;
+  --ds-color-foreground: #F8FAFC;
+  --ds-color-card: #1B2336;
+  --ds-color-card-foreground: #F8FAFC;
+  --ds-color-muted: #272F42;
+  --ds-color-muted-foreground: #94A3B8;
+  --ds-color-border: #475569;
+  --ds-color-destructive: #EF4444;
+  --ds-color-on-destructive: #000000;
+  --ds-color-ring: #FFFFFF;
+
+  /* spacing tokens */
+  --ds-space-xs: 4px;
+  --ds-space-sm: 8px;
+  --ds-space-md: 16px;
+  --ds-space-lg: 24px;
+  --ds-space-xl: 32px;
+  --ds-space-2xl: 48px;
+  --ds-space-3xl: 64px;
+
+  /* shadow depths */
+  --ds-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --ds-shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --ds-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --ds-shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+
+  /* typography */
+  --ds-font-heading: "JetBrains Mono", monospace;
+  --ds-font-body: "IBM Plex Sans", sans-serif;
+  --ds-type-display: clamp(1.25rem, 3.5vw, 1.75rem);
+  --ds-type-title: 1rem;
+  --ds-type-body: 0.875rem;
+  --ds-type-meta: 0.75rem;
+
+  /* radii */
+  --ds-radius-sm: 8px;
+  --ds-radius-md: 12px;
+  --ds-radius-lg: 16px;
+
+  /* z-index layers */
+  --ds-z-dropdown: 50;
+  --ds-z-sticky: 100;
+  --ds-z-modal: 200;
+  --ds-z-popover: 300;
+  --ds-z-tooltip: 400;
 
   /* semantic layer — new components must use these, not raw hex.
      ponytail: legacy components still hardcode #FF5F00/#050505 inline; migrate opportunistically. */
@@ -86,7 +144,7 @@ a {
   cursor: pointer;
 }
 :focus-visible {
-  outline: 2px solid var(--accent, #ff5f00);
+  outline: 2px solid var(--ds-color-ring, #FFFFFF);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -379,57 +437,83 @@ html[data-theme="dark"] {
   --grad-b: #0a0a0a;
   --neo-out: none;
   --neo-in: none;
+
+  /* ===== DESIGN SYSTEM DARK OVERRIDES ===== */
+  --ds-color-primary: #1E293B;
+  --ds-color-on-primary: #FFFFFF;
+  --ds-color-secondary: #334155;
+  --ds-color-on-secondary: #FFFFFF;
+  --ds-color-accent: #22C55E;
+  --ds-color-on-accent: #0F172A;
+  --ds-color-background: #0F172A;
+  --ds-color-foreground: #F8FAFC;
+  --ds-color-card: #1B2336;
+  --ds-color-card-foreground: #F8FAFC;
+  --ds-color-muted: #272F42;
+  --ds-color-muted-foreground: #94A3B8;
+  --ds-color-border: #475569;
+  --ds-color-destructive: #EF4444;
+  --ds-color-on-destructive: #000000;
+  --ds-color-ring: #FFFFFF;
 }
 body {
-  background: var(--bg);
-  color: var(--t1);
+  background: var(--ds-color-background);
+  color: var(--ds-color-foreground);
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-type-body);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 .vol-surface {
-  background: var(--bg);
+  background: var(--ds-color-background);
 }
 .vol-elev {
-  background: var(--s-elev);
+  background: var(--ds-color-card);
+  box-shadow: var(--ds-shadow-md);
+  border-radius: var(--ds-radius-md);
 }
 .vol-well {
-  background: var(--s-well);
-  box-shadow: var(--neo-in);
-  border-radius: 12px;
+  background: var(--ds-color-muted);
+  border-radius: var(--ds-radius-md);
 }
 .vol-veil {
-  background: var(--veil);
+  background: rgba(15, 23, 42, 0.55);
 }
 .vol-wash {
-  background: var(--wash);
+  background: rgba(15, 23, 42, 0.06);
 }
 .vol-acc-bg {
-  background: var(--acc);
+  background: var(--ds-color-accent);
+  color: var(--ds-color-on-accent);
 }
 .vol-acc-bg:active {
   transform: scale(0.97);
 }
 .vol-acc-wash {
-  background: var(--acc-wash);
+  background: rgba(34, 197, 94, 0.12);
 }
 .vol-accent {
-  color: var(--acc-text);
+  color: var(--ds-color-accent);
 }
 .vol-accent-soft {
-  color: var(--acc-soft);
+  color: rgba(34, 197, 94, 0.45);
 }
 .vol-ring {
-  border-color: var(--ring);
+  border-color: var(--ds-color-border);
 }
 .vol-ring-strong {
-  border-color: var(--ring-hi);
+  border-color: var(--ds-color-primary);
 }
 .vol-line {
-  border-color: var(--line);
+  border-color: var(--ds-color-border);
 }
 .vol-t1 {
-  color: var(--t1);
+  color: var(--ds-color-foreground);
 }
 .vol-t2 {
-  color: var(--t2);
+  color: var(--ds-color-muted-foreground);
 }
 /* hover/focus semantic pseudo-classes (escaped-class form) */
 .hover\:vol-accbg-hi:hover {
@@ -471,7 +555,14 @@ body {
 
 /* ---- Neumorphic depth layer (day theme) — real embossed UI, not flat ---- */
 .vol-panel {
-  background: var(--panel);
+  background: var(--ds-color-card);
+  box-shadow: var(--ds-shadow-md);
+  border-radius: var(--ds-radius-lg);
+}
+.vol-panel:hover {
+  box-shadow: var(--ds-shadow-lg);
+  transform: translateY(-2px);
+  transition: all 200ms ease;
 }
 html[data-theme="day"] .vol-panel,
 html[data-theme="day"] .vol-elev {

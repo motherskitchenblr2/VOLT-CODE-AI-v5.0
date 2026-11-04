@@ -4,9 +4,13 @@
  *
  * Shared state (enableSentinel, code, detectedLanguage) comes from
  * VoltContext. App-owned state/handlers are passed as props.
+ *
+ * Built on design system tokens (design-system/volt-code-ai/MASTER.md).
  */
 import React from "react";
 import { Shield, Sparkles } from "lucide-react";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 
 interface SentinelIssue {
   id: number;
@@ -75,155 +79,114 @@ export const SentinelView: React.FC<SentinelViewProps> = ({
 
   const maxVal = Math.max(...[1, sentinelIssues.length]);
 
+  // Pre-compute dynamic classNames using string concatenation
+  const sentinelDotClass =
+    "w-2 h-2 rounded-full " +
+    (enableSentinel ? "bg-[#22C55E] animate-pulse" : "bg-[#EF4444]");
+  const monitorTextClass = "font-semibold text-[#F8FAFC]";
+  const _lastScanClass =
+    "px-4 py-2 rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] text-sm text-[#22C55E]";
+
+  const severityBars = [
+    { label: "Critical / Vulnerability", count: sentinelIssues.filter((i) => i.severity === "Critical").length, color: "bg-[#EF4444]" },
+    { label: "High / Functional Logic", count: sentinelIssues.filter((i) => i.severity === "High").length, color: "bg-[#F59E0B]" },
+    { label: "Medium / Performance", count: sentinelIssues.filter((i) => i.severity === "Medium").length, color: "bg-[#EAB308]" },
+    { label: "Low / Code Smells", count: sentinelIssues.filter((i) => i.severity === "Low").length, color: "bg-[#3B82F6]" },
+  ].map((bar) => {
+    const percent = (bar.count / maxVal) * 100;
+    const barFillClass = "h-full " + bar.color + " transition-all duration-500";
+    const barFillStyle = { width: percent + "%" };
+    return (
+      <div key={bar.label} className="space-y-1">
+        <div className="flex justify-between text-xs font-semibold">
+          <span className="text-[#94A3B8]">{bar.label}</span>
+          <span className="text-[#F8FAFC]">{bar.count} issues</span>
+        </div>
+        <div className="h-2 w-full bg-[#334155]/20 rounded-full overflow-hidden">
+          <div className={barFillClass} style={barFillStyle}></div>
+        </div>
+      </div>
+    );
+  });
+
   return (
-    <div className="p-8 h-full overflow-auto space-y-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap border-b vol-ring pb-6">
+    <div className="p-8 h-full overflow-auto space-y-6 bg-[#0F172A]">
+      <div className="flex items-center justify-between gap-4 flex-wrap border-b border-[var(--ds-color-border)] pb-6">
         <div>
-          <div className="vol-accent text-xs tracking-[3px] font-bold uppercase mb-1">
+          <div className="text-[#22C55E] text-xs tracking-[3px] font-bold uppercase mb-1">
             Live Telemetry & Telemetric Scan
           </div>
-          <h1 className="text-3xl font-extrabold">SENTINEL OPERATIONS</h1>
+          <h1 className="text-3xl font-extrabold text-[#F8FAFC]">SENTINEL OPERATIONS</h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl border vol-ring vol-panel text-sm">
-            <span
-              className={`w-2 h-2 rounded-full ${enableSentinel ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
-            ></span>
-            <span className="font-semibold vol-t1">
-              MONITOR: {enableSentinel ? "ACTIVE" : "STANDBY"}
-            </span>
-          </div>
-          <div className="px-4 py-2 rounded-xl border vol-ring vol-panel text-sm vol-accent">
+          <Card padded={false} elevated={false} className="flex items-center gap-2 px-4 py-2 rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] text-sm">
+            <span className={sentinelDotClass}></span>
+            <span className={monitorTextClass}>MONITOR: {enableSentinel ? "ACTIVE" : "STANDBY"}</span>
+          </Card>
+          <Card padded={false} elevated={false} className="px-4 py-2 rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] text-sm text-[#22C55E]">
             Last Watch-Scan: {lastSentinelScan}
-          </div>
+          </Card>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="border vol-ring vol-wash p-5 rounded-2xl">
-          <div className="text-xs vol-t2 uppercase font-semibold">
-            Checks Executed
-          </div>
-          <div className="text-2xl font-black vol-accent mt-1">
-            {sentinelStats.totalRuns}
-          </div>
-        </div>
-        <div className="border vol-ring vol-wash p-5 rounded-2xl">
-          <div className="text-xs vol-t2 uppercase font-semibold">
-            Telemetry Spent
-          </div>
-          <div className="text-2xl font-black vol-t1 mt-1">
-            {sentinelStats.tokensConsumed} <span className="text-xs font-normal vol-t2">tokens</span>
-          </div>
-        </div>
-        <div className="border vol-ring vol-wash p-5 rounded-2xl">
-          <div className="text-xs vol-t2 uppercase font-semibold">
-            Active Warnings
-          </div>
-          <div className="text-2xl font-black text-red-500 mt-1">
-            {sentinelIssues.length}
-          </div>
-        </div>
-        <div className="border vol-ring vol-wash p-5 rounded-2xl">
-          <div className="text-xs vol-t2 uppercase font-semibold">
-            Time Saved (Est.)
-          </div>
-          <div className="text-2xl font-black text-green-400 mt-1">
-            {sentinelStats.timeSavedMinutes} <span className="text-xs font-normal vol-t2">mins</span>
-          </div>
-        </div>
+        <Card padded={false} elevated={false}>
+          <div className="text-xs text-[#94A3B8] uppercase font-semibold mb-1">Checks Executed</div>
+          <div className="text-2xl font-black text-[#22C55E] mt-1">{sentinelStats.totalRuns}</div>
+        </Card>
+        <Card padded={false} elevated={false}>
+          <div className="text-xs text-[#94A3B8] uppercase font-semibold mb-1">Telemetry Spent</div>
+          <div className="text-2xl font-black text-[#F8FAFC] mt-1">{sentinelStats.tokensConsumed} <span className="text-xs font-normal text-[#94A3B8]">tokens</span></div>
+        </Card>
+        <Card padded={false} elevated={false}>
+          <div className="text-xs text-[#94A3B8] uppercase font-semibold mb-1">Active Warnings</div>
+          <div className="text-2xl font-black text-[#EF4444] mt-1">{sentinelIssues.length}</div>
+        </Card>
+        <Card padded={false} elevated={false}>
+          <div className="text-xs text-[#94A3B8] uppercase font-semibold mb-1">Time Saved (Est.)</div>
+          <div className="text-2xl font-black text-[#22C55E] mt-1">{sentinelStats.timeSavedMinutes} <span className="text-xs font-normal text-[#94A3B8]">mins</span></div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 border vol-ring vol-panel p-6 rounded-3xl space-y-5">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Shield className="w-5 h-5 vol-accent" />
+        <Card padded={false} elevated={false} className="lg:col-span-2 p-6 space-y-5">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-[#F8FAFC]">
+            <Shield className="w-5 h-5 text-[#22C55E]" />
             Watchdog Diagnostic Heatmap
           </h2>
-
-          <div className="space-y-3">
-            {[
-              {
-                label: "Critical / Vulnerability",
-                count: sentinelIssues.filter((i) => i.severity === "Critical").length,
-                color: "bg-red-500",
-              },
-              {
-                label: "High / Functional Logic",
-                count: sentinelIssues.filter((i) => i.severity === "High").length,
-                color: "bg-orange-500",
-              },
-              {
-                label: "Medium / Performance",
-                count: sentinelIssues.filter((i) => i.severity === "Medium").length,
-                color: "bg-yellow-500",
-              },
-              {
-                label: "Low / Code Smells",
-                count: sentinelIssues.filter((i) => i.severity === "Low").length,
-                color: "bg-blue-500",
-              },
-            ].map((bar, idx) => {
-              const percent = (bar.count / maxVal) * 100;
-              return (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="vol-t2">{bar.label}</span>
-                    <span className="vol-t1">{bar.count} issues</span>
-                  </div>
-                  <div className="h-2 w-full vol-wash rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${bar.color} transition-all duration-500`}
-                      style={{ width: `${percent}%` }}
-                    ></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="pt-4 border-t vol-line flex flex-wrap gap-3">
-            <button
-              onClick={handleApplySentinelPatch}
-              className="px-5 py-2.5 rounded-xl vol-acc-bg text-black font-extrabold text-xs cursor-pointer"
-            >
+          <div className="space-y-3">{severityBars}</div>
+          <div className="pt-4 border-t border-[var(--ds-color-border)] flex flex-wrap gap-3">
+            <Button variant="primary" size="sm" onClick={handleApplySentinelPatch}>
               APPLY SENTINEL PATCH
-            </button>
-            <button
-              onClick={handleRunForceTelemetry}
-              className="px-5 py-2.5 rounded-xl border vol-line hover:vol-wash vol-t1 text-xs font-bold cursor-pointer"
-            >
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleRunForceTelemetry}>
               RUN FORCE TELEMETRY ANALYSIS
-            </button>
+            </Button>
           </div>
-        </div>
-
-        <div className="border vol-ring vol-panel p-6 rounded-3xl space-y-4">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Sparkles className="w-5 h-5 vol-accent" />
+        </Card>
+        <Card padded={false} elevated={false} className="p-6 space-y-4">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-[#F8FAFC]">
+            <Sparkles className="w-5 h-5 text-[#22C55E]" />
             Passive Scan Feed
           </h2>
           <div className="space-y-3 max-h-[300px] overflow-y-auto">
             {sentinelIssues.length === 0 ? (
-              <div className="text-center py-12 vol-t2 text-xs">
+              <div className="text-center py-12 text-[#94A3B8] text-xs">
                 Watcher scanning current editor inputs. Keep writing code...
               </div>
             ) : (
               sentinelIssues.map((issue, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 vol-surface rounded-xl border-l-4 vol-ring-strong text-xs"
-                >
+                <div key={idx} className="p-3 rounded-[var(--ds-radius-md)] border border-l-4 border-[#22C55E]/40 bg-[#1B2336] text-xs">
                   <div className="flex justify-between font-bold mb-1">
-                    <span>{issue.type}</span>
-                    <span className="vol-accent">{issue.severity}</span>
+                    <span className="text-[#F8FAFC]">{issue.type}</span>
+                    <span className="text-[#22C55E]">{issue.severity}</span>
                   </div>
-                  <p className="vol-t2 mb-2">{issue.description}</p>
+                  <p className="text-[#94A3B8] mb-2">{issue.description}</p>
                 </div>
               ))
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
