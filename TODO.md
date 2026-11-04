@@ -8,6 +8,7 @@
 - [x] Extract Sentinel view → `src/components/views/SentinelView.tsx` (security risk board, findings table)
 - [x] Extract History view → `src/components/views/HistoryView.tsx` (previous sessions list)
 - [x] Extract GitHub view → `src/components/views/GitHubView.tsx` (Git-Room deployment integration)
+- [x] Extract Meeting view → `src/components/views/MeetingView.tsx` (Meeting Panel + Boss Guidance + Minutes)
 - [ ] Extract Diagnostics column → `src/components/views/DiagnosticsView.tsx` (right-rail sentinel findings)
 - [ ] Extract Login/Onboarding modals → `src/components/views/LoginView.tsx` + `src/components/views/OnboardingView.tsx`
 - [ ] Replace `renderContent()` with simple view router switch
