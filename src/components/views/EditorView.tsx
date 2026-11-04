@@ -5,7 +5,7 @@
  * View-specific state and handlers are passed as props from the shell.
  */
 import React from "react";
-import { ChevronDown, Zap, Settings, Activity, Bot, Bug, X, Send } from "lucide-react";
+import { ChevronDown, Zap, Settings, Activity, Bot, Bug, X, Send, GitPullRequest } from "lucide-react";
 import { useVolt } from "../../context/VoltContext";
 
 const pluginOptions = [
@@ -101,7 +101,7 @@ interface EditorViewProps {
   sentinelLevel: "green" | "yellow" | "red";
   sentinelLabel: string;
   sentinelSummary: string;
-  issues: Array<{ id: number; severity: string; message: string }>;
+  issues: Array<{ id: number; severity: string }>;
   fixedCode: string;
   addLog: (msg: string, level?: "info" | "success" | "error" | "warn") => void;
   handleCodeChange: (code: string) => void;
@@ -157,7 +157,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
     { id: "gemma2-9b-it", name: "Gemma 2 9B", tag: "FAST", ctx: "8K", color: "#EF4444", provider: "Groq", tier: "FREE" },
   ];
 
-  const modelGroups = Array.from(
+  const modelGroups: Array<[string, (typeof modelOptionsAll)[number][]]> = Array.from(
     new Set(modelOptionsAll.map((m) => m.provider)),
   ).map((prov) => [prov, modelOptionsAll.filter((m) => m.provider === prov)]);
 
@@ -247,18 +247,12 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setSplitView((v) => !v)}
+              onClick={() => setSplitView(!splitView)}
               className={`px-3 py-1.5 rounded-lg border vol-ring text-xs font-black cursor-pointer ${
                 splitView ? "vol-acc-bg text-black" : "hover:vol-wash vol-t2"
               }`}
             >
               {splitView ? "SPLIT ✓" : "SPLIT"}
-            </button>
-            <button
-              onClick={() => setShowShortcutsCheatSheet(true)}
-              className="px-3 py-1.5 rounded-lg border vol-line hover:vol-wash vol-t2 hover:vol-t1 text-xs font-semibold cursor-pointer"
-            >
-              SHORTCUTS [?]
             </button>
             <div
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border vol-ring text-xs font-bold cursor-pointer ${

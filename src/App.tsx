@@ -50,6 +50,7 @@ import { useVolt } from "./context/VoltContext";
 import { EditorView } from "./components/views/EditorView";
 import { SwarmView } from "./components/views/SwarmView";
 import { IDECanvasView } from "./components/views/IDECanvasView";
+import { TodoItem } from "./components/TODOListWidget";
 
 interface Session {
   id: string;
@@ -335,6 +336,8 @@ const App: React.FC = () => {
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [_isScanning, setIsScanning] = useState(false);
+  const [_scanProgress, setScanProgress] = useState(0);
   const [, setAgentStatus] = useState("idle");
   const [tokensUsed, setTokensUsed] = useState(0);
   const [promptTokens, setPromptTokens] = useState(0);
@@ -3098,7 +3101,7 @@ const App: React.FC = () => {
           isAnalyzing={isAnalyzing}
           enableAgentSuggestions={enableAgentSuggestions}
           onCodeChange={handleCodeChange}
-          onToggleSuggestions={setEnableAgentSuggestions}
+          onToggleSuggestions={() => setEnableAgentSuggestions(!enableAgentSuggestions)}
           onBack={() => setActiveTab("editor")}
           issues={issues}
           todos={todos}
@@ -3249,7 +3252,7 @@ const App: React.FC = () => {
 
     return <EditorView
       splitView={splitView}
-      setSplitView={setSplitView}
+      setSplitView={(v: boolean) => setSplitView(v)}
       isAnalyzing={isAnalyzing}
       showAgentChat={showAgentChat}
       setShowAgentChat={setShowAgentChat}

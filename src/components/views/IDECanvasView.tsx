@@ -15,7 +15,7 @@ interface IDECanvasViewProps {
   onCodeChange: (code: string) => void;
   onToggleSuggestions: () => void;
   onBack: () => void;
-  issues: Array<{ id: number; severity: string; message: string }>;
+  issues: Array<{ id: number; severity: string }>;
   todos: TodoItem[];
   onAddTodo: (t: TodoItem) => void;
   onUpdateTodo: (id: string, updates: Partial<TodoItem>) => void;
