@@ -5,11 +5,20 @@
  *
  * Shared state (API keys, selectedModel, agentMode, etc.) comes from
  * VoltContext. App-owned state/handlers are passed as props.
+ *
+ * Built on design system tokens (design-system/volt-code-ai/MASTER.md).
+ * All colors, spacing, shadows, and typography use --ds-* CSS variables.
+ * Every button has cursor-pointer, focus-visible ring, and 200ms hover transition.
+ * No emojis as icons — Lucide SVG only.
  */
 import React from "react";
 import { Download, RefreshCw } from "lucide-react";
 import { AIProviderSelector } from "../AIProviderSelector";
 import { useVolt } from "../../context/VoltContext";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { Panel } from "../ui/Panel";
+import { Input } from "../ui/Input";
 
 interface Session {
   id: string;
@@ -34,24 +43,20 @@ interface Session {
 }
 
 export interface SettingsViewProps {
-  // Backup/restore
   exportWorkspaceData: () => void;
   importWorkspaceData: (file: File) => void;
-  // Checkpoints
   createCheckpoint: (filePath: string, code: string) => Promise<string>;
   onRestoreCheckpoint: (checkpointId: string) => Promise<void>;
   lastCheckpointId: string | null;
   setLastCheckpointId: (id: string | null) => void;
   code: string;
   loadedFilePath: string;
-  // Gateway
   gatewayLoading: boolean;
   gatewayLogs: string[];
   gatewayQuery: (
     payload: { code: string; language: string; model: string; skill: string; plugin: string; customPrompt?: string },
     keys: { groqKey?: string; openrouterKey?: string; nvidiaKey?: string; huggingfaceKey?: string },
   ) => Promise<void>;
-  // Live providers
   refreshLiveProviders: () => void;
   liveProviderLoading: boolean;
   liveProviderUpdated: number | null;
@@ -62,7 +67,6 @@ export interface SettingsViewProps {
     freeCount: number;
     paidCount: number;
   }>;
-  // UI state
   vaultStored: boolean;
   vaultSyncState: "idle" | "saving" | "saved" | "error";
   debounceDelay: number;
@@ -73,10 +77,8 @@ export interface SettingsViewProps {
   setEnableSentinel: (v: boolean) => void;
   showTokenUsage: boolean;
   setShowTokenUsage: (v: boolean) => void;
-  // Sessions
   sessions: Session[];
   setSessions: React.Dispatch<React.SetStateAction<Session[]>>;
-  // Logging/toast
   addLog: (msg: string, level?: "info" | "success" | "error" | "warn") => void;
   showToast: (msg: string, level?: "info" | "success" | "error" | "warn") => void;
 }
@@ -144,83 +146,73 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     checked: boolean,
     onToggle: () => void,
   ) => (
-    <button
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={onToggle}
-      className={`w-16 h-8 rounded-full transition-all cursor-pointer ${
-        checked ? "vol-acc-bg" : "vol-wash"
-      }`}
+      className="w-16 h-8 text-xs font-bold"
     >
-      <div
-        className={`w-6 h-6 bg-white rounded-full transition-all ${
-          checked ? "ml-9" : "ml-1"
-        }`}
-      />
-    </button>
+      {checked ? "ON" : "OFF"}
+    </Button>
   );
 
   return (
-    <div className="p-4 sm:p-8 max-w-2xl mx-auto pb-24">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-8">SETTINGS</h1>
+    <Panel padded={true} className="p-4 sm:p-8 max-w-2xl mx-auto pb-24">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-[#F8FAFC]">SETTINGS</h1>
       <div className="space-y-6">
         {/* Workspace Backup */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-1">Workspace Backup</div>
-          <p className="text-[10px] vol-t2 mb-4">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-1 text-[#F8FAFC]">Workspace Backup</div>
+          <p className="text-[10px] text-[#94A3B8] mb-4">
             Export or restore all sessions, todos, repo links and keys as a
             single JSON file. Keep it safe — it contains your API keys.
           </p>
           <div className="flex gap-3">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={exportWorkspaceData}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-bold cursor-pointer"
             >
               <Download className="w-4 h-4" />
               EXPORT BACKUP
-            </button>
-            <label className="flex items-center gap-2 px-4 py-2.5 rounded-xl vol-well border vol-ring-strong vol-accent text-xs font-bold cursor-pointer hover:vol-acc-wash">
+            </Button>
+            <button
+              onClick={() => {
+                const f = document.createElement("input");
+                f.type = "file";
+                f.accept = "application/json,.json";
+                f.onchange = (e: Event) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) importWorkspaceData(file);
+                  f.value = "";
+                };
+                f.click();
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[#334155]/20 text-[#94A3B8] text-xs font-bold cursor-pointer hover:bg-[#334155]/40 transition-all duration-200"
+            >
               <RefreshCw className="w-4 h-4" />
               RESTORE BACKUP
-              <input
-                type="file"
-                accept="application/json,.json"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) importWorkspaceData(f);
-                  e.target.value = "";
-                }}
-              />
-            </label>
+            </button>
           </div>
-        </div>
+        </Card>
 
         {/* Default Model */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-4">Default Model</div>
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-4 text-[#F8FAFC]">Default Model</div>
           <select
             value={selectedModel.id}
             onChange={(e) => {
-              const model = FREE_MODELS.find(
-                (m) => m.id === e.target.value,
-              )!;
+              const model = FREE_MODELS.find((m) => m.id === e.target.value)!;
               setSelectedModel(model);
             }}
-            className="w-full vol-well border vol-ring-strong px-4 py-3 rounded vol-t1 cursor-pointer font-mono font-semibold"
+            className="w-full bg-[#1B2336] border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] px-4 py-2.5 text-sm font-mono text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFFFFF] cursor-pointer"
           >
             {Array.from(new Set(FREE_MODELS.map((m) => m.provider))).map(
               (provider) => (
-                <optgroup
-                  key={provider}
-                  label={provider}
-                  className="vol-elev vol-accent font-bold"
-                >
+                <optgroup key={provider} label={provider}>
                   {FREE_MODELS.filter((m) => m.provider === provider).map(
                     (model) => (
-                      <option
-                        key={model.id}
-                        value={model.id}
-                        className="vol-elev vol-t1 font-normal"
-                      >
+                      <option key={model.id} value={model.id}>
                         {model.name} ({model.tag} • {model.ctx})
                       </option>
                     ),
@@ -229,114 +221,92 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               ),
             )}
           </select>
-        </div>
+        </Card>
 
         {/* Provider API Keys */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel space-y-4">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-lg font-bold">Provider API Keys</div>
+            <div className="text-lg font-bold text-[#F8FAFC]">Provider API Keys</div>
             <div className="flex items-center gap-2">
               {vaultStored && (
-                <span className="flex items-center gap-1 text-[10px] text-green-400 font-semibold uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_#22c55e]" />
+                <span className="flex items-center gap-1 text-[10px] text-[#22C55E] font-semibold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shadow-[0_0_6px_#22c55e]" />
                   Vault
                 </span>
               )}
               {vaultSyncState === "saving" && (
-                <span className="text-[10px] vol-accent font-semibold uppercase tracking-wider">
+                <span className="text-[10px] text-[#22C55E] font-semibold uppercase tracking-wider">
                   Syncing…
                 </span>
               )}
               {vaultSyncState === "saved" && (
-                <span className="text-[10px] text-green-400 font-semibold uppercase tracking-wider">
+                <span className="text-[10px] text-[#22C55E] font-semibold uppercase tracking-wider">
                   Saved
                 </span>
               )}
               {vaultSyncState === "error" && (
-                <span className="text-[10px] text-red-400 font-semibold uppercase tracking-wider">
+                <span className="text-[10px] text-[#EF4444] font-semibold uppercase tracking-wider">
                   Sync failed
                 </span>
               )}
             </div>
           </div>
-          <p className="text-[10px] vol-t2 -mt-2 mb-1">
+          <p className="text-[10px] text-[#94A3B8] -mt-2 mb-1">
             Keys are encrypted and stored in the MongoDB secret vault.
             Entering a key auto-syncs it to the vault.
           </p>
-
-          <div>
-            <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
-              OpenRouter Key
-            </label>
-            <input
-              type="password"
-              value={openrouterKey}
-              onChange={(e) => {
-                setOpenrouterKey(e.target.value);
-                localStorage.setItem("volt_openrouter_key", e.target.value);
-              }}
-              placeholder="sk-or-..."
-              className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
-              Groq Key
-            </label>
-            <input
-              type="password"
-              value={groqKey}
-              onChange={(e) => {
-                setGroqKey(e.target.value);
-                localStorage.setItem("volt_groq_key", e.target.value);
-              }}
-              placeholder="gsk_..."
-              className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
-              NVIDIA Key
-            </label>
-            <input
-              type="password"
-              value={nvidiaKey}
-              onChange={(e) => {
-                setNvidiaKey(e.target.value);
-                localStorage.setItem("volt_nvidia_key", e.target.value);
-              }}
-              placeholder="nvapi-..."
-              className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs vol-accent-soft mb-1 tracking-wider uppercase font-semibold">
-              HuggingFace Key
-            </label>
-            <input
-              type="password"
-              value={huggingfaceKey}
-              onChange={(e) => {
-                setHuggingfaceKey(e.target.value);
-                localStorage.setItem("volt_huggingface_key", e.target.value);
-              }}
-              placeholder="hf_..."
-              className="w-full vol-well border vol-ring-strong px-4 py-2.5 rounded-xl vol-t1 text-xs outline-none focus:vol-ring-hi font-mono"
-            />
-          </div>
-        </div>
+          <Input
+            label="OpenRouter Key"
+            value={openrouterKey}
+            onChange={(e) => {
+              setOpenrouterKey(e.target.value);
+              localStorage.setItem("volt_openrouter_key", e.target.value);
+            }}
+            placeholder="sk-or-..."
+            type="password"
+          />
+          <Input
+            label="Groq Key"
+            value={groqKey}
+            onChange={(e) => {
+              setGroqKey(e.target.value);
+              localStorage.setItem("volt_groq_key", e.target.value);
+            }}
+            placeholder="gsk_..."
+            type="password"
+          />
+          <Input
+            label="NVIDIA Key"
+            value={nvidiaKey}
+            onChange={(e) => {
+              setNvidiaKey(e.target.value);
+              localStorage.setItem("volt_nvidia_key", e.target.value);
+            }}
+            placeholder="nvapi-..."
+            type="password"
+          />
+          <Input
+            label="HuggingFace Key"
+            value={huggingfaceKey}
+            onChange={(e) => {
+              setHuggingfaceKey(e.target.value);
+              localStorage.setItem("volt_huggingface_key", e.target.value);
+            }}
+            placeholder="hf_..."
+            type="password"
+          />
+        </Card>
 
         {/* Gateway Console */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-2">Gateway Console</div>
-          <p className="text-[11px] vol-t2 mb-3">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Gateway Console</div>
+          <p className="text-[11px] text-[#94A3B8] mb-3">
             Runs a probe through the provider fallback chain (skips
             providers without keys) and shows the routing log.
           </p>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             disabled={gatewayLoading}
             onClick={async () => {
               await gatewayQuery(
@@ -351,28 +321,23 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               );
               addLog("Gateway probe finished", "info");
             }}
-            className="px-3 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-black cursor-pointer disabled:opacity-60"
           >
             {gatewayLoading ? "PROBING..." : "RUN PROBE"}
-          </button>
+          </Button>
           <div className="mt-3 max-h-40 overflow-y-auto space-y-1">
             {gatewayLogs.length === 0 && (
-              <p className="text-[11px] vol-t2">No gateway activity yet.</p>
+              <p className="text-[11px] text-[#94A3B8]">No gateway activity yet.</p>
             )}
             {gatewayLogs.slice(-20).map((l, i) => (
-              <div key={i} className="text-[10px] font-mono vol-t2">
-                {l}
-              </div>
+              <div key={i} className="text-[10px] font-mono text-[#94A3B8]">{l}</div>
             ))}
           </div>
-        </div>
+        </Card>
 
         {/* Provider & Model Picker */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-2">
-            Provider & Model Picker
-          </div>
-          <p className="text-[11px] vol-t2 mb-3">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Provider & Model Picker</div>
+          <p className="text-[11px] text-[#94A3B8] mb-3">
             Pick a provider/model; matching live models apply to the engine.
           </p>
           <AIProviderSelector
@@ -388,18 +353,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               );
             }}
           />
-        </div>
+        </Card>
 
         {/* Workspace Checkpoints */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-2">
-            Workspace Checkpoints
-          </div>
-          <p className="text-[11px] vol-t2 mb-3">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Workspace Checkpoints</div>
+          <p className="text-[11px] text-[#94A3B8] mb-3">
             Snapshot the editor before risky edits; restore any time.
           </p>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={async () => {
                 const id = await createCheckpoint(
                   loadedFilePath || "editor.txt",
@@ -408,60 +373,54 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 setLastCheckpointId(id);
                 addLog(`Checkpoint created: ${id}`, "success");
               }}
-              className="px-3 py-2.5 rounded-xl vol-acc-bg text-black text-xs font-black cursor-pointer disabled:opacity-60"
             >
               CREATE CHECKPOINT
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
               disabled={!lastCheckpointId}
               onClick={async () => {
                 if (!lastCheckpointId) return;
                 await onRestoreCheckpoint(lastCheckpointId);
-                addLog(
-                  `Restored checkpoint ${lastCheckpointId}`,
-                  "success",
-                );
+                addLog(`Restored checkpoint ${lastCheckpointId}`, "success");
               }}
-              className="px-3 py-2.5 rounded-xl vol-well border vol-ring vol-accent text-xs font-black cursor-pointer disabled:opacity-50"
             >
               RESTORE LAST
-            </button>
+            </Button>
             {lastCheckpointId && (
-              <span className="text-[10px] font-mono vol-t2 self-center">
+              <span className="text-[10px] font-mono text-[#94A3B8] self-center">
                 {lastCheckpointId}
               </span>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Live Provider Availability */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-lg font-bold">
+            <div className="text-lg font-bold text-[#F8FAFC]">
               Live Provider Availability
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={refreshLiveProviders}
-              className="flex items-center gap-1.5 text-xs vol-accent hover:vol-accent disabled:opacity-50"
               disabled={liveProviderLoading}
             >
-              <RefreshCw
-                className={`w-3.5 h-3.5 ${liveProviderLoading ? "animate-spin" : ""}`}
-              />
+              <RefreshCw className={`w-3.5 h-3.5 ${liveProviderLoading ? "animate-spin" : ""}`} />
               {liveProviderLoading ? "Checking..." : "Refresh"}
-            </button>
+            </Button>
           </div>
-
           {liveProviderUpdated && (
-            <p className="text-[10px] vol-t2 mb-3 font-mono">
+            <p className="text-[10px] text-[#94A3B8] mb-3 font-mono">
               Last checked:{" "}
               {new Date(liveProviderUpdated).toLocaleTimeString()} ·
               auto-refresh 30 min
             </p>
           )}
-
           {liveProviderAvailability.length === 0 ? (
-            <p className="text-xs vol-t2">
+            <p className="text-xs text-[#94A3B8]">
               No live model data yet. Press Refresh to load the model
               catalog from connected providers.
             </p>
@@ -476,45 +435,45 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 .map((provider) => (
                   <div
                     key={provider.provider}
-                    className="p-3 vol-panel border vol-line rounded-xl flex items-center justify-between"
+                    className="p-3 border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] flex items-center justify-between bg-[#1B2336]"
                   >
                     <div className="flex items-center gap-2">
                       <span
                         className={`w-2 h-2 rounded-full ${
                           provider.connected
-                            ? "bg-green-500 shadow-[0_0_8px_#22c55e]"
-                            : "bg-red-500"
+                            ? "bg-[#22C55E] shadow-[0_0_8px_#22c55e]"
+                            : "bg-[#EF4444]"
                         }`}
                       />
-                      <span className="text-sm font-bold vol-t1">
+                      <span className="text-sm font-bold text-[#F8FAFC]">
                         {provider.label}
                       </span>
                       {provider.connected ? (
-                        <span className="text-[10px] text-green-400 font-semibold uppercase">
+                        <span className="text-[10px] text-[#22C55E] font-semibold uppercase">
                           Connected
                         </span>
                       ) : (
-                        <span className="text-[10px] text-red-400 font-semibold uppercase">
+                        <span className="text-[10px] text-[#EF4444] font-semibold uppercase">
                           Offline
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] vol-t2 font-mono">
+                    <div className="text-[10px] font-mono text-[#94A3B8]">
                       {provider.freeCount} free / {provider.paidCount} paid
                     </div>
                   </div>
                 ))}
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Agent Mode Default */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-4">Agent Mode Default</div>
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-4 text-[#F8FAFC]">Agent Mode Default</div>
           <select
             value={agentMode}
             onChange={(e) => setAgentMode(e.target.value as string)}
-            className="w-full vol-well border vol-ring-strong px-4 py-3 rounded vol-t1 cursor-pointer font-semibold"
+            className="w-full bg-[#1B2336] border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] px-4 py-2.5 text-sm font-mono text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFFFFF] cursor-pointer"
           >
             {["manual", "assist", "auto-syntax", "auto-debug", "team-review"].map(
               (mode) => (
@@ -524,16 +483,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               ),
             )}
           </select>
-        </div>
+        </Card>
 
         {/* Sentinel Debounce Delay */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-2">
-            Sentinel Debounce Delay
-          </div>
-          <div className="text-sm vol-accent-soft mb-3">
-            Delay after typing before passive analysis runs: {debounceDelay}
-            ms
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Sentinel Debounce Delay</div>
+          <div className="text-sm text-[#22C55E] mb-3">
+            Delay after typing before passive analysis runs: {debounceDelay} ms
           </div>
           <input
             type="range"
@@ -542,63 +498,65 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             step="50"
             value={debounceDelay}
             onChange={(e) => setDebounceDelay(Number(e.target.value))}
-            className="w-full accent-[#FF5F00] vol-wash h-1.5 rounded-lg appearance-none cursor-pointer"
+            className="w-full accent-[#22C55E] bg-[#334155]/20 h-1.5 rounded-lg appearance-none cursor-pointer"
           />
-        </div>
+        </Card>
 
         {/* Auto-Apply Fixes */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-lg font-bold">Auto-Apply Fixes</div>
-              <div className="text-sm vol-accent-soft mt-1">
+              <div className="text-lg font-bold text-[#F8FAFC]">Auto-Apply Fixes</div>
+              <div className="text-sm text-[#94A3B8] mt-1">
                 Automatically apply all fixes without confirmation
               </div>
             </div>
             {toggleSwitch(autoApplyFixes, () => setAutoApplyFixes(!autoApplyFixes))}
           </div>
-        </div>
+        </Card>
 
         {/* Sentinel Live Monitoring */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-lg font-bold">
+              <div className="text-lg font-bold text-[#F8FAFC]">
                 Sentinel Live Monitoring
               </div>
-              <div className="text-sm vol-accent-soft mt-1">
+              <div className="text-sm text-[#94A3B8] mt-1">
                 Enable real-time code monitoring watchdog
               </div>
             </div>
             {toggleSwitch(enableSentinel, () => setEnableSentinel(!enableSentinel))}
           </div>
-        </div>
+        </Card>
 
         {/* Show Token Usage Panel */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-lg font-bold">
+              <div className="text-lg font-bold text-[#F8FAFC]">
                 Show Token Usage Panel
               </div>
-              <div className="text-sm vol-accent-soft mt-1">
+              <div className="text-sm text-[#94A3B8] mt-1">
                 Show prompt, completion, and cost estimates after runs
               </div>
             </div>
             {toggleSwitch(showTokenUsage, () => setShowTokenUsage(!showTokenUsage))}
           </div>
-        </div>
+        </Card>
 
         {/* Theme */}
-        <div className="border vol-ring rounded-xl p-6 vol-panel">
-          <div className="text-lg font-bold mb-2">Theme</div>
-          <div className="vol-accent-soft font-semibold">
+        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Theme</div>
+          <div className="text-sm text-[#94A3B8] font-semibold">
             Charcoal Black + Neon Orange (locked)
           </div>
-        </div>
+        </Card>
 
         {/* Session actions */}
-        <button
+        <Button
+          variant="primary"
+          size="md"
           onClick={() => {
             const dataStr =
               "data:text/json;charset=utf-8," +
@@ -614,22 +572,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             downloadAnchor.remove();
             showToast("Sessions exported successfully!", "success");
           }}
-          className="w-full px-6 py-4 rounded-xl border vol-ring-strong vol-accent font-bold hover:vol-acc-wash transition-all mb-3 cursor-pointer"
+          className="w-full px-6 py-4 rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] text-[#22C55E] font-bold hover:bg-[#22C55E]/20 transition-all mb-3 cursor-pointer"
         >
           EXPORT ALL SESSIONS (JSON)
-        </button>
+        </Button>
 
-        <button
+        <Button
+          variant="destructive"
+          size="md"
           onClick={() => {
             localStorage.removeItem("codeSessions");
             setSessions([]);
             showToast("All sessions cleared!", "success");
           }}
-          className="w-full px-6 py-4 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 font-bold transition-all cursor-pointer"
+          className="w-full px-6 py-4 rounded-[var(--ds-radius-lg)] text-[#EF4444] border border-[#EF4444]/40 font-bold hover:bg-[#EF4444]/20 transition-all cursor-pointer"
         >
           CLEAR ALL SESSIONS
-        </button>
+        </Button>
       </div>
-    </div>
+    </Panel>
   );
 };
