@@ -36,9 +36,6 @@ import { GitHubWorkspace } from "./components/GitHubWorkspace";
 import { MeetingPanel } from "./components/MeetingPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
 import { CloudAuth } from "./components/CloudAuth";
-// v0 dormant restore: IDE canvas + agent TODO widget
-import { ProfessionalEditorCanvas } from "./components/ProfessionalEditorCanvas";
-import { TODOListWidget, type TodoItem } from "./components/TODOListWidget";
 
 import { RecoveryCenter } from "./services/RecoveryCenter";
 import { inspectBuffer } from "./services/sentinelService";
@@ -52,6 +49,7 @@ import { useToast } from "./components/Toast";
 import { useVolt } from "./context/VoltContext";
 import { EditorView } from "./components/views/EditorView";
 import { SwarmView } from "./components/views/SwarmView";
+import { IDECanvasView } from "./components/views/IDECanvasView";
 
 interface Session {
   id: string;
@@ -3094,54 +3092,26 @@ const App: React.FC = () => {
     // IDE Canvas View (v0 dormant restore)
     if (activeTab === "ide") {
       return (
-        <div className="w-full h-full flex flex-col md:flex-row overflow-hidden vol-surface">
-          <div className="flex-1 min-w-0 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-2 border-b vol-ring shrink-0">
-              <div className="flex items-center gap-2 text-[11px] font-bold tracking-widest vol-accent">
-                <Sparkles className="w-4 h-4" />
-                IDE CANVAS · {language.toUpperCase()}
-              </div>
-              <button
-                onClick={() => setActiveTab("editor")}
-                className="text-[10px] font-bold vol-t2 hover:vol-t1 px-3 py-1.5 rounded-lg vol-wash hover:vol-wash"
-              >
-                BACK TO EDITOR
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {isAnalyzing && (
-                <div className="flex items-center gap-2 px-4 py-1.5 vol-acc-wash border-b vol-ring text-[10px] font-bold tracking-widest vol-accent">
-                  <span className="w-2 h-2 rounded-full vol-acc-bg animate-ping" />
-                  AGENT SCAN IN PROGRESS
-                </div>
-              )}
-              <ProfessionalEditorCanvas
-                code={code}
-                onCodeChange={handleCodeChange}
-                language={language}
-                enableAgentSuggestions={enableAgentSuggestions}
-                onToggleSuggestions={setEnableAgentSuggestions}
-                issues={issues}
-                isAnalyzing={isAnalyzing}
-              />
-            </div>
-          </div>
-
-          <div className="w-full md:w-80 shrink-0 border-l vol-ring vol-panel overflow-y-auto">
-            <TODOListWidget
-              todos={todos}
-              onAddTodo={(t) => setTodos((prev) => [...prev, t])}
-              onUpdateTodo={(id, updates) =>
-                setTodos((prev) =>
-                  prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
-                )
-              }
-              onDeleteTodo={(id) =>
-                setTodos((prev) => prev.filter((t) => t.id !== id))
-              }
-            />
-          </div>
-        </div>
+        <IDECanvasView
+          code={code}
+          language={language}
+          isAnalyzing={isAnalyzing}
+          enableAgentSuggestions={enableAgentSuggestions}
+          onCodeChange={handleCodeChange}
+          onToggleSuggestions={setEnableAgentSuggestions}
+          onBack={() => setActiveTab("editor")}
+          issues={issues}
+          todos={todos}
+          onAddTodo={(t) => setTodos((prev) => [...prev, t])}
+          onUpdateTodo={(id, updates) =>
+            setTodos((prev) =>
+              prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
+            )
+          }
+          onDeleteTodo={(id) =>
+            setTodos((prev) => prev.filter((t) => t.id !== id))
+          }
+        />
       );
     }
 
