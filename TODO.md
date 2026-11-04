@@ -9,10 +9,11 @@
 - [x] Extract History view → `src/components/views/HistoryView.tsx` (previous sessions list)
 - [x] Extract GitHub view → `src/components/views/GitHubView.tsx` (Git-Room deployment integration)
 - [x] Extract Meeting view → `src/components/views/MeetingView.tsx` (Meeting Panel + Boss Guidance + Minutes)
-- [ ] Extract Diagnostics column → `src/components/views/DiagnosticsView.tsx` (right-rail sentinel findings)
+- [x] Extract Diagnostics column → `src/components/views/DiagnosticsColumn.tsx` (right-rail sentinel findings)
 - [ ] Extract Login/Onboarding modals → `src/components/views/LoginView.tsx` + `src/components/views/OnboardingView.tsx`
 - [ ] Replace `renderContent()` with simple view router switch
 - [ ] Extract `renderTerminalPanel()` → `src/components/views/TerminalView.tsx`
+- [ ] Extract remaining modals (Diff, Report, Shortcuts, LangAlert, Login)
 - [ ] Verify: build + lint 0 errors + tests 79/79 after EACH view extraction
 - [ ] Test viewports: 375/768/1024/1440px after Phase 1 complete
 

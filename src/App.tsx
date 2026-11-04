@@ -50,6 +50,13 @@ import { SentinelView } from "./components/views/SentinelView";
 import { GitHubView } from "./components/views/GitHubView";
 import { MeetingView } from "./components/views/MeetingView";
 import { DiagnosticsColumn } from "./components/views/DiagnosticsColumn";
+import {
+  DiffModal,
+  ReportDrawer,
+  ShortcutsModal,
+  LangAlertModal,
+  LoginModal,
+} from "./components/views/Modals";
 import { TodoItem } from "./components/TODOListWidget";
 
 interface Session {
@@ -1881,18 +1888,6 @@ const App: React.FC = () => {
     />;
   };
 
-  const renderTerminalPanel = () => {
-    return (
-      <TerminalPanel
-        logs={terminalLogs}
-        setLogs={setTerminalLogs}
-        code={code}
-        runAnalysis={analyzeCode}
-        applyFixes={applyAllFixes}
-      />
-    );
-  };
-
   const renderDiagnosticsColumn = () => {
     return (
       <DiagnosticsColumn
@@ -2324,7 +2319,15 @@ const App: React.FC = () => {
       )}
       <ResponsiveContainer
         content={renderContent()}
-        terminal={renderTerminalPanel()}
+        terminal={
+          <TerminalPanel
+            logs={terminalLogs}
+            setLogs={setTerminalLogs}
+            code={code}
+            runAnalysis={analyzeCode}
+            applyFixes={applyAllFixes}
+          />
+        }
         diagnostics={renderDiagnosticsColumn()}
         currentView={activeTab}
         setCurrentView={setActiveTab as (v: string) => void}
