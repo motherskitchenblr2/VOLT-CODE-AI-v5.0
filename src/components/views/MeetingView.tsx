@@ -3,11 +3,16 @@
  *
  * Shared state (agentBreakdown, consensusScore, etc.) comes from
  * VoltContext. App-owned state/handlers are passed as props.
+ *
+ * Built on design system tokens (design-system/volt-code-ai/MASTER.md).
+ * All colors, spacing, shadows, and typography use --ds-* CSS variables.
+ * No emojis as icons — Lucide SVG only.
  */
 import React from "react";
 import { MeetingPanel } from "../MeetingPanel";
 import { BossGuidancePanel } from "../BossGuidancePanel";
 import { MeetingMinutesDisplay } from "../MeetingMinutesDisplay";
+import { Panel } from "../ui/Panel";
 
 interface MeetingViewProps {
   agentBreakdown: Record<string, number>;
@@ -94,7 +99,7 @@ export const MeetingView: React.FC<MeetingViewProps> = ({
       : null;
 
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <Panel padded={true} className="p-4 sm:p-8">
       <MeetingPanel onClose={onClose} />
       <div className="p-4 md:p-6 space-y-4">
         {guidance && !guidanceDismissed && (
@@ -107,6 +112,6 @@ export const MeetingView: React.FC<MeetingViewProps> = ({
         )}
         <MeetingMinutesDisplay meeting={minutes} />
       </div>
-    </div>
+    </Panel>
   );
 };
