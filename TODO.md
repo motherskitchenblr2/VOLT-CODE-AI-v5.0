@@ -12,7 +12,7 @@
 
 - [x] B-1: Refactor EditorView.tsx → design system tokens + UI components
 - [x] B-2: Refactor SentinelView.tsx → design system tokens + UI components
-- [ ] B-3: Refactor SettingsView.tsx → design system tokens + UI components
+- [x] B-3: Refactor SettingsView.tsx → design system tokens + UI components
 - [ ] B-4: Refactor GitHubView.tsx → design system tokens + UI components
 - [ ] B-5: Refactor MeetingView.tsx → design system tokens + UI components
 - [ ] B-6: Refactor IDECanvasView.tsx → design system tokens + UI components
