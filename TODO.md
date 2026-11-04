@@ -3,7 +3,7 @@
 ## Phase 1 — Complete View Extraction (App.tsx → slim shell)
 *Goal: Extract all remaining inline views from App.tsx into src/components/views/. Each view extracted one at a time, verified before moving to the next.*
 
-- [ ] Extract Settings view → `src/components/views/SettingsView.tsx` (API keys, model default, agent mode, debounce, auto-apply, sentinel live monitoring)
+- [x] Extract Settings view → `src/components/views/SettingsView.tsx` (API keys, model default, agent mode, debounce, auto-apply, sentinel live monitoring)
 - [ ] Extract About view → `src/components/views/AboutView.tsx` (whitepaper/changelog/comparison doc)
 - [ ] Extract Sentinel view → `src/components/views/SentinelView.tsx` (security risk board, findings table)
 - [ ] Extract History view → `src/components/views/HistoryView.tsx` (previous sessions list)
