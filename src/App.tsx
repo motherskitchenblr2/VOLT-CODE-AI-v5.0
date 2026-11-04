@@ -58,6 +58,7 @@ import {
 } from "./services/AgentWorkforce";
 import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
 import { useToast } from "./components/Toast";
+import { useVolt } from "./context/VoltContext";
 
 interface Session {
   id: string;
@@ -107,22 +108,6 @@ interface GitHubIssue {
   user?: { login?: string } | null;
   created_at: string;
 }
-
-type View =
-  | "editor"
-  | "ide"
-  | "history"
-  | "settings"
-  | "sentinel"
-  | "about"
-  | "github"
-  | "repo-ops"
-  | "admin"
-  | "diagnostics"
-  | "terminal"
-  | "meeting"
-  | "pr-review"
-  | "swarm";
 
 type AgentMode =
   "manual" | "assist" | "auto-syntax" | "auto-debug" | "team-review";
@@ -382,12 +367,33 @@ const ControlAccordion: React.FC<{
 };
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>("editor");
-  const [code, setCode] = useState(
-    'function calculateSum(arr) {\n  let sum = 0;\n  for (let i = 0; i < arr.length; i++) {\n    sum += arr[i];\n  }\n  console.log("Sum is: " + sum);\n  return sum;\n}',
-  );
-  const [language, setLanguage] = useState("javascript");
-  const [detectedLanguage, setDetectedLanguage] = useState("javascript");
+  const {
+    code,
+    setCode,
+    language,
+    setLanguage,
+    detectedLanguage,
+    setDetectedLanguage,
+    selectedModel,
+    setSelectedModel,
+    selectedPlugin,
+    setSelectedPlugin,
+    selectedSkill,
+    setSelectedSkill,
+    agentMode,
+    setAgentMode,
+    openrouterKey,
+    setOpenrouterKey,
+    groqKey,
+    setGroqKey,
+    nvidiaKey,
+    setNvidiaKey,
+    huggingfaceKey,
+    setHuggingfaceKey,
+    activeTab,
+    setActiveTab,
+  } = useVolt();
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -404,11 +410,7 @@ const App: React.FC = () => {
   const [loginBusy, setLoginBusy] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [scanProgress, setScanProgress] = useState(0);
-  const [selectedModel, setSelectedModel] = useState(FREE_MODELS[0]);
-  const [selectedPlugin, setSelectedPlugin] = useState("Test Runner");
-  const [selectedSkill, setSelectedSkill] = useState("Syntax Repair");
   const [, setAgentStatus] = useState("idle");
-  const [agentMode, setAgentMode] = useState<AgentMode>("assist");
   const [tokensUsed, setTokensUsed] = useState(0);
   const [promptTokens, setPromptTokens] = useState(0);
   const [completionTokens, setCompletionTokens] = useState(0);
@@ -441,20 +443,6 @@ const App: React.FC = () => {
   const [debounceDelay, setDebounceDelay] = useState(2500);
   const [showTokenUsage, setShowTokenUsage] = useState(true);
   const [showShortcutsCheatSheet, setShowShortcutsCheatSheet] = useState(false);
-
-  // Custom API Keys
-  const [openrouterKey, setOpenrouterKey] = useState(
-    localStorage.getItem("volt_openrouter_key") || "",
-  );
-  const [groqKey, setGroqKey] = useState(
-    localStorage.getItem("volt_groq_key") || "",
-  );
-  const [nvidiaKey, setNvidiaKey] = useState(
-    localStorage.getItem("volt_nvidia_key") || "",
-  );
-  const [huggingfaceKey, setHuggingfaceKey] = useState(
-    localStorage.getItem("volt_huggingface_key") || "",
-  );
 
   // Live AI Provider model catalog (fetched from /api/models)
   const {
@@ -1391,7 +1379,7 @@ const App: React.FC = () => {
       }
       if (e.ctrlKey && e.key === "/") {
         e.preventDefault();
-        setCurrentView((prev) => (prev === "sentinel" ? "editor" : "sentinel"));
+        setActiveTab(activeTab === "sentinel" ? "editor" : "sentinel");
       }
       if (e.ctrlKey && e.key === "k") {
         e.preventDefault();
@@ -1676,7 +1664,7 @@ const App: React.FC = () => {
       setCompletionTokens(session.completionTokens || 0);
     }
     if (session.modelUsed) setCurrentModelName(session.modelUsed);
-    setCurrentView("editor");
+    setActiveTab("editor");
     setShowReport(true);
   };
 
@@ -1837,7 +1825,7 @@ const App: React.FC = () => {
       <div className="p-8 max-w-4xl mx-auto overflow-y-auto h-full pb-20 select-text">
         <div className="bg-white text-black p-12 shadow-2xl rounded-2xl border-4 border-double vol-line font-serif relative">
           <button
-            onClick={() => setCurrentView("editor")}
+            onClick={() => setActiveTab("editor")}
             className="absolute top-6 right-6 px-4 py-2 rounded-full border vol-line hover:vol-well hover:vol-t1 transition-all font-sans text-xs font-bold"
           >
             DISAPPEAR DOCUMENT [ESC]
@@ -2489,7 +2477,7 @@ const App: React.FC = () => {
   // ==========================================
 
   const renderContent = () => {
-    if (currentView === "history") {
+    if (activeTab === "history") {
       return (
         <div className="p-8 select-text h-full overflow-y-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -2547,11 +2535,11 @@ const App: React.FC = () => {
       );
     }
 
-    if (currentView === "sentinel") {
+    if (activeTab === "sentinel") {
       return renderSentinelBoard();
     }
 
-    if (currentView === "settings") {
+    if (activeTab === "settings") {
       // one scroller only: the shell section already scrolls; a nested
       // h-full overflow-y-auto here froze touch scrolling on phones
       return (
@@ -3050,15 +3038,15 @@ const App: React.FC = () => {
       );
     }
 
-    if (currentView === "about") {
+    if (activeTab === "about") {
       return renderAboutWhitePaper();
     }
 
-    if (currentView === "repo-ops") {
+    if (activeTab === "repo-ops") {
       return <RepoOpsPanel addLog={(m, l) => addLog(m, l || "info")} />;
     }
 
-    if (currentView === "github") {
+    if (activeTab === "github") {
       return (
         <div className="p-8 h-full overflow-y-auto space-y-6">
           <div className="flex justify-between items-center flex-wrap gap-4 border-b vol-ring pb-5">
@@ -3244,7 +3232,7 @@ const App: React.FC = () => {
       );
     }
 
-    if (currentView === "admin") {
+    if (activeTab === "admin") {
       return (
         <AdminCenter
           tokensUsed={tokensUsed}
@@ -3270,7 +3258,7 @@ const App: React.FC = () => {
       );
     }
 
-    if (currentView === "swarm") {
+    if (activeTab === "swarm") {
       return (
         <div className="w-full h-full overflow-y-auto vol-surface pt-6">
           <SwarmPanel
@@ -3284,7 +3272,7 @@ const App: React.FC = () => {
     }
 
     // IDE Canvas View (v0 dormant restore)
-    if (currentView === "ide") {
+    if (activeTab === "ide") {
       return (
         <div className="w-full h-full flex flex-col md:flex-row overflow-hidden vol-surface">
           <div className="flex-1 min-w-0 flex flex-col">
@@ -3294,7 +3282,7 @@ const App: React.FC = () => {
                 IDE CANVAS · {language.toUpperCase()}
               </div>
               <button
-                onClick={() => setCurrentView("editor")}
+                onClick={() => setActiveTab("editor")}
                 className="text-[10px] font-bold vol-t2 hover:vol-t1 px-3 py-1.5 rounded-lg vol-wash hover:vol-wash"
               >
                 BACK TO EDITOR
@@ -3338,7 +3326,7 @@ const App: React.FC = () => {
     }
 
     // Meeting Panel View
-    if (currentView === "meeting") {
+    if (activeTab === "meeting") {
       // Meeting minutes + orchestrator guidance derived from the live swarm run
       const agentNames = Object.keys(agentBreakdown);
       const participants = agentNames.length
@@ -3408,7 +3396,7 @@ const App: React.FC = () => {
           : null;
       return (
         <div className="w-full h-full overflow-y-auto">
-          <MeetingPanel onClose={() => setCurrentView("editor")} />
+          <MeetingPanel onClose={() => setActiveTab("editor")} />
           <div className="p-4 md:p-6 space-y-4">
             {guidance && !guidanceDismissed && (
               <BossGuidancePanel
@@ -3425,7 +3413,7 @@ const App: React.FC = () => {
     }
 
     // PR Review Dashboard View
-    if (currentView === "pr-review") {
+    if (activeTab === "pr-review") {
       // Sample PRs for demonstration
       const samplePRs: PullRequest[] = [
         {
@@ -3924,7 +3912,7 @@ const App: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setCurrentView("meeting")}
+                onClick={() => setActiveTab("meeting")}
                 className="flex items-center justify-center gap-2 py-3.5 rounded-2xl vol-elev border vol-ring-strong vol-accent text-xs font-bold transition-all cursor-pointer"
               >
                 <Users className="w-4 h-4" />
@@ -4027,7 +4015,7 @@ const App: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView("meeting")}
+              onClick={() => setActiveTab("meeting")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border vol-ring-strong vol-accent font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <Crown className="w-5 h-5" />
@@ -4037,7 +4025,7 @@ const App: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView("meeting")}
+              onClick={() => setActiveTab("meeting")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border border-blue-600/60 text-blue-400 font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <Users className="w-5 h-5" />
@@ -4047,7 +4035,7 @@ const App: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.015 }}
               whileTap={{ scale: 0.985 }}
-              onClick={() => setCurrentView("pr-review")}
+              onClick={() => setActiveTab("pr-review")}
               className="flex items-center gap-3 px-8 py-3.5 rounded-xl vol-elev border border-orange-600/60 text-orange-400 font-semibold hover:vol-well transition-all cursor-pointer"
             >
               <GitPullRequest className="w-5 h-5" />
@@ -4641,7 +4629,7 @@ const App: React.FC = () => {
                 <button
                   key={view}
                   onClick={() => {
-                    setCurrentView(view);
+                    setActiveTab(view);
                     finishOnboarding();
                   }}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl vol-wash hover:vol-acc-wash border vol-line hover:vol-ring-hi text-left cursor-pointer transition-all"
@@ -4669,8 +4657,8 @@ const App: React.FC = () => {
         content={renderContent()}
         terminal={renderTerminalPanel()}
         diagnostics={renderDiagnosticsColumn()}
-        currentView={currentView}
-        setCurrentView={setCurrentView as (v: string) => void}
+        currentView={activeTab}
+        setCurrentView={setActiveTab as (v: string) => void}
         sentinelLevel={sentinelLevel}
         sentinelLabel={sentinelLabel}
       />

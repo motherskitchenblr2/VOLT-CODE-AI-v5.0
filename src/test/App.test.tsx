@@ -16,6 +16,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { render, waitFor, fireEvent, act } from "@testing-library/react";
+import { VoltProvider } from "../context/VoltContext";
 
 // ---------------------------------------------------------------------------
 // Pure logic extracted for unit testing (mirrors the implementation in App.tsx)
@@ -275,7 +276,7 @@ describe("App component (App.tsx)", () => {
   it("renders without crashing", async () => {
     const { default: App } = await import("../App");
     await act(async () => {
-      render(<App />);
+      render(<VoltProvider><App /></VoltProvider>);
     });
     // App mounts — the textarea / code editor should be present
     const textareas = document.querySelectorAll("textarea");
@@ -298,7 +299,7 @@ describe("App component (App.tsx)", () => {
 
     const { default: App } = await import("../App");
     await act(async () => {
-      render(<App />);
+      render(<VoltProvider><App /></VoltProvider>);
     });
 
     // Find the agent chat input

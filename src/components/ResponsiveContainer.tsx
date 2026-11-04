@@ -4,13 +4,7 @@ import {
   Sparkles,
   Bot,
   Users,
-  Shield,
   GitPullRequest,
-  GitBranch,
-  History,
-  Settings,
-  HelpCircle,
-  Activity,
   Menu,
   X,
 } from "lucide-react";
@@ -31,25 +25,18 @@ type NavItem = [view: string, label: string, icon: React.ReactNode];
 const NAV: NavItem[] = [
   ["editor", "Editor", <Play className="w-5 h-5" />],
   ["ide", "IDE Canvas", <Sparkles className="w-5 h-5" />],
-  ["swarm", "Agent Swarm", <Bot className="w-5 h-5" />],
+  ["swarm", "Swarm", <Bot className="w-5 h-5" />],
   ["meeting", "Agents", <Users className="w-5 h-5" />],
-  ["sentinel", "Sentinel", <Shield className="w-5 h-5" />],
-  ["pr-review", "PR Review", <GitPullRequest className="w-5 h-5" />],
-  ["github", "GitHub", <GitBranch className="w-5 h-5" />],
-  ["repo-ops", "Repo Ops", <GitPullRequest className="w-5 h-5" />],
-  ["history", "History", <History className="w-5 h-5" />],
-  ["admin", "Admin", <Settings className="w-5 h-5" />],
-  ["settings", "Settings", <HelpCircle className="w-5 h-5" />],
-  ["about", "About", <Activity className="w-5 h-5" />],
+  ["hub", "Hub", <GitPullRequest className="w-5 h-5" />],
 ];
 
 /**
  * Clean mobile-first shell.
- *   Mobile (<1024): bottom scrollable tab bar with ALL 12 tabs, 44px+ touch targets.
+ *   Mobile (<1024): bottom tab bar with 5 tabs, 44px+ touch targets.
  *   Tablet (1024-1279): left icon rail.
  *   Desktop (≥1280): left labeled sidebar + content + diagnostics + terminal drawer.
  *   Single content scroller — no nested overflow containers.
- *   No slide-up sheets, no nav drawer, no MORE menu hiding tabs.
+ *   Hub tab consolidates Git-Room, Sentinel, Settings, Admin.
  */
 export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
   content,
@@ -220,12 +207,12 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           {terminal}
         </footer>
 
-        {/* ── MOBILE BOTTOM TAB BAR — ALL 12 TABS, scrollable ── */}
+        {/* ── MOBILE BOTTOM TAB BAR — 5 TABS ── */}
         <nav
-          className="xl:hidden h-20 shrink-0 border-t vol-ring vol-surface backdrop-blur-md z-50"
+          className="xl:hidden h-20 shrink-0 border-t vol-ring vol-surface backdrop-blur-md z-50 pb-28"
           style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         >
-          <div className="flex items-stretch gap-0.5 overflow-x-auto no-scrollbar px-1">
+          <div className="flex items-stretch gap-0 px-1">
             {NAV.map(tabItem)}
           </div>
         </nav>
