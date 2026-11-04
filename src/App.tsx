@@ -3,8 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { classifyTask, smartRoute } from "./lib/smartRouter";
 import { detectLanguage } from "./lib/detectLanguage";
 import { RepoOpsPanel } from "./components/RepoOpsPanel";
-import { MeetingMinutesDisplay } from "./components/MeetingMinutesDisplay";
-import { BossGuidancePanel } from "./components/BossGuidancePanel";
 import { useApiGateway } from "./hooks/useApiGateway";
 import {
   Copy,
@@ -27,7 +25,6 @@ import { VisualDiff } from "./components/VisualDiff";
 import { AdminCenter } from "./components/AdminCenter";
 import { PullRequest } from "./services/AgentCommunication";
 import { TerminalPanel } from "./components/TerminalPanel";
-import { MeetingPanel } from "./components/MeetingPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
 import { CloudAuth } from "./components/CloudAuth";
 
@@ -51,6 +48,7 @@ import { AboutView } from "./components/views/AboutView";
 import { HistoryView } from "./components/views/HistoryView";
 import { SentinelView } from "./components/views/SentinelView";
 import { GitHubView } from "./components/views/GitHubView";
+import { MeetingView } from "./components/views/MeetingView";
 import { TodoItem } from "./components/TODOListWidget";
 
 interface Session {
@@ -1797,88 +1795,16 @@ const App: React.FC = () => {
 
     // Meeting Panel View
     if (activeTab === "meeting") {
-      // Meeting minutes + orchestrator guidance derived from the live swarm run
-      const agentNames = Object.keys(agentBreakdown);
-      const participants = agentNames.length
-        ? agentNames
-        : ["Security", "QA", "UI", "Architect"];
-      const minutes = {
-        id: `mtg-${consensusScore ?? 0}`,
-        title: "Agent Swarm Sync",
-        date: new Date(),
-        participants,
-        agenda: ["Review latest analysis", "Approve fixes"],
-        decisions: participants.map((name, i) => ({
-          id: `d-${i}`,
-          title: `${name} verdict`,
-          description:
-            agentBreakdown[name] !== undefined
-              ? `Score ${agentBreakdown[name]}/100`
-              : "Awaiting run",
-          votes: [
-            {
-              agent: "Triage",
-              vote: (agentBreakdown[name] ?? 0) >= 70 ? "yes" : "no",
-            } as const,
-          ],
-          bossApproval: Boolean(consensusPassed),
-          timestamp: new Date(),
-        })),
-        actionItems: participants.map((name, i) => ({
-          id: `a-${i}`,
-          description: `Apply fixes approved by ${name}`,
-          assignedTo: name,
-          dueDate: new Date(),
-          // Consensus passing only approves the patch; the edit is applied
-          // later in applyAllFixes, so keep these pending until then.
-          status: "pending" as "pending" | "in-progress" | "completed",
-          priority: "medium" as const,
-        })),
-        notes:
-          (Array.isArray(consensusFeedback)
-            ? consensusFeedback.join(" ")
-            : consensusFeedback) ||
-          "No consensus feedback yet — run an analysis.",
-      };
-      const score = consensusScore ?? 0;
-      const guidance =
-        !consensusPassed && score > 0
-          ? {
-              id: "g-1",
-              prNumber: 0,
-              reason: "Consensus score below the merge threshold",
-              concern: "rejected-critical-fix" as const,
-              recommendation:
-                (Array.isArray(consensusFeedback)
-                  ? consensusFeedback.join(" ")
-                  : consensusFeedback) ||
-                "Retry with a stricter skill or repair the flagged issues.",
-              agentFeedback: participants.map(
-                (n) => `${n}: ${agentBreakdown[n] ?? "?"}/100`,
-              ),
-              riskLevel: (score < 40
-                ? "critical"
-                : score < 60
-                  ? "high"
-                  : "medium") as "low" | "medium" | "high" | "critical",
-              timestamp: new Date(),
-            }
-          : null;
       return (
-        <div className="w-full h-full overflow-y-auto">
-          <MeetingPanel onClose={() => setActiveTab("editor")} />
-          <div className="p-4 md:p-6 space-y-4">
-            {guidance && !guidanceDismissed && (
-              <BossGuidancePanel
-                guidance={guidance}
-                onDismiss={() => setGuidanceDismissed(true)}
-                onAccept={() => setGuidanceDismissed(true)}
-                onConfirm={() => setGuidanceDismissed(true)}
-              />
-            )}
-            <MeetingMinutesDisplay meeting={minutes} />
-          </div>
-        </div>
+        <MeetingView
+          agentBreakdown={agentBreakdown}
+          consensusScore={consensusScore}
+          consensusPassed={consensusPassed}
+          consensusFeedback={consensusFeedback}
+          guidanceDismissed={guidanceDismissed}
+          setGuidanceDismissed={setGuidanceDismissed}
+          onClose={() => setActiveTab("editor")}
+        />
       );
     }
 
