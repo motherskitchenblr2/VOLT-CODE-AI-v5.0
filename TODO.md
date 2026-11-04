@@ -16,7 +16,7 @@
 - [x] B-4: Refactor GitHubView.tsx → design system tokens + UI components
 - [x] B-5: Refactor MeetingView.tsx → design system tokens + UI components
 - [x] B-6: Refactor IDECanvasView.tsx → design system tokens + UI components
-- [ ] B-7: Refactor HubView.tsx → design system tokens + UI components
+- [x] B-7: Refactor HubView.tsx → design system tokens + UI components
 - [ ] B-8: Refactor HistoryView.tsx → design system tokens + UI components
 - [ ] B-9: Refactor SwarmView.tsx → design system tokens + UI components
 - [ ] B-10: Refactor AboutView.tsx → design system tokens + UI components
