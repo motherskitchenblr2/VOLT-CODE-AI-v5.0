@@ -18,7 +18,7 @@ import {
 import { AgentGroupChat } from "./AgentGroupChat";
 import { AudioInterface } from "./AudioInterface";
 import { ExecutionPanel } from "./ExecutionPanel";
-import { Users, LogOut, Plus, Settings } from "lucide-react";
+import { Users, LogOut, Plus, Settings, Crown } from "lucide-react";
 
 interface MeetingPanelProps {
   onClose?: () => void;
@@ -255,16 +255,16 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           <div className="flex gap-1 vol-wash rounded-lg p-1">
             <button
               onClick={() => setLanguage("en")}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded font-semibold text-[10px] sm:text-sm transition-all ${
-                language === "en" ? "bg-blue-600 vol-t1" : "vol-t2 hover:vol-t1"
+              className={`icon-btn sm:px-3 sm:py-1.5 rounded font-semibold text-[10px] sm:text-sm transition-all ${
+                language === "en" ? "bg-[var(--color-info)] text-black" : "vol-t2 hover:vol-t1"
               }`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage("hi")}
-              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded font-semibold text-[10px] sm:text-sm transition-all ${
-                language === "hi" ? "bg-blue-600 vol-t1" : "vol-t2 hover:vol-t1"
+              className={`icon-btn sm:px-3 sm:py-1.5 rounded font-semibold text-[10px] sm:text-sm transition-all ${
+                language === "hi" ? "bg-[var(--color-info)] text-black" : "vol-t2 hover:vol-t1"
               }`}
             >
               HI
@@ -274,31 +274,33 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
           {/* Settings Button */}
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="p-2 sm:p-2.5 rounded-lg hover:vol-wash transition-colors"
+            className="icon-btn"
             title={language === "en" ? "Settings" : "सेटिंग्स"}
+            aria-label={language === "en" ? "Settings" : "सेटिंग्स"}
           >
-            <Settings className="w-4 h-5 vol-t2 hover:vol-t1" />
+            <Settings className="w-5 h-5 vol-t2 hover:vol-t1" />
           </button>
 
           {/* Boss Presence Toggle */}
           <button
             onClick={toggleBossPresence}
-            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-[10px] sm:text-sm transition-all ${
+            className={`icon-btn sm:px-4 sm:py-2 rounded-lg font-semibold text-[10px] sm:text-sm transition-all ${
               isBossPresent
-                ? "bg-yellow-600 vol-t1"
-                : "vol-wash vol-t2 hover:vol-t1"
+                ? "bg-[var(--color-warning)] text-black"
+                : "vol-t2 hover:vol-t1"
             }`}
           >
-            {isBossPresent ? "👑" : "🚪"} {language === "en" ? "Boss" : "बॉस"}
+            <Crown className="w-4 h-4 mr-1" /> {language === "en" ? "Boss" : "बॉस"}
           </button>
 
           {/* Close Button */}
           <button
             onClick={handleEndMeeting}
-            className="p-2 sm:p-2.5 rounded-lg hover:bg-red-600/20 transition-colors"
+            className="icon-btn hover:bg-[rgba(239,68,68,0.15)] text-red-400 hover:text-red-300"
             title={language === "en" ? "End Meeting" : "बैठक समाप्त करें"}
+            aria-label={language === "en" ? "End Meeting" : "बैठक समाप्त करें"}
           >
-            <LogOut className="w-4 h-5 text-red-400" />
+            <LogOut className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -320,7 +322,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
                 <select
                   value={selectedAgent || ""}
                   onChange={(e) => setSelectedAgent(e.target.value)}
-                  className="w-full vol-panel border vol-line rounded-lg px-3 py-2 vol-t1 text-sm focus:outline-none focus:border-blue-500"
+                  className="w-full vol-panel border vol-line rounded-lg px-3 py-3 vol-t1 text-sm focus:outline-none focus:border-[var(--color-ring)] min-h-[44px]"
                 >
                   {Array.from(agentsMap.values()).map((agent) => (
                     <option key={agent.id} value={agent.id}>
@@ -336,7 +338,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
                 </label>
                 <button
                   onClick={handleCreateTask}
-                  className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 vol-t1 font-semibold text-sm hover:from-green-700 hover:to-emerald-700 transition-all flex items-center justify-center gap-2"
+                  className="w-full px-4 py-3 rounded-lg bg-[var(--color-success)] text-black font-semibold text-sm hover:bg-[var(--color-success)]/80 transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   <Plus className="w-4 h-4" />
                   {language === "en" ? "New Task" : "नया कार्य"}
@@ -396,7 +398,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
                   <button
                     key={task.id}
                     onClick={() => handleBossApproveTask(task.id)}
-                    className="px-3 py-1 rounded bg-yellow-600/70 text-yellow-100 hover:bg-yellow-600 transition-colors font-semibold"
+                    className="icon-btn sm:px-4 sm:py-1.5 bg-[var(--color-warning)] text-black hover:bg-[var(--color-warning)]/80 font-semibold"
                     disabled={!isBossPresent}
                     title={isBossPresent ? "" : "Boss must be present"}
                   >
@@ -411,7 +413,7 @@ export const MeetingPanel: React.FC<MeetingPanelProps> = ({ onClose }) => {
                   <button
                     key={task.id}
                     onClick={() => handleExecuteTask(task.id)}
-                    className="px-3 py-1 rounded bg-green-600/70 text-green-100 hover:bg-green-600 transition-colors font-semibold"
+                    className="icon-btn sm:px-4 sm:py-1.5 bg-[var(--color-success)] text-black hover:bg-[var(--color-success)]/80 font-semibold"
                   >
                     {language === "en" ? "Execute" : "निष्पादित करें"}
                   </button>

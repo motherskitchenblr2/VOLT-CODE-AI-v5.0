@@ -5,14 +5,15 @@
  * Children provide the modal content.
  *
  * Design system compliance:
- *   - Overlay: rgba(15, 23, 42, 0.5) backdrop-blur
- *   - Card: --ds-color-card with --ds-shadow-xl
- *   - Radius: --ds-radius-lg
+ *   - Overlay: rgba(5, 5, 5, 0.6) backdrop-blur
+ *   - Card: --color-card with --shadow-xl
+ *   - Radius: --radius-xl
  *   - Focus trap via focus-visible ring
  *   - Close button: cursor-pointer, hover transition
  *   - No emojis as icons (Lucide SVG only)
+ *   - Mobile: full-screen on small screens
  */
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
@@ -23,6 +24,7 @@ interface ModalProps {
   titleIcon?: ReactNode;
   className?: string;
   children: ReactNode;
+  size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -32,44 +34,115 @@ export const Modal: React.FC<ModalProps> = ({
   titleIcon,
   className = "",
   children,
+  size = "md",
 }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  // Focus trap
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElement.current = document.activeElement as HTMLElement;
+      // Focus first focusable element
+      setTimeout(() => {
+        contentRef.current?.focus();
+      }, 0);
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          onClose();
+        }
+        if (e.key === "Tab") {
+          const focusableElements = contentRef.current?.querySelectorAll<
+            HTMLElement
+          >(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (!focusableElements?.length) return;
+
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey && document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          } else if (!e.shiftKey && document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "";
+        previousActiveElement.current?.focus();
+      };
+    }
+  }, [isOpen, onClose]);
+
+  const sizeClasses: Record<string, string> = {
+    sm: "max-w-md",
+    md: "max-w-2xl",
+    lg: "max-w-4xl",
+    xl: "max-w-6xl",
+    full: "max-w-full mx-4 my-4",
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-[var(--ds-z-modal)] flex items-center justify-center p-4 sm:p-6 select-text"
+          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-4 select-text"
           onClick={onClose}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={title ? "modal-title" : undefined}
         >
           <div
-            className="absolute inset-0 bg-[#0F172A]/60 backdrop-blur-md"
+            className="absolute inset-0 bg-[var(--color-background)]/60 backdrop-blur-md"
             onClick={onClose}
+            aria-hidden="true"
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 30 }}
+            ref={contentRef}
+            initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.985, y: 15 }}
-            transition={{ ease: [0.21, 0.92, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 0.98, y: 10 }}
+            transition={{ ease: [0.21, 0.92, 0.3, 1], duration: 0.2 }}
             className={
-              "relative z-[51] w-full max-w-4xl max-h-[90vh] " +
-              "border border-[var(--ds-color-border)] bg-[var(--ds-color-card)] " +
-              "rounded-[var(--ds-radius-lg)] shadow-[var(--ds-shadow-xl)] overflow-hidden flex flex-col " +
+              "relative z-[51] w-full " +
+              sizeClasses[size] +
+              " max-h-[90vh] " +
+              "border border-[var(--color-border-strong)] bg-[var(--color-card)] " +
+              "rounded-[var(--radius-xl)] shadow-[var(--shadow-xl)] overflow-hidden flex flex-col " +
               className
             }
+            tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
           >
             {title && (
-              <div className="px-6 py-4 border-b border-[var(--ds-color-border)] flex items-center justify-between select-none">
+              <div className="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between select-none">
                 <div className="flex items-center gap-3">
                   {titleIcon && (
                     <span className="w-5 h-5 flex-shrink-0">{titleIcon}</span>
                   )}
-                  <h3 className="font-bold text-xl text-[#F8FAFC]">{title}</h3>
+                  <h3
+                    id="modal-title"
+                    className="font-bold text-xl text-[var(--color-foreground)]"
+                  >
+                    {title}
+                  </h3>
                 </div>
                 <button
                   onClick={onClose}
-                  className="cursor-pointer hover:bg-[#334155]/20 rounded-lg p-1.5 transition-colors duration-200"
+                  className="icon-btn hover:bg-[var(--color-accent-soft)] hover:border-[var(--color-border)] rounded-lg p-1.5 transition-colors duration-200"
+                  aria-label="Close modal"
                 >
-                  <X className="w-5 h-5 text-[#F8FAFC]" />
+                  <X className="w-5 h-5 text-[var(--color-foreground)]" />
                 </button>
               </div>
             )}

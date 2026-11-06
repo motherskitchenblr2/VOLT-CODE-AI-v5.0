@@ -6,10 +6,10 @@
  * full-bleed within a layout column rather than a standalone contained object.
  *
  * Design system compliance:
- *   - Background: --ds-color-background
- *   - Border: --ds-color-border
- *   - Radius: --ds-radius-lg
- *   - Padding: --ds-space-lg (default)
+ *   - Background: --color-background
+ *   - Border: --color-border
+ *   - Radius: --radius-lg
+ *   - Padding: --space-6 (default)
  *   - Focus: visible focus-visible ring when interactive
  */
 import React from "react";
@@ -27,7 +27,7 @@ export const Panel: React.FC<PanelProps> = ({
   return (
     <div
       className={
-        "relative rounded-lg border border-[var(--ds-color-border)] bg-[var(--ds-color-background)] " +
+        "relative rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] " +
         "transition-all duration-200 " +
         (padded ? "p-6" : "") +
         " " +
