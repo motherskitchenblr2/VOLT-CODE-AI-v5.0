@@ -18,7 +18,6 @@ import { AdminCenter } from "./components/AdminCenter";
 import { TerminalPanel } from "./components/TerminalPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
 
-import { RecoveryCenter } from "./services/RecoveryCenter";
 import { riskLevel, levelLabel } from "./lib/sentinel/analyzers";
 import { ConsensusEngine, MultiAgentOrchestrator } from "./services/AgentWorkforce";
 import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
@@ -122,7 +121,8 @@ const App: React.FC = () => {
   const [vaultSyncState, setVaultSyncState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   const fetchVaultStatus = useCallback(async () => {
-    try { const res = await fetch(`/api/database?action=getSecretStatus`); if (res.ok) { const data = await res.json(); setVaultStored(Boolean(data.stored)); } } catch { setVaultStored(false); }
+    // # ponytail: no backend DB in SPA; vault status derived from localStorage presence
+    setVaultStored(Boolean(localStorage.getItem("volt_groqKey") || localStorage.getItem("volt_openrouterKey") || localStorage.getItem("volt_nvidiaKey") || localStorage.getItem("volt_huggingfaceKey")));
   }, []);
 
   useEffect(() => { fetchVaultStatus(); }, [fetchVaultStatus]);
@@ -131,8 +131,14 @@ const App: React.FC = () => {
     const hasAnyKey = groqKey || openrouterKey || nvidiaKey || huggingfaceKey;
     if (!hasAnyKey) return;
     setVaultSyncState("saving");
-    const timer = setTimeout(async () => {
-      try { const res = await fetch(`/api/database?action=saveSecrets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keys: { groqKey, openrouterKey, nvidiaKey, huggingfaceKey } }) }); setVaultSyncState(res.ok ? "saved" : "error"); if (res.ok) fetchVaultStatus(); } catch { setVaultSyncState("error"); }
+    const timer = setTimeout(() => {
+      // # ponytail: no backend DB in SPA; keys persisted to localStorage only
+      localStorage.setItem("volt_groqKey", groqKey);
+      localStorage.setItem("volt_openrouterKey", openrouterKey);
+      localStorage.setItem("volt_nvidiaKey", nvidiaKey);
+      localStorage.setItem("volt_huggingfaceKey", huggingfaceKey);
+      setVaultSyncState("saved");
+      fetchVaultStatus();
     }, 800);
     return () => clearTimeout(timer);
   }, [groqKey, openrouterKey, nvidiaKey, huggingfaceKey, username, fetchVaultStatus]);
@@ -193,24 +199,48 @@ const App: React.FC = () => {
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
   const fetchAuditLogs = useCallback(async () => {
-    try { const res = await fetch(`/api/database?action=getAuditLogs`); if (res.ok) { const data = await res.json(); setAuditLogs(data || []); } else { setAuditLogs([{ action: "SYSTEM_BOOT", details: "Volt AI v6.0 Core engine successfully initialized.", status: "SUCCESS", createdAt: new Date().toISOString() }, { action: "SECURITY_CHECK", details: "Environment encryption validation constraints satisfied.", status: "SUCCESS", createdAt: new Date().toISOString() }]); } } catch { setAuditLogs([{ action: "SYSTEM_BOOT", details: "Volt AI v6.0 Core engine successfully initialized.", status: "SUCCESS", createdAt: new Date().toISOString() }, { action: "SECURITY_CHECK", details: "Environment encryption validation constraints satisfied.", status: "SUCCESS", createdAt: new Date().toISOString() }]); }
+    // # ponytail: no backend DB in SPA; audit logs from localStorage
+    const logs: AuditLog[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("audit_")) {
+        try { logs.push(JSON.parse(localStorage.getItem(key) || "{}")); } catch {}
+      }
+    }
+    setAuditLogs(logs.length > 0 ? logs : [{ action: "SYSTEM_BOOT", details: "Volt AI v6.0 Core engine successfully initialized.", status: "SUCCESS", createdAt: new Date().toISOString() }, { action: "SECURITY_CHECK", details: "Environment encryption validation constraints satisfied.", status: "SUCCESS", createdAt: new Date().toISOString() }]);
   }, []);
 
-  const loadCheckpoints = useCallback(async () => { try { const res = await fetch(`/api/database?action=getCheckpoints`); if (res.ok) { const data = await res.json(); setCheckpoints(data || []); } else { const localCheckpoints: Checkpoint[] = []; for (let i = 0; i < localStorage.length; i++) { const key = localStorage.key(i); if (key && key.startsWith("backup_")) { const checkpointId = key.replace("backup_", ""); const val = localStorage.getItem(key); if (val) { const parsed = JSON.parse(val); localCheckpoints.push({ checkpointId, filePath: parsed.filePath, createdAt: parsed.timestamp } as Checkpoint); } } } setCheckpoints(localCheckpoints); } } catch { } }, []);
+  const loadCheckpoints = useCallback(async () => {
+    const localCheckpoints: Checkpoint[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("backup_")) {
+        const checkpointId = key.replace("backup_", "");
+        const val = localStorage.getItem(key);
+        if (val) {
+          const parsed = JSON.parse(val);
+          localCheckpoints.push({ checkpointId, filePath: parsed.filePath, createdAt: parsed.timestamp } as Checkpoint);
+        }
+      }
+    }
+    setCheckpoints(localCheckpoints);
+  }, []);
 
   const createCheckpoint = useCallback(async (filePath: string, codeBackup: string): Promise<string> => {
     const checkpointId = "ck_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 6);
-    const payload = { checkpointId, filePath, codeBackup, gitCommitSha: "local_sha_rc2" };
     localStorage.setItem(`backup_${checkpointId}`, JSON.stringify({ filePath, content: codeBackup, timestamp: new Date().toISOString() }));
-    try { await fetch(`/api/database?action=saveCheckpoint`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); addLog(`[RECOVERY] Checkpoint ${checkpointId} created and registered inside database registers.`, "success"); } catch { addLog(`[RECOVERY] Saved checkpoint ${checkpointId} in local storage cache (database offline).`, "warn"); }
+    // # ponytail: no backend DB in SPA; checkpoint persisted to localStorage only
+    addLog(`[RECOVERY] Checkpoint ${checkpointId} created in localStorage.`, "success");
     loadCheckpoints();
     return checkpointId;
   }, [addLog, loadCheckpoints]);
 
   const onRestoreCheckpoint = useCallback(async (checkpointId: string) => {
-    const recovery = new RecoveryCenter((msg, type) => addLog(msg, type), username);
-    try { const recoveredCode = await recovery.undoLastRepair(checkpointId); setCode(recoveredCode); const raw = localStorage.getItem(`backup_${checkpointId}`); if (raw) { try { const parsed = JSON.parse(raw) as { filePath?: string }; if (parsed.filePath) setLoadedFilePath(parsed.filePath); } catch { } } showToast(`Checkpoint ${checkpointId} restored successfully!`, "success"); } catch (err: unknown) { showToast(`Restore failed: ${getErrorMessage(err)}`, "error"); }
-  }, [username, addLog]);
+    // # ponytail: RecoveryCenter inlined; no backend DB
+    const raw = localStorage.getItem(`backup_${checkpointId}`);
+    if (!raw) { showToast(`Checkpoint ${checkpointId} not found.`, "error"); return; }
+    try { const parsed = JSON.parse(raw) as { content: string; filePath?: string }; setCode(parsed.content); if (parsed.filePath) setLoadedFilePath(parsed.filePath); showToast(`Checkpoint ${checkpointId} restored successfully!`, "success"); } catch (err: unknown) { showToast(`Restore failed: ${getErrorMessage(err)}`, "error"); }
+  }, [addLog]);
 
   const onToggleHunk = useCallback((id: number) => { setAcceptedHunkIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); }, []);
 
@@ -243,7 +273,7 @@ const App: React.FC = () => {
         addLog(`[ORCHESTRATOR] Spawning TriageAgent and initiating Multi-Agent DAG workflow...`, "info");
         const orchestrator = new MultiAgentOrchestrator();
         const keys = { groqKey, openrouterKey, nvidiaKey, huggingfaceKey };
-        const result = await orchestrator.runOrchestration(`Resolve and optimize: ${selectedSkill} with ${selectedPlugin}. Source code validation.`, code, username, keys, { language: activeLanguage, filePath: loadedFilePath, circularCycles: 0 });
+        const result = await orchestrator.runOrchestration(`Resolve and optimize: ${selectedSkill} with ${selectedPlugin}. Source code validation.`, code, username, keys, { language: activeLanguage, filePath: loadedFilePath });
         const lastAttempt = result.history[result.history.length - 1];
         const finalScore = lastAttempt ? lastAttempt.score : 0;
         const finalFeedback = lastAttempt ? lastAttempt.feedback : [];
@@ -270,7 +300,7 @@ const App: React.FC = () => {
       }
       const data = await res.json();
       if (!data || !data.issues) { showToast("Model returned empty response. Try again.", "error"); addLog(`Malformed openrouter response object`, "error"); setIsAnalyzing(false); setAgentStatus("error"); return; }
-      const evalResult = await consensusEngine.current.evaluateCodePatch(data.fixedCode || code, { circularCycles: 0, filePath: loadedFilePath, language: activeLanguage });
+      const evalResult = await consensusEngine.current.evaluateCodePatch(data.fixedCode || code, { filePath: loadedFilePath, language: activeLanguage });
       setConsensusScore(evalResult.compositeScore); setConsensusPassed(evalResult.passed); setConsensusFeedback(evalResult.compiledFeedback); setAgentBreakdown(evalResult.agentBreakdown);
       if (data.issues) { setIssues(data.issues); setAcceptedHunkIds(data.issues.map((i: { id: number }) => i.id)); }
       if (data.fixedCode) setFixedCode(data.fixedCode);
@@ -301,9 +331,9 @@ const App: React.FC = () => {
     const allFixed = issues.reduce((acc, issue) => { if (!acceptedHunkIds.includes(issue.id)) return acc; const escaped = escapeRegExp(issue.original); return acc.replace(new RegExp(escaped, "g"), () => issue.fixed); }, code);
     setCode(allFixed); setShowDiff(false);
     addLog(`Successfully patched and updated accepted hunks. Checkpoint: ${checkpointId}.`, "success");
-    addLog("[TESTS] Running automated quality validation tests...", "info");
-    const testSuccess = Math.random() > 0.15;
-    if (testSuccess) { addLog("[TESTS] Automated verification tests PASSED.", "success"); showToast("Patches applied and verified successfully!", "success"); } else { addLog("[TESTS] Test execution failed on applied fixes. Recommend reviewing test output logs.", "warn"); showToast("Patches applied but tests failed verification.", "warn"); }
+    // # ponytail: no test runner in this SPA; ceiling: fake random pass/fail, upgrade: integrate vitest-runner or GitHub Actions for real verification
+    addLog("[TESTS] Patches applied. Run project test suite manually for verification.", "info");
+    showToast("Patches applied. Run tests to verify.", "success");
     _setSentinelStats((prev: { totalRuns: number; totalBugsFixed: number; timeSavedMinutes: number; tokensConsumed: number }) => ({ ...prev, totalBugsFixed: prev.totalBugsFixed + issues.filter((i) => acceptedHunkIds.includes(i.id)).length, timeSavedMinutes: prev.timeSavedMinutes + issues.filter((i) => acceptedHunkIds.includes(i.id)).length * 2 }));
     const newSession: Session = { id: Date.now().toString(36), timestamp: new Date().toISOString(), language: language === "auto" ? detectedLanguage : language, originalCode: code, fixedCode: allFixed, issues: issues.filter((i) => acceptedHunkIds.includes(i.id)), summary: `${issues.filter((i) => acceptedHunkIds.includes(i.id)).length} issues fixed. ${issues.filter((i) => acceptedHunkIds.includes(i.id) && (i.severity === "Critical" || i.severity === "High")).length} critical/high severity resolved.`, tokensUsed, promptTokens, completionTokens, modelUsed: selectedModel.name };
     const updatedSessions = [newSession, ...sessions].slice(0, 50); saveSessions(updatedSessions); setShowReport(true); setIssues([]); setFixedCode("");
@@ -367,13 +397,26 @@ const App: React.FC = () => {
     }).catch(() => addLog("[BACKUP] Corrupt or unreadable backup file.", "error"));
   };
 
+
   const handleLogin = async () => {
-    setLoginError(""); setLoginBusy(true); try { const action = loginMode === "register" ? "register" : "login"; const res = await fetch(`/api/auth?action=${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ username: username.trim(), password: loginPassword }) }); const data = (await res.json()) as { ok?: boolean; username?: string; error?: string; details?: string }; if (!res.ok || !data.ok) { setLoginError(data.details || data.error || "Sign-in failed."); return; } setIsLoggedIn(true); setUsername(data.username || username.trim()); _setShowLoginModal(false); } catch { setLoginError("Network error — could not reach the server."); } finally { setLoginBusy(false); } };
+    setLoginError(""); setLoginBusy(true);
+    try {
+      const users = JSON.parse(localStorage.getItem("volt_users") || "{}");
+      if (loginMode === "register") {
+        if (users[username.trim()]) { setLoginError("User already exists."); return; }
+        users[username.trim()] = { password: loginPassword }; // # ponytail: plaintext for demo only; ceiling: no hashing, upgrade: bcrypt/scrypt + salt
+        localStorage.setItem("volt_users", JSON.stringify(users));
+      } else {
+        if (!users[username.trim()] || users[username.trim()].password !== loginPassword) { setLoginError("Invalid credentials."); return; }
+      }
+      setIsLoggedIn(true); setUsername(username.trim()); _setShowLoginModal(false);
+    } catch { setLoginError("Login failed."); } finally { setLoginBusy(false); } };
 
   useEffect(() => {
-    (async () => { try { const res = await fetch("/api/auth?action=me", { credentials: "include" }); const data = (await res.json()) as { authenticated?: boolean; username?: string }; if (data.authenticated && data.username) { setIsLoggedIn(true); setUsername(data.username); } } catch { /* No session — leave logged out. */ } })();
+    // # ponytail: no backend auth; session from localStorage
+    const session = localStorage.getItem("volt_session");
+    if (session) { try { const data = JSON.parse(session); if (data.username) { setIsLoggedIn(true); setUsername(data.username); } } catch {} }
   }, []);
-
   const _filteredSessions = sessions.filter((s) => s.summary.toLowerCase().includes(historySearch.toLowerCase()) || s.language.toLowerCase().includes(historySearch.toLowerCase()) || (s.modelUsed && s.modelUsed.toLowerCase().includes(historySearch.toLowerCase())));
 
   const renderContent = () => {

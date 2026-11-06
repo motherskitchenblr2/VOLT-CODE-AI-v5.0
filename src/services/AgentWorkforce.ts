@@ -13,7 +13,6 @@ export interface VerificationResult {
 export interface VerifyContext {
   language?: string;
   filePath?: string;
-  circularCycles?: number;
 }
 
 export abstract class SeniorAgent {
@@ -134,17 +133,12 @@ export class SeniorArchitectAgent extends SeniorAgent {
     );
   }
   async verify(
-    code: string,
-    context?: { circularCycles: number },
+    _code: string,
+    _context?: VerifyContext,
   ): Promise<VerificationResult> {
     const feedback: string[] = [];
-    let score = 100;
-    if (context && context.circularCycles > 0) {
-      feedback.push(
-        "[ARCHITECTURE] Circular dependency loops identified inside module path context.",
-      );
-      score -= 30;
-    }
+    const score = 100;
+    // # ponytail: circular dependency detection requires AST/module graph; ceiling: no auto-detect, upgrade: integrate madge or ts-circular-analyzer
     return { passed: score >= 70, score, feedback };
   }
 }

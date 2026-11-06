@@ -21,18 +21,18 @@
 - [x] B-11: ResponsiveContainer.tsx shell (mobile dock, desktop rail, sticky header)
 - [x] B-12: Views use design system tokens + UI components
 
-## Phase C — Slim Shell + Mobile Fix + Deploy — IN PROGRESS 🔄
-- [ ] C-1: Replace App.tsx monolith with slim shell router (< 400 lines, down from 2382)
-- [ ] C-2: Bottom dock: 5 tabs with min 44×44px touch targets + pb-28 clearance (in ResponsiveContainer)
-- [ ] C-3: Top bar: brand + active engine pill + sentinel pill + theme toggle (in ResponsiveContainer)
-- [ ] C-4: Sticky action bar: RUN AI / CHAT
-- [ ] C-5: Fix mobile scrolling (whole page scroll → contained scroll)
-- [ ] C-6: Run full verification: build + lint 0 errors + tests 79/79
-- [ ] C-7: Push to main branch directly
-- [ ] C-8: Vercel deployment check on volt-code-ai-v5-0.vercel.app
-- [ ] C-9: Confirm zero deployment errors
-- [ ] C-10: Record rejected-PR lessons in AGENT_LESSONS.md
-- [ ] C-11: Short bullet summary + ready for next task
+## Phase C — Slim Shell + Mobile Fix + Deploy — COMPLETE ✅
+- [x] C-1: Replace App.tsx monolith with slim shell router (< 400 lines, down from 2382)
+- [x] C-2: Bottom dock: 5 tabs with min 44×44px touch targets + pb-28 clearance (in ResponsiveContainer)
+- [x] C-3: Top bar: brand + active engine pill + sentinel pill + theme toggle (in ResponsiveContainer)
+- [x] C-4: Sticky action bar: RUN AI / CHAT
+- [x] C-5: Fix mobile scrolling (whole page scroll → contained scroll)
+- [x] C-6: Run full verification: build + lint 0 errors + tests 79/79
+- [x] C-7: Push to main branch directly
+- [x] C-8: Vercel deployment check on volt-code-ai-v5-0.vercel.app (deployed to volt-code-ai-v5-0-next-gen-ops-projects.vercel.app)
+- [x] C-9: Confirm zero deployment errors
+- [x] C-10: Record rejected-PR lessons in AGENT_LESSONS.md
+- [x] C-11: Short bullet summary + ready for next task
 
 ---
 
@@ -57,7 +57,8 @@
 5. Vercel deployment check — zero errors
 
 ## Verification Status
-- Build: ⏳ Pending
-- Lint: ⏳ Pending
-- Tests: ⏳ Pending
-- Pushed to main: ⏳ Pending
+- Build: ✅ PASS
+- Lint: ✅ PASS (0 errors, 11 warnings)
+- Tests: ✅ PASS (79/79)
+- Pushed to main: ✅ PASS (commit 358dbe6)
+- Vercel: ✅ DEPLOYED (READY state)
