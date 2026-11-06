@@ -398,16 +398,49 @@ const App: React.FC = () => {
   };
 
 
+  const bytesToBase64 = (bytes: Uint8Array): string => btoa(String.fromCharCode(...bytes));
+  const base64ToBytes = (b64: string): Uint8Array => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+
+  const hashPassword = async (password: string, saltB64?: string) => {
+    const encoder = new TextEncoder();
+    const salt = saltB64 ? base64ToBytes(saltB64) : crypto.getRandomValues(new Uint8Array(16));
+    const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+    const iterations = 100000;
+    const derived = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+      keyMaterial,
+      256
+    );
+    return {
+      salt: bytesToBase64(salt),
+      hash: bytesToBase64(new Uint8Array(derived)),
+      iterations,
+      algorithm: "PBKDF2",
+      hashAlgorithm: "SHA-256",
+    };
+  };
+
+  const verifyPassword = async (password: string, stored: { salt: string; hash: string }) => {
+    const recalculated = await hashPassword(password, stored.salt);
+    const a = base64ToBytes(recalculated.hash);
+    const b = base64ToBytes(stored.hash);
+    if (a.length !== b.length) return false;
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+    return diff === 0;
+  };
+
   const handleLogin = async () => {
     setLoginError(""); setLoginBusy(true);
     try {
       const users = JSON.parse(localStorage.getItem("volt_users") || "{}");
       if (loginMode === "register") {
         if (users[username.trim()]) { setLoginError("User already exists."); return; }
-        users[username.trim()] = { password: loginPassword }; // # ponytail: plaintext for demo only; ceiling: no hashing, upgrade: bcrypt/scrypt + salt
+        users[username.trim()] = { passwordHash: await hashPassword(loginPassword) };
         localStorage.setItem("volt_users", JSON.stringify(users));
       } else {
-        if (!users[username.trim()] || users[username.trim()].password !== loginPassword) { setLoginError("Invalid credentials."); return; }
+        const userRecord = users[username.trim()];
+        if (!userRecord || !userRecord.passwordHash || !(await verifyPassword(loginPassword, userRecord.passwordHash))) { setLoginError("Invalid credentials."); return; }
       }
       setIsLoggedIn(true); setUsername(username.trim()); _setShowLoginModal(false);
     } catch { setLoginError("Login failed."); } finally { setLoginBusy(false); } };
