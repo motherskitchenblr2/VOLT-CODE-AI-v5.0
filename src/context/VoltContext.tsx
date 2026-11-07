@@ -20,6 +20,7 @@ export interface ModelConfig {
   ctx: string;
   color: string;
   provider: string;
+  tier?: string;
 }
 
 interface VoltContextType {

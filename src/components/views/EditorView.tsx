@@ -10,7 +10,7 @@
  * No emojis as icons — Lucide SVG only.
  */
 import React from "react";
-import { ChevronDown, Zap, Settings, Activity, Bot, Bug, X, Send, GitPullRequest } from "lucide-react";
+import { Zap, Bot, Bug, X, Send, GitPullRequest, Settings, Activity, ChevronDown } from "lucide-react";
 import { useVolt } from "../../context/VoltContext";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
