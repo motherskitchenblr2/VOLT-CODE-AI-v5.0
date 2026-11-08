@@ -92,7 +92,8 @@ export function VoltProvider({ children }: { children: ReactNode }) {
   const [selectedPlugin, setSelectedPlugin] = useState("Test Runner");
   const [selectedSkill, setSelectedSkill] = useState("Syntax Repair");
 
-  const [selectedModel, setSelectedModel] = useState<ModelConfig>(DEFAULT_MODEL);
+  const [selectedModel, setSelectedModel] =
+    useState<ModelConfig>(DEFAULT_MODEL);
 
   const [openrouterKey, setOpenrouterKey] = useState(
     localStorage.getItem("volt_openrouter_key") || "",

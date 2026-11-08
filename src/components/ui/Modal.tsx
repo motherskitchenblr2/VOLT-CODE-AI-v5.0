@@ -53,11 +53,10 @@ export const Modal: React.FC<ModalProps> = ({
           onClose();
         }
         if (e.key === "Tab") {
-          const focusableElements = contentRef.current?.querySelectorAll<
-            HTMLElement
-          >(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-          );
+          const focusableElements =
+            contentRef.current?.querySelectorAll<HTMLElement>(
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+            );
           if (!focusableElements?.length) return;
 
           const firstElement = focusableElements[0];

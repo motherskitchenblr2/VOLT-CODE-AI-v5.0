@@ -128,9 +128,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         style={{ minHeight: "44px" }}
       >
         {icon}
-        <span className="text-[11px] font-bold tracking-widest">
-          {label}
-        </span>
+        <span className="text-[11px] font-bold tracking-widest">{label}</span>
       </button>
     );
   };
@@ -237,7 +235,10 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             className="xl:hidden shrink-0 border-t border-[var(--color-border)] bg-[var(--color-background)] backdrop-blur-md z-50 pb-safe"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            <div className="flex items-stretch gap-0 px-1" style={{ minHeight: "56px" }}>
+            <div
+              className="flex items-stretch gap-0 px-1"
+              style={{ minHeight: "56px" }}
+            >
               {NAV.map(tabItem)}
             </div>
           </nav>
@@ -249,7 +250,10 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             className="xl:hidden md:flex hidden shrink-0 border-t border-[var(--color-border)] bg-[var(--color-background)] backdrop-blur-md z-50"
             style={{ minHeight: "56px" }}
           >
-            <div className="flex items-stretch gap-0 px-1 w-full" style={{ minHeight: "56px" }}>
+            <div
+              className="flex items-stretch gap-0 px-1 w-full"
+              style={{ minHeight: "56px" }}
+            >
               {NAV.map(tabItem)}
             </div>
           </nav>

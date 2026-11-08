@@ -58,7 +58,9 @@ export const Input: React.FC<InputProps> = ({
         {...props}
       />
       {error && (
-        <p className="text-xs text-[var(--color-destructive)] font-medium mt-1">{error}</p>
+        <p className="text-xs text-[var(--color-destructive)] font-medium mt-1">
+          {error}
+        </p>
       )}
     </div>
   );

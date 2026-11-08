@@ -75,7 +75,11 @@ export const IDECanvasView: React.FC<IDECanvasViewProps> = ({
         </div>
       </div>
 
-      <Card padded={false} elevated={false} className="w-full md:w-80 shrink-0 border border-[var(--ds-color-border)] rounded-none overflow-y-auto bg-[#1B2336]">
+      <Card
+        padded={false}
+        elevated={false}
+        className="w-full md:w-80 shrink-0 border border-[var(--ds-color-border)] rounded-none overflow-y-auto bg-[#1B2336]"
+      >
         <TODOListWidget
           todos={todos}
           onAddTodo={onAddTodo}

@@ -54,8 +54,20 @@ export interface SettingsViewProps {
   gatewayLoading: boolean;
   gatewayLogs: string[];
   gatewayQuery: (
-    payload: { code: string; language: string; model: string; skill: string; plugin: string; customPrompt?: string },
-    keys: { groqKey?: string; openrouterKey?: string; nvidiaKey?: string; huggingfaceKey?: string },
+    payload: {
+      code: string;
+      language: string;
+      model: string;
+      skill: string;
+      plugin: string;
+      customPrompt?: string;
+    },
+    keys: {
+      groqKey?: string;
+      openrouterKey?: string;
+      nvidiaKey?: string;
+      huggingfaceKey?: string;
+    },
   ) => Promise<void>;
   refreshLiveProviders: () => void;
   liveProviderLoading: boolean;
@@ -80,7 +92,10 @@ export interface SettingsViewProps {
   sessions: Session[];
   setSessions: React.Dispatch<React.SetStateAction<Session[]>>;
   addLog: (msg: string, level?: "info" | "success" | "error" | "warn") => void;
-  showToast: (msg: string, level?: "info" | "success" | "error" | "warn") => void;
+  showToast: (
+    msg: string,
+    level?: "info" | "success" | "error" | "warn",
+  ) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -132,20 +147,65 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   } = useVolt();
 
   const modelOptionsAll = [
-    { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", tag: "BALANCED", ctx: "128K", color: "#F97316", provider: "Groq", tier: "FREE" },
-    { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B", tag: "FAST", ctx: "128K", color: "#60A5FA", provider: "Groq", tier: "FREE" },
-    { id: "deepseek-r1-distill-llama-70b", name: "DeepSeek R1 Distill Llama 70B", tag: "REASONING", ctx: "128K", color: "#3B82F6", provider: "Groq", tier: "FREE" },
-    { id: "gemma2-9b-it", name: "Gemma 2 9B", tag: "FAST", ctx: "8K", color: "#EF4444", provider: "Groq", tier: "FREE" },
-    { id: "openrouter/auto", name: "OpenRouter Auto", tag: "BALANCED", ctx: "varies", color: "#FF5F00", provider: "OpenRouter", tier: "FREE" },
-    { id: "qwen/qwen-2.5-coder-32b-instruct", name: "Qwen 2.5 Coder 32B", tag: "CODING", ctx: "32K", color: "#9333EA", provider: "OpenRouter", tier: "FREE" },
+    {
+      id: "llama-3.3-70b-versatile",
+      name: "Llama 3.3 70B",
+      tag: "BALANCED",
+      ctx: "128K",
+      color: "#F97316",
+      provider: "Groq",
+      tier: "FREE",
+    },
+    {
+      id: "llama-3.1-8b-instant",
+      name: "Llama 3.1 8B",
+      tag: "FAST",
+      ctx: "128K",
+      color: "#60A5FA",
+      provider: "Groq",
+      tier: "FREE",
+    },
+    {
+      id: "deepseek-r1-distill-llama-70b",
+      name: "DeepSeek R1 Distill Llama 70B",
+      tag: "REASONING",
+      ctx: "128K",
+      color: "#3B82F6",
+      provider: "Groq",
+      tier: "FREE",
+    },
+    {
+      id: "gemma2-9b-it",
+      name: "Gemma 2 9B",
+      tag: "FAST",
+      ctx: "8K",
+      color: "#EF4444",
+      provider: "Groq",
+      tier: "FREE",
+    },
+    {
+      id: "openrouter/auto",
+      name: "OpenRouter Auto",
+      tag: "BALANCED",
+      ctx: "varies",
+      color: "#FF5F00",
+      provider: "OpenRouter",
+      tier: "FREE",
+    },
+    {
+      id: "qwen/qwen-2.5-coder-32b-instruct",
+      name: "Qwen 2.5 Coder 32B",
+      tag: "CODING",
+      ctx: "32K",
+      color: "#9333EA",
+      provider: "OpenRouter",
+      tier: "FREE",
+    },
   ];
 
   const FREE_MODELS = modelOptionsAll.filter((m) => m.tier === "FREE");
 
-  const toggleSwitch = (
-    checked: boolean,
-    onToggle: () => void,
-  ) => (
+  const toggleSwitch = (checked: boolean, onToggle: () => void) => (
     <Button
       variant="ghost"
       size="sm"
@@ -158,21 +218,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   return (
     <Panel padded={true} className="p-4 sm:p-8 max-w-2xl mx-auto pb-24">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-[#F8FAFC]">SETTINGS</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-8 text-[#F8FAFC]">
+        SETTINGS
+      </h1>
       <div className="space-y-6">
         {/* Workspace Backup */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-1 text-[#F8FAFC]">Workspace Backup</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-1 text-[#F8FAFC]">
+            Workspace Backup
+          </div>
           <p className="text-[10px] text-[#94A3B8] mb-4">
             Export or restore all sessions, todos, repo links and keys as a
             single JSON file. Keep it safe — it contains your API keys.
           </p>
           <div className="flex gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={exportWorkspaceData}
-            >
+            <Button variant="ghost" size="sm" onClick={exportWorkspaceData}>
               <Download className="w-4 h-4" />
               EXPORT BACKUP
             </Button>
@@ -197,8 +261,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Default Model */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-4 text-[#F8FAFC]">Default Model</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-4 text-[#F8FAFC]">
+            Default Model
+          </div>
           <select
             value={selectedModel.id}
             onChange={(e) => {
@@ -224,9 +294,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Provider API Keys */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4"
+        >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-lg font-bold text-[#F8FAFC]">Provider API Keys</div>
+            <div className="text-lg font-bold text-[#F8FAFC]">
+              Provider API Keys
+            </div>
             <div className="flex items-center gap-2">
               {vaultStored && (
                 <span className="flex items-center gap-1 text-[10px] text-[#22C55E] font-semibold uppercase tracking-wider">
@@ -252,8 +328,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             </div>
           </div>
           <p className="text-[10px] text-[#94A3B8] -mt-2 mb-1">
-            Keys are encrypted and stored in the MongoDB secret vault.
-            Entering a key auto-syncs it to the vault.
+            Keys are encrypted and stored in the MongoDB secret vault. Entering
+            a key auto-syncs it to the vault.
           </p>
           <Input
             label="OpenRouter Key"
@@ -298,11 +374,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Gateway Console */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Gateway Console</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">
+            Gateway Console
+          </div>
           <p className="text-[11px] text-[#94A3B8] mb-3">
-            Runs a probe through the provider fallback chain (skips
-            providers without keys) and shows the routing log.
+            Runs a probe through the provider fallback chain (skips providers
+            without keys) and shows the routing log.
           </p>
           <Button
             variant="ghost"
@@ -326,17 +408,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </Button>
           <div className="mt-3 max-h-40 overflow-y-auto space-y-1">
             {gatewayLogs.length === 0 && (
-              <p className="text-[11px] text-[#94A3B8]">No gateway activity yet.</p>
+              <p className="text-[11px] text-[#94A3B8]">
+                No gateway activity yet.
+              </p>
             )}
             {gatewayLogs.slice(-20).map((l, i) => (
-              <div key={i} className="text-[10px] font-mono text-[#94A3B8]">{l}</div>
+              <div key={i} className="text-[10px] font-mono text-[#94A3B8]">
+                {l}
+              </div>
             ))}
           </div>
         </Card>
 
         {/* Provider & Model Picker */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Provider & Model Picker</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">
+            Provider & Model Picker
+          </div>
           <p className="text-[11px] text-[#94A3B8] mb-3">
             Pick a provider/model; matching live models apply to the engine.
           </p>
@@ -356,8 +448,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Workspace Checkpoints */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Workspace Checkpoints</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">
+            Workspace Checkpoints
+          </div>
           <p className="text-[11px] text-[#94A3B8] mb-3">
             Snapshot the editor before risky edits; restore any time.
           </p>
@@ -397,7 +495,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Live Provider Availability */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="text-lg font-bold text-[#F8FAFC]">
               Live Provider Availability
@@ -408,21 +510,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               onClick={refreshLiveProviders}
               disabled={liveProviderLoading}
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${liveProviderLoading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${liveProviderLoading ? "animate-spin" : ""}`}
+              />
               {liveProviderLoading ? "Checking..." : "Refresh"}
             </Button>
           </div>
           {liveProviderUpdated && (
             <p className="text-[10px] text-[#94A3B8] mb-3 font-mono">
-              Last checked:{" "}
-              {new Date(liveProviderUpdated).toLocaleTimeString()} ·
-              auto-refresh 30 min
+              Last checked: {new Date(liveProviderUpdated).toLocaleTimeString()}{" "}
+              · auto-refresh 30 min
             </p>
           )}
           {liveProviderAvailability.length === 0 ? (
             <p className="text-xs text-[#94A3B8]">
-              No live model data yet. Press Refresh to load the model
-              catalog from connected providers.
+              No live model data yet. Press Refresh to load the model catalog
+              from connected providers.
             </p>
           ) : (
             <div className="space-y-2">
@@ -468,26 +571,42 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Agent Mode Default */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-4 text-[#F8FAFC]">Agent Mode Default</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-4 text-[#F8FAFC]">
+            Agent Mode Default
+          </div>
           <select
             value={agentMode}
             onChange={(e) => setAgentMode(e.target.value as string)}
             className="w-full bg-[#1B2336] border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] px-4 py-2.5 text-sm font-mono text-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFFFFF] cursor-pointer"
           >
-            {["manual", "assist", "auto-syntax", "auto-debug", "team-review"].map(
-              (mode) => (
-                <option key={mode} value={mode}>
-                  {mode}
-                </option>
-              ),
-            )}
+            {[
+              "manual",
+              "assist",
+              "auto-syntax",
+              "auto-debug",
+              "team-review",
+            ].map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
           </select>
         </Card>
 
         {/* Sentinel Debounce Delay */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
-          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Sentinel Debounce Delay</div>
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
+          <div className="text-lg font-bold mb-2 text-[#F8FAFC]">
+            Sentinel Debounce Delay
+          </div>
           <div className="text-sm text-[#22C55E] mb-3">
             Delay after typing before passive analysis runs: {debounceDelay} ms
           </div>
@@ -503,20 +622,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </Card>
 
         {/* Auto-Apply Fixes */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-lg font-bold text-[#F8FAFC]">Auto-Apply Fixes</div>
+              <div className="text-lg font-bold text-[#F8FAFC]">
+                Auto-Apply Fixes
+              </div>
               <div className="text-sm text-[#94A3B8] mt-1">
                 Automatically apply all fixes without confirmation
               </div>
             </div>
-            {toggleSwitch(autoApplyFixes, () => setAutoApplyFixes(!autoApplyFixes))}
+            {toggleSwitch(autoApplyFixes, () =>
+              setAutoApplyFixes(!autoApplyFixes),
+            )}
           </div>
         </Card>
 
         {/* Sentinel Live Monitoring */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
           <div className="flex items-center justify-between">
             <div>
               <div className="text-lg font-bold text-[#F8FAFC]">
@@ -526,12 +657,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 Enable real-time code monitoring watchdog
               </div>
             </div>
-            {toggleSwitch(enableSentinel, () => setEnableSentinel(!enableSentinel))}
+            {toggleSwitch(enableSentinel, () =>
+              setEnableSentinel(!enableSentinel),
+            )}
           </div>
         </Card>
 
         {/* Show Token Usage Panel */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
           <div className="flex items-center justify-between">
             <div>
               <div className="text-lg font-bold text-[#F8FAFC]">
@@ -541,12 +678,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 Show prompt, completion, and cost estimates after runs
               </div>
             </div>
-            {toggleSwitch(showTokenUsage, () => setShowTokenUsage(!showTokenUsage))}
+            {toggleSwitch(showTokenUsage, () =>
+              setShowTokenUsage(!showTokenUsage),
+            )}
           </div>
         </Card>
 
         {/* Theme */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)]"
+        >
           <div className="text-lg font-bold mb-2 text-[#F8FAFC]">Theme</div>
           <div className="text-sm text-[#94A3B8] font-semibold">
             Charcoal Black + Neon Orange (locked)

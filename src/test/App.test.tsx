@@ -276,7 +276,11 @@ describe("App component (App.tsx)", () => {
   it("renders without crashing", async () => {
     const { default: App } = await import("../App");
     await act(async () => {
-      render(<VoltProvider><App /></VoltProvider>);
+      render(
+        <VoltProvider>
+          <App />
+        </VoltProvider>,
+      );
     });
     // App mounts — the textarea / code editor should be present
     const textareas = document.querySelectorAll("textarea");
@@ -299,7 +303,11 @@ describe("App component (App.tsx)", () => {
 
     const { default: App } = await import("../App");
     await act(async () => {
-      render(<VoltProvider><App /></VoltProvider>);
+      render(
+        <VoltProvider>
+          <App />
+        </VoltProvider>,
+      );
     });
 
     // Find the agent chat input

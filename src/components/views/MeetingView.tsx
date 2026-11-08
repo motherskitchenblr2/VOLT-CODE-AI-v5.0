@@ -71,8 +71,7 @@ export const MeetingView: React.FC<MeetingViewProps> = ({
     notes:
       (Array.isArray(consensusFeedback)
         ? consensusFeedback.join(" ")
-        : consensusFeedback) ||
-      "No consensus feedback yet — run an analysis.",
+        : consensusFeedback) || "No consensus feedback yet — run an analysis.",
   };
   const guidance =
     !consensusPassed && score > 0
