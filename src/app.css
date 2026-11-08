@@ -316,6 +316,63 @@ summary,
 }
 
 /* =========================================================================
+   GLOBAL TOUCH & ZOOM PREVENTION
+   ========================================================================= */
+/* Prevent double-tap zoom on iOS */
+html {
+  touch-action: manipulation;
+}
+
+/* Prevent pull-to-refresh and overscroll on mobile */
+body {
+  overscroll-behavior: none;
+}
+
+/* Prevent text selection on UI elements (except textarea/input) */
+button, [role="button"], .icon-btn, .btn, select, .card, .panel {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Prevent text selection on touch */
+@media (pointer: coarse) {
+  *:not(input):not(textarea):not([contenteditable]) {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection in textarea and input */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* Prevent zoom on double tap for all elements */
+* {
+  touch-action: manipulation;
+}
+
+/* Allow scrolling on textarea and input */
+textarea, input {
+  touch-action: auto;
+}
+
+/* Prevent overscroll bounce on iOS */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Prevent pinch zoom */
+@media (pointer: coarse) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+}
+
+/* =========================================================================
    SEMANTIC UTILITY CLASSES — For components to use
    ========================================================================= */
 
@@ -486,6 +543,34 @@ summary,
     box-shadow: var(--shadow-sm);
     border-radius: var(--radius-md);
   }
+}
+
+/* =========================================================================
+   SAFE AREA UTILITIES
+   ========================================================================= */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+.mb-safe {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+.mt-safe {
+  margin-top: env(safe-area-inset-top);
+}
+.ml-safe {
+  margin-left: env(safe-area-inset-left);
+}
+.mr-safe {
+  margin-right: env(safe-area-inset-right);
 }
 
 /* =========================================================================
