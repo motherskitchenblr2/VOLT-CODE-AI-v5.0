@@ -52,7 +52,10 @@ export const DiffModal: React.FC<DiffModalProps> = ({
                 <AlertTriangle className="vol-accent" />
                 SELECTIVE HUNK DIFF PREVIEW & QUALITY CONSENSUS
               </div>
-              <button onClick={() => setShowDiff(false)} className="cursor-pointer">
+              <button
+                onClick={() => setShowDiff(false)}
+                className="cursor-pointer"
+              >
                 <X />
               </button>
             </div>
@@ -139,7 +142,10 @@ export const ReportDrawer: React.FC<ReportDrawerProps> = ({
                   ALL PATCHES APPLIED TO CODEBASE
                 </div>
               </div>
-              <button onClick={() => setShowReport(false)} className="cursor-pointer">
+              <button
+                onClick={() => setShowReport(false)}
+                className="cursor-pointer"
+              >
                 <X />
               </button>
             </div>
@@ -178,7 +184,9 @@ export const ReportDrawer: React.FC<ReportDrawerProps> = ({
                 COPY CODE
               </button>
               <button
-                onClick={() => downloadCode(fixedCode, `fixed-${Date.now()}.js`)}
+                onClick={() =>
+                  downloadCode(fixedCode, `fixed-${Date.now()}.js`)
+                }
                 className="flex-1 flex justify-center gap-2 items-center py-3 vol-acc-bg text-black font-extrabold rounded-xl cursor-pointer"
               >
                 <Download className="w-4 h-4" />
@@ -232,7 +240,10 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({
                 { keys: "Escape", action: "Close Modals / Panels" },
                 { keys: "?", action: "Toggle this Shortcuts Guide" },
               ].map((s, idx) => (
-                <div key={idx} className="flex justify-between py-1.5 border-b vol-line">
+                <div
+                  key={idx}
+                  className="flex justify-between py-1.5 border-b vol-line"
+                >
                   <span className="vol-t2">{s.action}</span>
                   <kbd className="px-2 py-0.5 vol-acc-wash border vol-ring-strong vol-accent font-mono text-xs rounded-md">
                     {s.keys}
@@ -279,10 +290,10 @@ export const LangAlertModal: React.FC<LangAlertModalProps> = ({
               </button>
             </div>
             <div className="text-sm vol-t1 leading-relaxed font-mono">
-              The analysis engine could not auto-detect the programming
-              language of the active editor code. Please explicitly select the
-              language from the dropdown menu (e.g. JavaScript, Python, C++,
-              HTML, YAML, CSS) before running diagnostics.
+              The analysis engine could not auto-detect the programming language
+              of the active editor code. Please explicitly select the language
+              from the dropdown menu (e.g. JavaScript, Python, C++, HTML, YAML,
+              CSS) before running diagnostics.
             </div>
             <div className="flex justify-end gap-3 pt-4 select-none">
               <button
@@ -385,7 +396,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               className="w-full vol-well border vol-ring-strong py-3 px-4 mb-3 rounded-xl focus:outline-none focus:vol-ring-hi"
               placeholder="Password (min 8 characters)"
-              autoComplete={loginMode === "register" ? "new-password" : "current-password"}
+              autoComplete={
+                loginMode === "register" ? "new-password" : "current-password"
+              }
             />
             {loginError && (
               <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mb-3">

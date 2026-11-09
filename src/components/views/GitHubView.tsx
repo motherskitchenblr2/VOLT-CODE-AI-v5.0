@@ -68,8 +68,8 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
             GITHUB DEPLOYMENT INTEGRATION
           </h1>
           <p className="text-xs text-[#22C55E] mt-1 font-bold">
-            Synchronize edits, branch patches, and quality gates directly to
-            git remote
+            Synchronize edits, branch patches, and quality gates directly to git
+            remote
           </p>
         </div>
         <Button
@@ -78,7 +78,9 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
           disabled={isFetchingGithub}
           onClick={fetchGithubData}
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isFetchingGithub ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${isFetchingGithub ? "animate-spin" : ""}`}
+          />
           {isFetchingGithub ? "REFRESHING" : "REFRESH TREE"}
         </Button>
       </div>
@@ -101,7 +103,11 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
         </div>
 
         {/* Git config form & log */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4"
+        >
           <h3 className="font-extrabold text-sm text-[#22C55E] uppercase tracking-wider">
             Repository Synchronization Settings
           </h3>
@@ -152,7 +158,11 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
         </Card>
 
         {/* Issues list */}
-        <Card padded={true} elevated={false} className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4">
+        <Card
+          padded={true}
+          elevated={false}
+          className="border border-[var(--ds-color-border)] rounded-[var(--ds-radius-lg)] space-y-4"
+        >
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-[#22C55E] uppercase tracking-wider flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
@@ -182,9 +192,7 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
                 <div className="text-[10px] text-[#94A3B8]/50 flex items-center gap-1.5">
                   <span>By {issue.user?.login}</span>
                   <span>•</span>
-                  <span>
-                    {new Date(issue.created_at).toLocaleDateString()}
-                  </span>
+                  <span>{new Date(issue.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}

@@ -26,8 +26,13 @@ export const SwarmView: React.FC<SwarmViewProps> = ({
   isAnalyzing,
 }) => {
   return (
-    <Panel padded={true} className="p-4 sm:p-6 min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16">
-      <h1 className="text-lg sm:text-xl font-bold mb-6 text-[#F8FAFC]">Agent Swarm</h1>
+    <Panel
+      padded={true}
+      className="p-4 sm:p-6 min-h-[100dvh] overflow-y-auto pb-28 sm:pb-16"
+    >
+      <h1 className="text-lg sm:text-xl font-bold mb-6 text-[#F8FAFC]">
+        Agent Swarm
+      </h1>
       <SwarmPanel
         agentBreakdown={agentBreakdown}
         consensusScore={consensusScore}

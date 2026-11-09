@@ -76,8 +76,13 @@ export const AboutView: React.FC<AboutViewProps> = ({
               </h1>
               <div className="text-sm font-bold text-[#F8FAFC]">
                 Co-Developers:{" "}
-                <span className="underline text-[#F8FAFC]">AntiGravity AI Co-Developer</span>{" "}
-                & <span className="underline text-[#F8FAFC]">Gemini AI 3.5 Flash</span>
+                <span className="underline text-[#F8FAFC]">
+                  AntiGravity AI Co-Developer
+                </span>{" "}
+                &{" "}
+                <span className="underline text-[#F8FAFC]">
+                  Gemini AI 3.5 Flash
+                </span>
               </div>
               <div className="text-xs text-[#94A3B8] mt-2 font-mono">
                 Released: June 2026 • Status: Production Deployed
@@ -159,8 +164,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
                   5. Dedicated Virtual Terminal Stream
                 </h2>
                 <p className="mb-3 text-[#94A3B8]">
-                  Volt Code AI houses a virtual console capturing telemetry
-                  log data. Every step of execution—including model routing
+                  Volt Code AI houses a virtual console capturing telemetry log
+                  data. Every step of execution—including model routing
                   decisions, token reports, parse statuses, and API network
                   roundtrips—is streamed chronologically to this console to
                   ensure full system transparency.
@@ -182,8 +187,13 @@ export const AboutView: React.FC<AboutViewProps> = ({
               </h1>
               <div className="text-sm font-bold text-[#94A3B8]">
                 Prepared by
-                <span className="underline text-[#F8FAFC]">AntiGravity AI Co-Developer</span>{" "}
-                & <span className="underline text-[#F8FAFC]">Gemini AI 3.5 Flash</span>
+                <span className="underline text-[#F8FAFC]">
+                  AntiGravity AI Co-Developer
+                </span>{" "}
+                &{" "}
+                <span className="underline text-[#F8FAFC]">
+                  Gemini AI 3.5 Flash
+                </span>
               </div>
               <div className="text-xs text-[#94A3B8] mt-2 font-mono">
                 Published: June 2026 • Target: v5.0 Upgrade Hub
@@ -198,8 +208,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
                 This specification matrix details the comparative analysis of
                 features that were dead or placeholder in the legacy codebase
                 and have been brought to full functional life in Volt Code AI
-                v5.0. This comparative process is set as a standard
-                requirement for all future major releases.
+                v5.0. This comparative process is set as a standard requirement
+                for all future major releases.
               </p>
             </div>
 
@@ -231,8 +241,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
                       Static labels; dead placeholders.
                     </td>
                     <td className="border border-[var(--ds-color-border)] px-4 py-3 text-[#22C55E] font-medium">
-                      Debounced active watcher scan, severity heatbars,
-                      warning log feeds & instant patch buttons.
+                      Debounced active watcher scan, severity heatbars, warning
+                      log feeds & instant patch buttons.
                     </td>
                     <td className="border border-[var(--ds-color-border)] px-4 py-3 text-[#22C55E] font-bold">
                       ✔ Verified
@@ -307,8 +317,8 @@ export const AboutView: React.FC<AboutViewProps> = ({
                       Hidden until analysis finished; minimal watermark tags.
                     </td>
                     <td className="border border-[var(--ds-color-border)] px-4 py-3 text-[#22C55E] font-medium">
-                      Always visible header badge tracking engine tags,
-                      context size, and real-time scanning status.
+                      Always visible header badge tracking engine tags, context
+                      size, and real-time scanning status.
                     </td>
                     <td className="border border-[var(--ds-color-border)] px-4 py-3 text-[#22C55E] font-bold">
                       ✔ Verified
