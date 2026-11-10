@@ -246,7 +246,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         : "bg-[var(--color-destructive)]";
 
   return (
-    <div className="relative flex flex-col h-[100dvh] w-full bg-[var(--color-background)] overflow-hidden touch-none select-none">
+    <div className="relative flex flex-col h-[100dvh] w-full bg-[var(--color-background)] overflow-hidden select-none">
       {/* ── Minimal Top Bar ── */}
       <header className="fixed top-0 left-0 right-0 z-[var(--z-sticky)] h-12 shrink-0 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)] flex items-center justify-between px-3">
         {/* Left: Menu + Title */}
@@ -340,7 +340,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
       {/* ── Main Editor Canvas ── */}
       <main
-        className="relative flex flex-col flex-1 min-h-[calc(100dvh-130px)] pt-12 pb-24 overflow-hidden"
+        className="relative flex flex-col flex-1 min-h-[calc(100dvh-130px)] pt-[88px] pb-[calc(140px+env(safe-area-inset-bottom,0px))] overflow-hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {/* Analyzing indicator */}
@@ -410,21 +410,46 @@ export const EditorView: React.FC<EditorViewProps> = ({
         </div>
 
         {/* Editor textarea - full viewport */}
-        <div className="flex-1 w-full flex flex-col touch-none min-h-[350px]">
-          <textarea
-            ref={textareaRef}
-            value={code}
-            onChange={(e) => handleCodeChange(e.target.value)}
-            spellCheck={false}
-            className="flex-1 w-full border-none bg-[var(--color-card)] text-[var(--color-foreground)] font-mono text-sm resize-none outline-none focus-visible:ring-0 p-4 md:p-6 leading-relaxed placeholder-[var(--color-muted-foreground)] touch-none"
-            style={{
-              lineHeight: "1.6",
-              letterSpacing: "0.3px",
-              tabSize: 2,
-              backgroundAttachment: "local",
-            }}
-            placeholder="// Start coding... Press ⌘+Enter to analyze, ⌘+/ for config"
-          />
+        <div className="flex-1 w-full flex flex-col touch-none min-h-[350px] relative">
+          {/* Line number gutter - mobile only */}
+          <div className="hidden md:block absolute left-0 top-0 bottom-0 w-8 border-r border-[var(--color-border)] bg-[var(--color-background)]/50 select-none pointer-events-none z-10">
+            <div
+              className="font-mono text-xs text-[var(--color-muted-foreground)] select-none"
+              style={{
+                lineHeight: "1.6",
+                paddingTop: "1rem",
+                paddingBottom: "1.5rem",
+              }}
+            >
+              {code.split("\n").map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[1.6rem] flex items-center justify-end pr-2 text-[11px] text-[var(--color-muted-foreground)]/60"
+                >
+                  {i + 1}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Editor textarea - full viewport */}
+          <div className="flex-1 w-full flex flex-col touch-pan-y overscroll-contain min-h-[350px] pl-8 md:pl-0">
+            <textarea
+              ref={textareaRef}
+              value={code}
+              onChange={(e) => handleCodeChange(e.target.value)}
+              spellCheck={false}
+              className="flex-1 w-full border-none bg-[var(--color-card)] text-[var(--color-foreground)] font-mono text-[14px] resize-none outline-none focus-visible:ring-0 p-4 md:p-6 leading-relaxed placeholder-[var(--color-muted-foreground)] touch-pan-y overscroll-contain"
+              style={{
+                lineHeight: "1.6",
+                letterSpacing: "0.3px",
+                tabSize: 2,
+                backgroundAttachment: "local",
+                WebkitOverflowScrolling: "touch",
+              }}
+              placeholder="// Start coding... Press ⌘+Enter to analyze, ⌘+/ for config"
+            />
+          </div>
         </div>
 
         {/* Sentinel inline findings (bottom overlay when issues exist) */}
@@ -453,8 +478,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         )}
 
-        {/* Floating Action Buttons (FABs) - Bottom right stack */}
-        <div className="absolute bottom-[calc(20px+env(safe-area-inset-bottom))] right-3 left-3 md:bottom-6 md:right-6 md:left-auto md:w-auto z-[var(--z-sticky)] flex flex-col-reverse md:flex-row-reverse gap-3 pointer-events-none pb-safe">
+        {/* Floating Action Buttons (FABs) - Bottom right stack, above bottom dock */}
+        <div className="absolute bottom-[calc(80px+env(safe-area-inset-bottom))] right-3 left-3 md:bottom-6 md:right-6 md:left-auto md:w-auto z-[var(--z-sticky)] flex flex-col-reverse md:flex-row-reverse gap-3 pointer-events-none pb-safe">
           {/* Fix All FAB */}
           {fixedCode && issues.length > 0 && (
             <motion.button

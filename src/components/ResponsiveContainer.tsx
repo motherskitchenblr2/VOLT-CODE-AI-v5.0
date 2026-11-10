@@ -49,6 +49,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 }) => {
   const [navOpen, setNavOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -56,6 +57,24 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
     handleResize(); // initial
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Virtual keyboard detection for mobile
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.visualViewport) return;
+    const viewport = window.visualViewport;
+    const handleResize = () => {
+      const heightDiff = window.innerHeight - viewport.height;
+      // Keyboard is considered open if the height difference is significant (>150px)
+      setKeyboardOpen(heightDiff > 150);
+    };
+    viewport.addEventListener("resize", handleResize);
+    viewport.addEventListener("scroll", handleResize);
+    handleResize(); // initial check
+    return () => {
+      viewport.removeEventListener("resize", handleResize);
+      viewport.removeEventListener("scroll", handleResize);
+    };
   }, []);
 
   const title = NAV.find(([v]) => v === currentView)?.[1] ?? "Editor";
@@ -230,7 +249,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         )}
 
         {/* ── MOBILE BOTTOM TAB BAR — 5 TABS ── */}
-        {isMobile && (
+        {!keyboardOpen && isMobile && (
           <nav
             className="xl:hidden shrink-0 border-t border-[var(--color-border)] bg-[var(--color-background)] backdrop-blur-md z-50 pb-safe"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -245,7 +264,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
         )}
 
         {/* ── TABLET BOTTOM TAB BAR (1024–1279) — 5 TABS ── */}
-        {isTablet && (
+        {!keyboardOpen && isTablet && (
           <nav
             className="xl:hidden md:flex hidden shrink-0 border-t border-[var(--color-border)] bg-[var(--color-background)] backdrop-blur-md z-50"
             style={{ minHeight: "56px" }}
