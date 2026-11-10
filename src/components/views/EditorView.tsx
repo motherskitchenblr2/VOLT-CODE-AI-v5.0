@@ -351,6 +351,64 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         )}
 
+        {/* Mobile-only horizontal sliding rail for quick config access */}
+        <div className="block md:hidden flex flex-row items-center gap-1.5 overflow-x-auto no-scrollbar py-1.5 px-2 bg-neutral-950/90 border-b border-neutral-800">
+          <button
+            onClick={() => setShowConfigSheet(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            aria-label="Engine & Model"
+          >
+            <Zap className="w-3.5 h-3.5 text-[var(--color-accent)]" />
+            Engine
+          </button>
+          <button
+            onClick={() => setShowConfigSheet(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            aria-label="Plugin"
+          >
+            <span className="w-3.5 h-3.5" />
+            Plugin
+          </button>
+          <button
+            onClick={() => setShowConfigSheet(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            aria-label="Skill"
+          >
+            <span className="w-3.5 h-3.5" />
+            Skill
+          </button>
+          <button
+            onClick={() => setShowConfigSheet(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            aria-label="Mode"
+          >
+            <span className="w-3.5 h-3.5" />
+            Mode
+          </button>
+          <button
+            onClick={() =>
+              setLanguage(
+                language === "javascript" ? "typescript" : "javascript",
+              )
+            }
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            aria-label="Language"
+          >
+            <span className="w-3.5 h-3.5" />
+            JS
+          </button>
+          <button
+            onClick={() =>
+              setAgentMode(agentMode === "manual" ? "assist" : "manual")
+            }
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            aria-label="Operation Mode"
+          >
+            <span className="w-3.5 h-3.5" />
+            {agentMode === "manual" ? "Auto" : "Manual"}
+          </button>
+        </div>
+
         {/* Editor textarea - full viewport */}
         <div className="h-full w-full flex flex-col touch-none">
           <textarea
