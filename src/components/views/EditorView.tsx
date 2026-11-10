@@ -340,7 +340,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
       {/* ── Main Editor Canvas ── */}
       <main
-        className="relative overflow-hidden pt-12 pb-safe"
+        className="relative flex flex-col flex-1 min-h-[calc(100dvh-130px)] pt-12 pb-24 overflow-hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {/* Analyzing indicator */}
@@ -410,7 +410,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         </div>
 
         {/* Editor textarea - full viewport */}
-        <div className="h-full w-full flex flex-col touch-none">
+        <div className="flex-1 w-full flex flex-col touch-none min-h-[350px]">
           <textarea
             ref={textareaRef}
             value={code}
