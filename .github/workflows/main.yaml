@@ -13,7 +13,6 @@ permissions:
   contents: write
   checks: write
 
-
 jobs:
   code-quality:
     runs-on: ubuntu-latest
@@ -71,12 +70,12 @@ jobs:
           script: |
             const fs = require('fs');
 
-            let comment = '## 🤖 Code Quality Report\n\n';
+            let comment = '## 🛠️ Code Quality Report\n\n';
             comment += '| Check | Status |\n';
             comment += '|-------|--------|\n';
-            comment += '| Linting | ✅ Completed |\n';
-            comment += '| Formatting | ✅ Auto-fixed |\n';
-            comment += '| Tests | ✅ Passed |\n';
+            comment += '| Linting | 📑 Completed |\n';
+            comment += '| Formatting | 🧹 Auto-fixed |\n';
+            comment += '| Tests | 🧪 Passed |\n';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -94,7 +93,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run Snyk security check
-        uses: snyk/actions/node@3f4a2dca0ac87582f42069402df3492a80e54541 # pinned
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
@@ -139,9 +138,9 @@ jobs:
             const deletions = comparison?.stats?.deletions ?? 0;
 
             let stats = '## 📊 PR Statistics\n\n';
-            stats += '- **Files Changed**: ${filesChanged}\n';
-            stats += '- **Additions**: +${additions}\n';
-            stats += '- **Deletions**: -${deletions}\n';
+            stats += `- **Files Changed**: ${filesChanged}\n`;
+            stats += `- **Additions**: +${additions}\n`;
+            stats += `- **Deletions**: -${deletions}\n`;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
