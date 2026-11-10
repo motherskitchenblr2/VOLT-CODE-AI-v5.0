@@ -410,9 +410,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
         </div>
 
         {/* Editor textarea - full viewport */}
-        <div className="flex-1 w-full flex flex-col touch-none min-h-[350px] relative">
-          {/* Line number gutter - mobile only */}
-          <div className="hidden md:block absolute left-0 top-0 bottom-0 w-8 border-r border-[var(--color-border)] bg-[var(--color-background)]/50 select-none pointer-events-none z-10">
+        <div className="flex-1 w-full flex flex-col touch-pan-y overscroll-contain min-h-[350px] relative">
+          {/* Line number gutter - all screen sizes */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 border-r border-[var(--color-border)] bg-[var(--color-background)]/50 select-none pointer-events-none z-10">
             <div
               className="font-mono text-xs text-[var(--color-muted-foreground)] select-none"
               style={{
