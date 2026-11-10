@@ -40,10 +40,7 @@ jobs:
         run: npm run lint -- --format json > lint-report.json 2>&1 || true
 
       - name: Auto-format with Prettier
-        git add .uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
-uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
-uses: snyk/actions/node@3f4a2dca0ac87582f42069402df3492a80e54541  # pinned
-uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0 pinnedid: format
+        id: format
         run: npx prettier --write . --check || true
 
       - name: Run tests
@@ -73,14 +70,14 @@ uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0 pi
         with:
           script: |
             const fs = require('fs');
-            
+
             let comment = '## 🤖 Code Quality Report\n\n';
             comment += '| Check | Status |\n';
             comment += '|-------|--------|\n';
-            comment += `| Linting | ✅ Completed |\n`;
-            comment += `| Formatting | ✅ Auto-fixed |\n`;
-            comment += `| Tests | ✅ Passed |\n`;
-            
+            comment += '| Linting | ✅ Completed |\n';
+            comment += '| Formatting | ✅ Auto-fixed |\n';
+            comment += '| Tests | ✅ Passed |\n';
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -97,7 +94,7 @@ uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0 pi
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run Snyk security check
-        uses: snyk/actions/node@3f4a2dca0ac87582f42069402df3492a80e54541
+        uses: snyk/actions/node@3f4a2dca0ac87582f42069402df3492a80e54541 # pinned
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
@@ -141,10 +138,10 @@ uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0 pi
             const additions = comparison?.stats?.additions ?? 0;
             const deletions = comparison?.stats?.deletions ?? 0;
 
-            let stats = `## 📊 PR Statistics\n\n`;
-            stats += `- **Files Changed**: ${filesChanged}\n`;
-            stats += `- **Additions**: +${additions}\n`;
-            stats += `- **Deletions**: -${deletions}\n`;
+            let stats = '## 📊 PR Statistics\n\n';
+            stats += '- **Files Changed**: ${filesChanged}\n';
+            stats += '- **Additions**: +${additions}\n';
+            stats += '- **Deletions**: -${deletions}\n';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
