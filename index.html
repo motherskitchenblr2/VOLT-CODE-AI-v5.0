@@ -205,7 +205,7 @@
 
           // Send to parent
           if (window.parent && window.parent !== window) {
-            window.parent.postMessage(info, "*");
+            window.parent.postMessage(info, window.location.origin);
           }
           // Also log locally for standalone testing
           console.log("[element-picker] Selected:", info);
