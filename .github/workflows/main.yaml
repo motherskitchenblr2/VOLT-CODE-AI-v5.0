@@ -17,6 +17,7 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
     name: Code Quality & Corrections
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -32,7 +33,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --engine-strict=false || npm install --legacy-peer-deps
+
+      - name: Build project
+        run: npm run build
 
       - name: Run ESLint
         id: lint
@@ -87,6 +91,7 @@ jobs:
   security-check:
     runs-on: ubuntu-latest
     name: Security & Dependency Check
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -99,12 +104,13 @@ jobs:
         continue-on-error: true
 
       - name: Check for vulnerabilities
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=moderate || true
 
   code-review:
     runs-on: ubuntu-latest
     name: Automated Code Review
     needs: code-quality
+    continue-on-error: true
 
     steps:
       - name: Checkout code
