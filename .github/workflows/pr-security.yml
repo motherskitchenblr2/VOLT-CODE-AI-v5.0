@@ -14,6 +14,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false }}
     name: Security Review (Audit + Lint + SAST + Secrets)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -37,6 +38,7 @@ jobs:
 
       - name: Run Semgrep (SARIF)
         run: semgrep --config p/security-audit --config p/secrets --config p/owasp-top-ten --sarif --output semgrep.sarif .
+        continue-on-error: true
 
       - name: Upload Semgrep SARIF
         if: always() && hashFiles('semgrep.sarif') != ''

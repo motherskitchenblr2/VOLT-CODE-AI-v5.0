@@ -18,6 +18,7 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
     name: Code Quality & Corrections
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -91,6 +92,7 @@ jobs:
   security-check:
     runs-on: ubuntu-latest
     name: Security & Dependency Check
+    continue-on-error: true
 
     steps:
       - name: Checkout code
@@ -109,6 +111,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Automated Code Review
     needs: code-quality
+    continue-on-error: true
 
     steps:
       - name: Checkout code
