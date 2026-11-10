@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "sweep": "node scripts/security-sweep.mjs"
+    "sweep": "node scripts/security-sweep.mjs",
+    "ci": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.4",
@@ -17,12 +18,13 @@
     "framer-motion": "^14.9.1",
     "highlight.js": "^11.12.0",
     "lucide-react": "^1.69.0",
+    "py": "^0.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.5",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
