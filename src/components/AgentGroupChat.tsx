@@ -134,9 +134,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                     {message.audioTranscript && (
                       <div className="mt-2 pt-2 border-t vol-line">
                         <p className="text-xs vol-t1 italic">
-                          {language === "en"
-                            ? "Transcript:"
-                            : "ट्रांस्क्रिप्ट:"}{" "}
+                          {language === "en" ? "Transcript:" : "ट्रांस्क्रिप्ट:"}{" "}
                           {message.audioTranscript}
                         </p>
                       </div>
@@ -163,9 +161,7 @@ export const AgentGroupChat: React.FC<AgentGroupChatProps> = ({
                           onClick={() => copyToClipboard(message.content)}
                           className="hover:vol-t1 transition-colors"
                           title={
-                            language === "en"
-                              ? "Copy message"
-                              : "संदेश कॉपी करें"
+                            language === "en" ? "Copy message" : "संदेश कॉपी करें"
                           }
                         >
                           <Copy className="w-3 h-3" />
