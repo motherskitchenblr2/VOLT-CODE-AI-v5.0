@@ -229,9 +229,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
               <div className="text-center">
                 <div className="text-4xl mb-2">📭</div>
                 <p className="vol-t2">
-                  {language === "en"
-                    ? "No pull requests"
-                    : "कोई पुल अनुरोध नहीं"}
+                  {language === "en" ? "No pull requests" : "कोई पुल अनुरोध नहीं"}
                 </p>
               </div>
             </div>
@@ -336,9 +334,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                           }`}
                         >
                           <p className="text-xs font-semibold mb-1">
-                            {language === "en"
-                              ? "Your Decision"
-                              : "आपका निर्णय"}
+                            {language === "en" ? "Your Decision" : "आपका निर्णय"}
                           </p>
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-bold uppercase">
@@ -402,9 +398,7 @@ export const PRReviewDashboard: React.FC<PRReviewDashboardProps> = ({
                         className="inline-flex items-center gap-2 px-3 py-2 rounded-lg vol-wash text-blue-400 hover:text-blue-300 text-xs font-semibold transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
-                        {language === "en"
-                          ? "View on GitHub"
-                          : "GitHub पर देखें"}
+                        {language === "en" ? "View on GitHub" : "GitHub पर देखें"}
                       </a>
                     </motion.div>
                   )}
