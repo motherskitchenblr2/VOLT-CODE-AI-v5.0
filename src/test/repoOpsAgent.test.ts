@@ -111,7 +111,7 @@ describe("injectionScan — workflows", () => {
 describe("injectionScan — secrets", () => {
   it("finds a GitHub PAT and a private key", () => {
     const text =
-      "const t = 'github_pat_11BTAZRSA09FPm9atZjOgO_oD4dPw5OuEz2YfOISWU8Ix';\n-----BEGIN RSA PRIVATE KEY-----";
+      "const t = 'github_pat_11BTAZRSA09FPm9atZjOgO_oD4dPw5OuEz2YfOISWU8Ix';\n***REDACTED:private-key-block***";
     const found = scanSecrets("src/a.ts", text).map((f) => f.rule);
     expect(found).toContain("secret-github-pat");
     expect(found).toContain("secret-private-key");
@@ -120,7 +120,7 @@ describe("injectionScan — secrets", () => {
   it("only scans added lines in a patch", () => {
     const patch = ["-const old = ''';", "+const safe = 1;"].join("\n");
     expect(scanPatch("src/a.ts", patch)).toHaveLength(0);
-    const leaking = ['+const k = "sk-abcdefghijklmnopqrstuvwx";'].join("\n");
+    const leaking = ['+const k = "***REDACTED:openai-key***";'].join("\n");
     expect(scanPatch("src/a.ts", leaking)[0].rule).toBe("pr-secret-openai-key");
   });
 
@@ -188,10 +188,7 @@ describe("repoAgent — pull request review", () => {
 
   it("blocks a leaked key and asks for changes", () => {
     const report = reviewPullRequest([
-      file(
-        "src/a.ts",
-        '+const k = "ghp_abcdefghijklmnopqrstuvwxyz0123456789";',
-      ),
+      file("src/a.ts", '+const k = "***REDACTED:github-token***";'),
     ]);
     expect(report.verdict).toBe("request_changes");
     expect(report.blocks).toBeGreaterThan(0);
