@@ -188,10 +188,7 @@ describe("repoAgent — pull request review", () => {
 
   it("blocks a leaked key and asks for changes", () => {
     const report = reviewPullRequest([
-      file(
-        "src/a.ts",
-        '+const k = "***REDACTED:github-token***";',
-      ),
+      file("src/a.ts", '+const k = "***REDACTED:github-token***";'),
     ]);
     expect(report.verdict).toBe("request_changes");
     expect(report.blocks).toBeGreaterThan(0);
