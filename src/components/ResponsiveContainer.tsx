@@ -97,7 +97,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           active
             ? "bg-[var(--color-accent)] text-black border-transparent shadow-[var(--shadow-glow)]"
             : "text-[var(--color-muted-foreground)] border-transparent hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
-        }`}
+          }`}
         style={{ minHeight: "44px" }}
       >
         {icon}
@@ -120,7 +120,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           active
             ? "bg-[var(--color-accent)] text-black border-transparent"
             : "text-[var(--color-muted-foreground)] border-transparent hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
-        }`}
+          }`}
         style={{ minHeight: "44px" }}
       >
         {icon}
@@ -143,7 +143,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
           active
             ? "bg-[var(--color-accent)] text-black border-transparent pl-3"
             : "text-[var(--color-muted-foreground)] border-transparent hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] pl-4"
-        }`}
+          }`}
         style={{ minHeight: "44px" }}
       >
         {icon}
@@ -212,7 +212,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                     : sentinelLevel === "yellow"
                       ? "bg-[var(--color-warning-soft)] text-[var(--color-warning)] border-[var(--color-warning)]"
                       : "bg-[rgba(239,68,68,0.15)] text-red-400 border-[rgba(239,68,68,0.3)]"
-                }`}
+                  }`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
@@ -221,7 +221,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                       : sentinelLevel === "yellow"
                         ? "bg-[var(--color-warning)]"
                         : "bg-red-500"
-                  }`}
+                      }`}
                 ></span>
                 {sentinelLabel}
               </div>
@@ -277,6 +277,11 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
             </div>
           </nav>
         )}
+
+        {/* ── Keyboard spacer for mobile editor FABs ── */}
+        {keyboardOpen && isMobile && (
+          <div className="xl:hidden shrink-0" style={{ height: "calc(90px + env(safe-area-inset-bottom))" }} aria-hidden="true" />
+        )}
       </div>
 
       {/* NAV DRAWER — mobile full-screen overlay */}
@@ -318,7 +323,7 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
                       active
                         ? "bg-[var(--color-accent)] text-black border-transparent font-bold"
                         : "text-[var(--color-muted-foreground)] border-transparent hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
-                    }`}
+                      }`}
                     style={{ minHeight: "44px" }}
                   >
                     {icon}

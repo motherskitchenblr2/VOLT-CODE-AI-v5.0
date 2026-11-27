@@ -260,32 +260,29 @@ export const EditorView: React.FC<EditorViewProps> = ({
           >
             <Menu className="w-5 h-5 text-[var(--color-foreground)]" />
           </button>
-          <div className="flex-1 min-w-0 flex items-center gap-2">
-            <span className="text-xs font-bold tracking-widest text-[var(--color-foreground)] truncate">
+          <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <span className="text-xs font-bold tracking-widest text-[var(--color-foreground)] truncate max-w-[120px]">
               VOLT EDITOR
             </span>
-            <span className="text-[10px] text-[var(--color-muted-foreground)] font-medium uppercase tracking-wider">
+            <span className="px-2 py-0.5 bg-[var(--color-muted)] border border-[var(--color-border)] rounded-full text-[10px] font-semibold text-[var(--color-accent)] shrink-0 whitespace-nowrap">
               {detectedLanguage.toUpperCase()}
             </span>
           </div>
         </div>
 
         {/* Center: Engine badge (mobile) */}
-        <div className="flex sm:hidden items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-card)]">
+        <div className="flex sm:hidden items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-card)] shrink-0">
           <span className="text-[10px] font-mono text-[var(--color-muted-foreground)]">
             ENGINE
           </span>
-          <span className="text-xs font-bold text-[var(--color-accent)]">
+          <span className="text-xs font-bold text-[var(--color-accent)] truncate max-w-[100px]">
             {selectedModel.name}
           </span>
           {selectedModel.tier === "FREE" && (
-            <span className="text-[9px] font-bold text-[var(--color-success)]">
+            <span className="text-[9px] font-bold text-[var(--color-success)] shrink-0">
               ★ FREE
             </span>
           )}
-          <span className="h-10 px-3 py-1 bg-[var(--color-muted)] border border-[var(--color-border)] rounded-full text-sm font-semibold text-[var(--color-accent)] flex items-center">
-            {detectedLanguage.toUpperCase()}
-          </span>
         </div>
 
         {/* Right: Sentinel + Token + Agent + Fullscreen */}
@@ -490,22 +487,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         )}
 
         {/* Floating Action Buttons (FABs) - Bottom area, above bottom dock */}
-        <div className="absolute bottom-[calc(90px+env(safe-area-inset-bottom))] right-3 left-3 md:bottom-6 md:right-6 md:left-auto md:w-auto z-[var(--z-sticky)] flex flex-col-reverse md:flex-row-reverse gap-3 pointer-events-none pb-safe">
-          {/* Fix All FAB (only when there are fixes) */}
-          {fixedCode && issues.length > 0 && (
-            <motion.button
-              onClick={applyAllFixes}
-              className="pointer-events-auto w-full md:w-auto btn-primary btn-lg flex items-center justify-center gap-2 shadow-[var(--shadow-glow-intense)]"
-              whileTap={{ scale: 0.96 }}
-            >
-              <Zap className="w-5 h-5" />
-              <span className="hidden sm:inline">
-                FIX ALL ({issues.length})
-              </span>
-              <span className="sm:hidden">FIX ALL</span>
-            </motion.button>
-          )}
-
+        <div className="absolute bottom-[calc(90px+env(safe-area-inset-bottom))] right-3 left-3 md:bottom-6 md:right-6 md:left-auto md:w-auto z-[calc(var(--z-sticky)+1)] flex flex-col-reverse md:flex-row-reverse gap-3 pointer-events-none pb-safe">
           {/* Primary CTAs side-by-side on mobile: RUN AI + AGENT CHAT */}
           <div className="flex flex-col md:flex-row-reverse gap-2 w-full md:w-auto pointer-events-auto">
             {/* RUN AI Button */}
@@ -620,7 +602,8 @@ const ConfigSelect: React.FC<{
   options: string[];
   optionLabels?: { value: string; label: string }[];
   onChange: (v: string) => void;
-}> = ({ label, value, options, optionLabels, onChange }) => (
+  disabled?: boolean;
+}> = ({ label, value, options, optionLabels, onChange, disabled }) => (
   <div className="flex flex-col gap-1">
     <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)]">
       {label}
@@ -628,7 +611,13 @@ const ConfigSelect: React.FC<{
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="min-h-[44px] py-2.5 px-3 leading-normal text-sm bg-transparent border border-[var(--color-border)] rounded-[var(--radius-md)] text-[var(--color-foreground)] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]"
+      disabled={disabled}
+      className="min-h-[44px] py-2.5 px-3 pr-10 leading-normal text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-md)] text-[var(--color-foreground)] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
+      style={{
+        backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b8d98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "right 12px center",
+      }}
     >
       {optionLabels
         ? optionLabels.map((l) => (
@@ -645,9 +634,9 @@ const ConfigSelect: React.FC<{
   </div>
 );
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────
    CONFIG BOTTOM SHEET
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────── */
 
 interface ConfigSheetProps {
   isOpen: boolean;
@@ -829,25 +818,32 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
                 <h3 className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)] mb-3">
                   LANGUAGE
                 </h3>
-                <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 shrink-0 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={language === "auto"}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setLanguage("auto");
+                          setDetectedLanguage(detectedLanguage);
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] cursor-pointer"
+                    />
+                    <span className="text-sm font-semibold text-[var(--color-foreground)]">Auto-Detect</span>
+                  </label>
                   <ConfigSelect
-                    label="LANGUAGE"
+                    label=""
                     value={language}
-                    options={languages.map((l) => l.value)}
-                    optionLabels={languages}
+                    options={languages.filter((l) => l.value !== "auto").map((l) => l.value)}
+                    optionLabels={languages.filter((l) => l.value !== "auto")}
                     onChange={(v) => {
                       setLanguage(v);
-                      if (v !== "auto") setDetectedLanguage(v);
+                      setDetectedLanguage(v);
                     }}
+                    disabled={language === "auto"}
                   />
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-                      DETECTED
-                    </span>
-                    <div className="h-10 px-3 py-1 bg-[var(--color-muted)] border border-[var(--color-border)] rounded-full text-sm font-semibold text-[var(--color-accent)] flex items-center">
-                      {detectedLanguage.toUpperCase()}
-                    </div>
-                  </div>
                 </div>
               </section>
 
@@ -903,7 +899,7 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
                       splitView
                         ? "bg-[var(--color-success)]"
                         : "bg-[var(--color-muted)]"
-                    }`}
+                      }`}
                     role="switch"
                     aria-checked={splitView}
                   >
@@ -954,9 +950,9 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
   );
 };
 
-/* ──────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────
    AGENT CHAT SLIDE-OVER PANEL
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────── */
 
 interface AgentPanelProps {
   isOpen: boolean;
@@ -1033,7 +1029,7 @@ const AgentPanel: React.FC<AgentPanelProps> = ({
                         m.role === "user"
                           ? "bg-[var(--color-accent)] text-[var(--color-on-accent)] rounded-br-md"
                           : "bg-[var(--color-muted)] text-[var(--color-foreground)] rounded-bl-md"
-                      }`}
+                        }`}
                     >
                       <div className="text-[9px] font-bold tracking-wider opacity-70 mb-1 flex items-center gap-1">
                         {m.role === "user" ? (
@@ -1095,9 +1091,9 @@ const AgentPanel: React.FC<AgentPanelProps> = ({
   );
 };
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────
    TOKEN USAGE PANEL
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────── */
 
 interface TokenPanelProps {
   isOpen: boolean;
