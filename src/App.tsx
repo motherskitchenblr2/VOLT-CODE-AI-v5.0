@@ -1588,7 +1588,7 @@ const App: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen vol-surface vol-t1 flex select-none"
+      className="min-h-screen vol-surface vol-t1 flex select-none h-[100dvh] flex-col overflow-hidden"
       style={{ fontFamily: "Inter, system-ui, sans-serif" }}
     >
       {showOnboarding && (

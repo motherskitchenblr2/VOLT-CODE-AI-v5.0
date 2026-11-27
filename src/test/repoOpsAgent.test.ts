@@ -120,7 +120,9 @@ describe("injectionScan — secrets", () => {
   it("only scans added lines in a patch", () => {
     const patch = ["-const old = ''';", "+const safe = 1;"].join("\n");
     expect(scanPatch("src/a.ts", patch)).toHaveLength(0);
-    const leaking = ['+const k = "sk-abcdefghijklmnopqrstuvwxyz123456";'].join("\n");
+    const leaking = ['+const k = "sk-abcdefghijklmnopqrstuvwxyz123456";'].join(
+      "\n",
+    );
     expect(scanPatch("src/a.ts", leaking)[0].rule).toBe("pr-secret-openai-key");
   });
 
@@ -188,7 +190,10 @@ describe("repoAgent — pull request review", () => {
 
   it("blocks a leaked key and asks for changes", () => {
     const report = reviewPullRequest([
-      file("src/a.ts", '+const k = "ghp_1234567890abcdefghijklmnopqrstuvwxyz12";'),
+      file(
+        "src/a.ts",
+        '+const k = "ghp_1234567890abcdefghijklmnopqrstuvwxyz12";',
+      ),
     ]);
     expect(report.verdict).toBe("request_changes");
     expect(report.blocks).toBeGreaterThan(0);

@@ -26,6 +26,7 @@ import {
 import { useVolt } from "../../context/VoltContext";
 import { Card } from "../ui/Card";
 import { AnimatePresence, motion } from "framer-motion";
+import { detectLanguage } from "../../lib/detectLanguage";
 
 const pluginOptions = [
   "Test Runner",
@@ -131,6 +132,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
     language,
     setLanguage,
     detectedLanguage,
+    setDetectedLanguage,
     selectedModel,
     setSelectedModel,
     selectedPlugin,
@@ -246,7 +248,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         : "bg-[var(--color-destructive)]";
 
   return (
-    <div className="relative flex flex-col h-[100dvh] w-full bg-[var(--color-background)] overflow-hidden select-none">
+    <div className="relative flex flex-col h-[100dvh] w-full bg-[var(--color-background)] overflow-hidden">
       {/* ── Minimal Top Bar ── */}
       <header className="fixed top-0 left-0 right-0 z-[var(--z-sticky)] h-12 shrink-0 bg-[var(--color-background)]/80 backdrop-blur-md border-b border-[var(--color-border)] flex items-center justify-between px-3">
         {/* Left: Menu + Title */}
@@ -268,8 +270,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         </div>
 
-        {/* Center: Engine badge (mobile) */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-card)]">
+        {/* Center: Engine badge + detected language (mobile) */}
+        <div className="flex sm:hidden items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-card)]">
           <span className="text-[10px] font-mono text-[var(--color-muted-foreground)]">
             ENGINE
           </span>
@@ -281,6 +283,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
               ★ FREE
             </span>
           )}
+          <span className="h-10 px-3 py-1 bg-[var(--color-muted)] border border-[var(--color-border)] rounded-full text-sm font-semibold text-[var(--color-accent)] flex items-center">
+            {detectedLanguage.toUpperCase()}
+          </span>
         </div>
 
         {/* Right: Sentinel + Token + Agent + Fullscreen */}
@@ -351,11 +356,11 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         )}
 
-        {/* Mobile-only horizontal sliding rail for quick config access */}
-        <div className="block md:hidden flex flex-row items-center gap-1.5 overflow-x-auto no-scrollbar py-1.5 px-2 bg-neutral-950/90 border-b border-neutral-800">
+        {/* Mobile-only compact 2x2 config grid */}
+        <div className="block md:hidden grid grid-cols-2 gap-2 py-2 px-2 bg-neutral-950/90 border-b border-neutral-800">
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Engine & Model"
           >
             <Zap className="w-3.5 h-3.5 text-[var(--color-accent)]" />
@@ -363,7 +368,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Plugin"
           >
             <span className="w-3.5 h-3.5" />
@@ -371,7 +376,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Skill"
           >
             <span className="w-3.5 h-3.5" />
@@ -379,7 +384,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Mode"
           >
             <span className="w-3.5 h-3.5" />
@@ -391,7 +396,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                 language === "javascript" ? "typescript" : "javascript",
               )
             }
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Language"
           >
             <span className="w-3.5 h-3.5" />
@@ -401,7 +406,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             onClick={() =>
               setAgentMode(agentMode === "manual" ? "assist" : "manual")
             }
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Operation Mode"
           >
             <span className="w-3.5 h-3.5" />
@@ -409,7 +414,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
         </div>
 
-        {/* Editor textarea - full viewport */}
+        {/* Editor textarea - full viewport with language sync */}
         <div className="flex-1 w-full flex flex-col touch-pan-y overscroll-contain min-h-[350px] relative">
           {/* Line number gutter - all screen sizes */}
           <div className="absolute left-0 top-0 bottom-0 w-8 border-r border-[var(--color-border)] bg-[var(--color-background)]/50 select-none pointer-events-none z-10">
@@ -432,12 +437,18 @@ export const EditorView: React.FC<EditorViewProps> = ({
             </div>
           </div>
 
-          {/* Editor textarea - full viewport */}
+          {/* Editor textarea - full viewport with language sync */}
           <div className="flex-1 w-full flex flex-col touch-pan-y overscroll-contain min-h-[350px] pl-8 md:pl-0">
             <textarea
               ref={textareaRef}
               value={code}
-              onChange={(e) => handleCodeChange(e.target.value)}
+              onChange={(e) => {
+                handleCodeChange(e.target.value);
+                // Sync detected language on change
+                const detected = detectLanguage(e.target.value);
+                setDetectedLanguage(detected);
+                if (language === "auto") setLanguage(detected);
+              }}
               spellCheck={false}
               className="flex-1 w-full border-none bg-[var(--color-card)] text-[var(--color-foreground)] font-mono text-[14px] resize-none outline-none focus-visible:ring-0 p-4 md:p-6 leading-relaxed placeholder-[var(--color-muted-foreground)] touch-pan-y overscroll-contain"
               style={{
@@ -478,9 +489,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         )}
 
-        {/* Floating Action Buttons (FABs) - Bottom right stack, above bottom dock */}
-        <div className="absolute bottom-[calc(80px+env(safe-area-inset-bottom))] right-3 left-3 md:bottom-6 md:right-6 md:left-auto md:w-auto z-[var(--z-sticky)] flex flex-col-reverse md:flex-row-reverse gap-3 pointer-events-none pb-safe">
-          {/* Fix All FAB */}
+        {/* Floating Action Buttons (FABs) - Bottom area, above bottom dock */}
+        <div className="absolute bottom-[calc(90px+env(safe-area-inset-bottom))] right-3 left-3 md:bottom-6 md:right-6 md:left-auto md:w-auto z-[var(--z-sticky)] flex flex-col-reverse md:flex-row-reverse gap-3 pointer-events-none pb-safe">
+          {/* Fix All FAB (only when there are fixes) */}
           {fixedCode && issues.length > 0 && (
             <motion.button
               onClick={applyAllFixes}
@@ -495,20 +506,56 @@ export const EditorView: React.FC<EditorViewProps> = ({
             </motion.button>
           )}
 
-          {/* Analyze FAB */}
-          <motion.button
-            onClick={analyzeCode}
-            disabled={isAnalyzing}
-            className="pointer-events-auto w-full md:w-auto btn-primary btn-lg flex items-center justify-center gap-2 shadow-[var(--shadow-glow)]"
-            whileTap={{ scale: 0.96 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <Bug className="w-5 h-5" />
-            <span className="hidden sm:inline">
-              {isAnalyzing ? "ANALYZING..." : "RUN AI"}
-            </span>
-            <span className="sm:hidden">{isAnalyzing ? "..." : "AI"}</span>
-          </motion.button>
+          {/* Primary CTAs side-by-side on mobile: RUN AI + AGENT CHAT */}
+          <div className="flex flex-col md:flex-row-reverse gap-2 w-full md:w-auto pointer-events-auto">
+            {/* RUN AI Button */}
+            <motion.button
+              onClick={analyzeCode}
+              disabled={isAnalyzing}
+              className="flex-1 md:w-auto btn-primary btn-lg flex items-center justify-center gap-2 shadow-[var(--shadow-glow)]"
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <Bug className="w-5 h-5" />
+              <span className="hidden sm:inline">
+                {isAnalyzing ? "ANALYZING..." : "RUN AI"}
+              </span>
+              <span className="sm:hidden">{isAnalyzing ? "..." : "AI"}</span>
+            </motion.button>
+
+            {/* AGENT CHAT Button */}
+            <motion.button
+              onClick={() => setShowAgentPanel(true)}
+              className={`flex-1 md:w-auto btn-secondary btn-lg flex items-center justify-center gap-2 ${showAgentChat ? "bg-[var(--color-accent-soft)]" : ""}`}
+              whileTap={{ scale: 0.96 }}
+              aria-label={
+                showAgentChat ? "Close agent chat" : "Open agent chat"
+              }
+            >
+              <Bot
+                className={`w-5 h-5 ${showAgentChat ? "text-[var(--color-accent)]" : "text-[var(--color-muted-foreground)]"}`}
+              />
+              <span className="hidden sm:inline">
+                {showAgentChat ? "CLOSE CHAT" : "AGENT CHAT"}
+              </span>
+              <span className="sm:hidden">{showAgentChat ? "✕" : "💬"}</span>
+            </motion.button>
+          </div>
+
+          {/* Fix All FAB (when there are fixes) */}
+          {fixedCode && issues.length > 0 && (
+            <motion.button
+              onClick={applyAllFixes}
+              className="pointer-events-auto w-full md:w-auto btn-primary btn-lg flex items-center justify-center gap-2 shadow-[var(--shadow-glow-intense)]"
+              whileTap={{ scale: 0.96 }}
+            >
+              <Zap className="w-5 h-5" />
+              <span className="hidden sm:inline">
+                FIX ALL ({issues.length})
+              </span>
+              <span className="sm:hidden">FIX ALL</span>
+            </motion.button>
+          )}
         </div>
       </main>
 
