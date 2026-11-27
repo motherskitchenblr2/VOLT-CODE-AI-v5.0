@@ -3,53 +3,37 @@
  * Matches eval(), new Function(), vm.runInContext() — all attacker-controllable
  * code paths. Neutralizing the call is a deterministic, safe auto-fix.
  */
-import { lineColumnOf, type ScanFinding } from "./index";
+import { runRules, type RuleDef, type ScanFinding } from "./index";
 
-const DANGEROUS_CALLS: Array<{
-  re: RegExp;
-  rule: string;
-  label: string;
-  message: string;
-}> = [
+const AST_EXECUTION_RULES: RuleDef[] = [
   {
     re: /\beval\s*\(/g,
     rule: "ast-execution-eval",
-    label: "eval()",
+    severity: "CRITICAL",
+    confidence: 0.95,
     message: "Dynamic code execution via eval() is blocked by Sentinel.",
+    fixed: "/* Sentinel blocked dynamic eval() execution */",
   },
   {
     re: /\bnew\s+Function\s*\(/g,
     rule: "ast-execution-new-function",
-    label: "new Function()",
+    severity: "CRITICAL",
+    confidence: 0.95,
     message:
       "Dynamic code execution via new Function() is blocked by Sentinel.",
+    fixed: "/* Sentinel blocked dynamic new Function() execution */",
   },
   {
     re: /\bvm\.runInContext\s*\(/g,
     rule: "ast-execution-vm-runincontext",
-    label: "vm.runInContext()",
+    severity: "CRITICAL",
+    confidence: 0.95,
     message:
       "Dynamic code execution via vm.runInContext() is blocked by Sentinel.",
+    fixed: "/* Sentinel blocked dynamic vm.runInContext() execution */",
   },
 ];
 
 export function astExecution(code: string): ScanFinding[] {
-  const findings: ScanFinding[] = [];
-  for (const { re, rule, label, message } of DANGEROUS_CALLS) {
-    re.lastIndex = 0;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(code))) {
-      const { line, column } = lineColumnOf(code, m.index);
-      findings.push({
-        rule_id: rule,
-        severity: "CRITICAL",
-        confidence: 0.95,
-        location: { line, column },
-        message,
-        original: m[0],
-        fixed: `/* Sentinel blocked dynamic ${label} execution */`,
-      });
-    }
-  }
-  return findings;
+  return runRules(code, AST_EXECUTION_RULES);
 }
