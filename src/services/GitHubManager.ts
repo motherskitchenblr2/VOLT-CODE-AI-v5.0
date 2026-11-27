@@ -167,7 +167,7 @@ export class GitHubManager {
             parents: [commitSha],
             author: options.author || {
               name: "VOLT Agent",
-              email: "agent@volt.dev",
+              email: "***REDACTED:email-address***",
             },
           }),
         },

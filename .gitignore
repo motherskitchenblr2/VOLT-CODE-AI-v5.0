@@ -40,3 +40,24 @@ Git Pull Errors.pdf
 api/utils/http.ts
 src/test/api/http-adapter.test.ts
 
+# --- secrets (managed by repo-guardian) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_ed25519
+.secrets
+secrets.json
+credentials.json
+# --- local/tooling noise ---
+Thumbs.db
+.idea/
+.vscode/
+__pycache__/
+*.py[cod]
+node_modules/
