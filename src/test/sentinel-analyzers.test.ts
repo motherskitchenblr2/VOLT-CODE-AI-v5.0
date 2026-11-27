@@ -28,7 +28,7 @@ describe("SkillSpector sentinel analyzers", () => {
 
   it("detects hardcoded LLM API keys (credentialLeak)", () => {
     const findings = analyzeCodeBuffer(
-      "const key = '***REDACTED:openai-key***';",
+      "const key = 'sk-abcdefghijklmnopqrstuvwxyz123456';",
     );
     expect(findings.some((f) => f.rule_id === "credential-llm-key")).toBe(true);
   });

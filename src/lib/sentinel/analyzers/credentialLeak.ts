@@ -6,7 +6,7 @@ import { runRules, type RuleDef, type ScanFinding } from "./index";
 
 const CREDENTIAL_RULES: RuleDef[] = [
   {
-    re: /(?:sk-or-|gsk_|nvapi-|hf_)[A-Za-z0-9_-]{20,}/g,
+    re: /(?:sk-|sk-or-|gsk_|nvapi-|hf_)[A-Za-z0-9_-]{20,}/g,
     rule: "credential-llm-key",
     severity: "CRITICAL",
     confidence: 0.9,
