@@ -270,7 +270,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         </div>
 
-        {/* Center: Engine badge + detected language (mobile) */}
+        {/* Center: Engine badge (mobile) */}
         <div className="flex sm:hidden items-center gap-1.5 px-2 py-1 rounded-full border border-[var(--color-border)] bg-[var(--color-card)]">
           <span className="text-[10px] font-mono text-[var(--color-muted-foreground)]">
             ENGINE
@@ -345,7 +345,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
       {/* ── Main Editor Canvas ── */}
       <main
-        className="relative flex flex-col flex-1 min-h-[calc(100dvh-130px)] pt-[88px] pb-[calc(140px+env(safe-area-inset-bottom,0px))] overflow-hidden"
+        className="relative flex flex-col flex-1 min-h-[calc(100dvh-130px)] pt-[88px] pb-[calc(140px+env(safe-area-inset-bottom))] overflow-hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {/* Analyzing indicator */}
@@ -356,11 +356,11 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         )}
 
-        {/* Mobile-only compact 2x2 config grid */}
-        <div className="block md:hidden grid grid-cols-2 gap-2 py-2 px-2 bg-neutral-950/90 border-b border-neutral-800">
+        {/* Mobile-only horizontal sliding rail for quick config access */}
+        <div className="block md:hidden flex flex-row items-center gap-1.5 overflow-x-auto no-scrollbar py-1.5 px-2 bg-neutral-950/90 border-b border-neutral-800">
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Engine & Model"
           >
             <Zap className="w-3.5 h-3.5 text-[var(--color-accent)]" />
@@ -368,7 +368,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Plugin"
           >
             <span className="w-3.5 h-3.5" />
@@ -376,7 +376,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Skill"
           >
             <span className="w-3.5 h-3.5" />
@@ -384,7 +384,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </button>
           <button
             onClick={() => setShowConfigSheet(true)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Mode"
           >
             <span className="w-3.5 h-3.5" />
@@ -396,7 +396,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                 language === "javascript" ? "typescript" : "javascript",
               )
             }
-            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Language"
           >
             <span className="w-3.5 h-3.5" />
@@ -406,7 +406,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             onClick={() =>
               setAgentMode(agentMode === "manual" ? "assist" : "manual")
             }
-            className="flex items-center gap-1 px-2 py-1.5 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-muted)] border border-[var(--color-border)] text-[var(--color-foreground)] text-[10px] font-bold whitespace-nowrap shrink-0"
             aria-label="Operation Mode"
           >
             <span className="w-3.5 h-3.5" />
@@ -526,7 +526,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             {/* AGENT CHAT Button */}
             <motion.button
               onClick={() => setShowAgentPanel(true)}
-              className={`flex-1 md:w-auto btn-secondary btn-lg flex items-center justify-center gap-2 ${showAgentChat ? "bg-[var(--color-accent-soft)]" : ""}`}
+              className={`flex-1 md:w-auto btn-secondary btn-lg flex items-center justify-center gap-2 shadow-[var(--shadow-glow)] ${showAgentChat ? "bg-[var(--color-accent-soft)]" : ""}`}
               whileTap={{ scale: 0.96 }}
               aria-label={
                 showAgentChat ? "Close agent chat" : "Open agent chat"
@@ -576,6 +576,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         language={language}
         setLanguage={setLanguage}
         detectedLanguage={detectedLanguage}
+        setDetectedLanguage={setDetectedLanguage}
         languages={languages}
         addLog={addLog}
         splitView={splitView}
@@ -613,6 +614,37 @@ export const EditorView: React.FC<EditorViewProps> = ({
   );
 };
 
+const ConfigSelect: React.FC<{
+  label: string;
+  value: string;
+  options: string[];
+  optionLabels?: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}> = ({ label, value, options, optionLabels, onChange }) => (
+  <div className="flex flex-col gap-1">
+    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)]">
+      {label}
+    </span>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="min-h-[44px] py-2.5 px-3 leading-normal text-sm bg-transparent border border-[var(--color-border)] rounded-[var(--radius-md)] text-[var(--color-foreground)] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]"
+    >
+      {optionLabels
+        ? optionLabels.map((l) => (
+            <option key={l.value} value={l.value}>
+              {l.label}
+            </option>
+          ))
+        : options.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+    </select>
+  </div>
+);
+
 /* ──────────────────────────────────────────────────────────────
    CONFIG BOTTOM SHEET
    ────────────────────────────────────────────────────────────── */
@@ -633,6 +665,7 @@ interface ConfigSheetProps {
   language: string;
   setLanguage: (v: string) => void;
   detectedLanguage: string;
+  setDetectedLanguage: (v: string) => void;
   languages: { value: string; label: string }[];
   addLog: (msg: string, level?: "info" | "success" | "error" | "warn") => void;
   splitView: boolean;
@@ -661,6 +694,7 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
   language,
   setLanguage,
   detectedLanguage,
+  setDetectedLanguage,
   languages,
   addLog,
   splitView,
@@ -670,7 +704,6 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
   tokensUsed,
   promptTokens,
   completionTokens,
-  _setShowAgentChat,
 }) => {
   return (
     <AnimatePresence>
@@ -796,13 +829,16 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
                 <h3 className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)] mb-3">
                   LANGUAGE
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-3">
                   <ConfigSelect
-                    label="MANUAL"
+                    label="LANGUAGE"
                     value={language}
                     options={languages.map((l) => l.value)}
                     optionLabels={languages}
-                    onChange={setLanguage}
+                    onChange={(v) => {
+                      setLanguage(v);
+                      if (v !== "auto") setDetectedLanguage(v);
+                    }}
                   />
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)]">
@@ -918,40 +954,10 @@ const ConfigSheet: React.FC<ConfigSheetProps> = ({
   );
 };
 
-const ConfigSelect: React.FC<{
-  label: string;
-  value: string;
-  options: string[];
-  optionLabels?: { value: string; label: string }[];
-  onChange: (v: string) => void;
-}> = ({ label, value, options, optionLabels, onChange }) => (
-  <div className="flex flex-col gap-1">
-    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-      {label}
-    </span>
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-10 px-3 bg-transparent border border-[var(--color-border)] rounded-full text-sm text-[var(--color-foreground)] cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)]"
-    >
-      {optionLabels
-        ? optionLabels.map((l) => (
-            <option key={l.value} value={l.value}>
-              {l.label}
-            </option>
-          ))
-        : options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-    </select>
-  </div>
-);
-
 /* ──────────────────────────────────────────────────────────────
    AGENT CHAT SLIDE-OVER PANEL
    ────────────────────────────────────────────────────────────── */
+
 interface AgentPanelProps {
   isOpen: boolean;
   onClose: () => void;
@@ -1092,6 +1098,7 @@ const AgentPanel: React.FC<AgentPanelProps> = ({
 /* ──────────────────────────────────────────────────────────────
    TOKEN USAGE PANEL
    ────────────────────────────────────────────────────────────── */
+
 interface TokenPanelProps {
   isOpen: boolean;
   onClose: () => void;
