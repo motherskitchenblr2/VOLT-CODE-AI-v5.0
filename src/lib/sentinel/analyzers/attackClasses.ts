@@ -20,19 +20,9 @@
  * ponytail: these are heuristics, not a verifier — they raise leads for a human
  * to trace. No auto-fix (fixed === original); a real fix needs the full path.
  */
-import { lineColumnOf, type ScanFinding } from "./index";
+import { runRules, type RuleDef, type ScanFinding } from "./index";
 
-type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
-
-interface AttackClassRule {
-  rule: string;
-  severity: Severity;
-  confidence: number;
-  re: RegExp;
-  message: string;
-}
-
-const RULES: AttackClassRule[] = [
+const ATTACK_CLASS_RULES: RuleDef[] = [
   // ── Supply chain and release ────────────────────────────────────────────
   {
     rule: "cf-supply-curl-pipe-shell",
@@ -41,6 +31,7 @@ const RULES: AttackClassRule[] = [
     re: /\b(?:curl|wget)\b[^\n|]*\|\s*(?:sudo\s+)?(?:ba|z)?sh\b/g,
     message:
       "Remote script piped straight into a shell (curl|bash). Fetch, verify a checksum/signature, then execute.",
+    fixed: "",
   },
   {
     rule: "cf-supply-unpinned-action",
@@ -49,6 +40,7 @@ const RULES: AttackClassRule[] = [
     re: /^\s*(?:-\s*)?uses:\s*[\w.-]+\/[\w.-]+@(?!\b[0-9a-f]{40}\b)[\w.-]+/gm,
     message:
       "CI action pinned to a mutable tag/branch. A compromised maintainer can repoint it; pin the full commit SHA.",
+    fixed: "",
   },
 
   // ── HTTP protocol and authentication ────────────────────────────────────
@@ -59,6 +51,7 @@ const RULES: AttackClassRule[] = [
     re: /algorithms?\s*[:=]\s*\[[^\]]*["']none["']/g,
     message:
       "JWT accepting the 'none' algorithm — signature verification can be bypassed. Pin a single expected algorithm.",
+    fixed: "",
   },
   {
     rule: "cf-auth-tls-verify-disabled",
@@ -67,6 +60,7 @@ const RULES: AttackClassRule[] = [
     re: /(?:rejectUnauthorized\s*:\s*false|NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*["']?0["']?)/g,
     message:
       "TLS certificate verification disabled — a network attacker can read or alter traffic. Remove the override.",
+    fixed: "",
   },
   {
     rule: "cf-auth-cors-wildcard-credentials",
@@ -75,6 +69,7 @@ const RULES: AttackClassRule[] = [
     re: /(?:origin\s*:\s*["']\*["'][\s\S]{0,120}?credentials\s*:\s*true|credentials\s*:\s*true[\s\S]{0,120}?origin\s*:\s*["']\*["'])/g,
     message:
       "CORS wildcard origin combined with credentials — browsers reject it, but a reflected origin here leaks authenticated data. Allowlist exact origins.",
+    fixed: "",
   },
   {
     rule: "cf-auth-open-redirect",
@@ -83,6 +78,7 @@ const RULES: AttackClassRule[] = [
     re: /(?:res|response)\.redirect\(\s*(?:req|request)\.(?:query|params|body)/g,
     message:
       "Redirect target taken directly from request input (open redirect). Allowlist destinations or use an index.",
+    fixed: "",
   },
   {
     rule: "cf-auth-cookie-secure-false",
@@ -91,6 +87,7 @@ const RULES: AttackClassRule[] = [
     re: /\bcookie\s*\([^)\n]{0,120}?secure\s*:\s*false/g,
     message:
       "Cookie explicitly set with secure: false — it can cross plaintext transport. Enable Secure (and HttpOnly/SameSite).",
+    fixed: "",
   },
 
   // ── Client-side and browser ─────────────────────────────────────────────
@@ -101,6 +98,7 @@ const RULES: AttackClassRule[] = [
     re: /dangerouslySetInnerHTML/g,
     message:
       "dangerouslySetInnerHTML renders untrusted HTML as-is (DOM XSS). Sanitize with DOMPurify or render text.",
+    fixed: "",
   },
   {
     rule: "cf-client-innerhtml-assign",
@@ -109,6 +107,7 @@ const RULES: AttackClassRule[] = [
     re: /\.innerHTML\s*=/g,
     message:
       "Assignment to innerHTML with dynamic data is DOM XSS. Use textContent or a sanitizer.",
+    fixed: "",
   },
   {
     rule: "cf-client-document-write",
@@ -117,6 +116,7 @@ const RULES: AttackClassRule[] = [
     re: /document\.write\s*\(/g,
     message:
       "document.write() injects markup into the live document. Prefer DOM APIs or a templating layer.",
+    fixed: "",
   },
   {
     rule: "cf-client-postmessage-wildcard",
@@ -125,6 +125,7 @@ const RULES: AttackClassRule[] = [
     re: /\.postMessage\([^,\n]*,\s*["']\*["']\s*\)/g,
     message:
       "postMessage with targetOrigin '*' delivers the payload to any window. Pass the exact receiving origin.",
+    fixed: "",
   },
   {
     rule: "cf-client-prototype-pollution",
@@ -133,6 +134,7 @@ const RULES: AttackClassRule[] = [
     re: /(?:\[["']__proto__["']\]\s*=|\b__proto__\s*[:=]|\bconstructor\.prototype\b)/g,
     message:
       "Prototype manipulation (__proto__ / constructor.prototype) enables prototype pollution. Build objects with Object.create(null) and validate keys.",
+    fixed: "",
   },
 
   // ── Cloud and deployment ────────────────────────────────────────────────
@@ -143,6 +145,7 @@ const RULES: AttackClassRule[] = [
     re: /["']Action["']\s*:\s*(?:\[\s*)?["']\*["']/g,
     message:
       "IAM policy grants Action '*' (all operations). Scope to the exact actions the principal needs.",
+    fixed: "",
   },
   {
     rule: "cf-cloud-iam-wildcard-principal",
@@ -151,6 +154,7 @@ const RULES: AttackClassRule[] = [
     re: /["']Principal["']\s*:\s*(?:\[\s*)?["']\*["']/g,
     message:
       "Resource policy allows Principal '*' (anyone). Restrict to specific accounts/roles.",
+    fixed: "",
   },
   {
     rule: "cf-cloud-public-acl",
@@ -159,6 +163,7 @@ const RULES: AttackClassRule[] = [
     re: /\bacl\s*[:=]\s*["']public-read(?:-write)?["']/g,
     message:
       "Object storage ACL set to public — anyone can read/write. Keep buckets private and serve via signed URLs.",
+    fixed: "",
   },
   {
     rule: "cf-cloud-open-ingress",
@@ -167,6 +172,7 @@ const RULES: AttackClassRule[] = [
     re: /0\.0\.0\.0\/0/g,
     message:
       "Ingress open to 0.0.0.0/0 (the whole internet). Narrow the CIDR or place it behind an authenticated proxy.",
+    fixed: "",
   },
   {
     rule: "cf-cloud-privileged-container",
@@ -175,6 +181,7 @@ const RULES: AttackClassRule[] = [
     re: /privileged\s*[:=]\s*true/g,
     message:
       "Container runs privileged (host-level access). Drop privileged and grant only the specific capabilities needed.",
+    fixed: "",
   },
 
   // ── Unsafe deserialization ──────────────────────────────────────────────
@@ -185,6 +192,7 @@ const RULES: AttackClassRule[] = [
     re: /\byaml\.load\s*\(/g,
     message:
       "yaml.load can construct arbitrary objects from untrusted YAML. Use safeLoad / a SafeLoader-only schema.",
+    fixed: "",
   },
   {
     rule: "cf-deser-pickle-load",
@@ -193,6 +201,7 @@ const RULES: AttackClassRule[] = [
     re: /\bpickle\.loads?\s*\(/g,
     message:
       "pickle deserializes arbitrary Python objects — untrusted input means remote code execution. Use a safe format (JSON).",
+    fixed: "",
   },
   {
     rule: "cf-deser-php-unserialize",
@@ -201,6 +210,7 @@ const RULES: AttackClassRule[] = [
     re: /\bunserialize\s*\(/g,
     message:
       "PHP unserialize on untrusted input enables object injection. Use json_decode with allowed classes.",
+    fixed: "",
   },
 
   // ── Resource and file handling ──────────────────────────────────────────
@@ -211,6 +221,7 @@ const RULES: AttackClassRule[] = [
     re: /\b(?:readFile|readFileSync|writeFile|writeFileSync|unlink|unlinkSync|createReadStream|sendFile)\s*\([^)\n]{0,80}\b(?:req|request)\.(?:query|params|body)/g,
     message:
       "File path built from request input (path traversal). Resolve against a fixed root and reject '..'.",
+    fixed: "",
   },
 
   // ── Obvious exposures ───────────────────────────────────────────────────
@@ -221,6 +232,7 @@ const RULES: AttackClassRule[] = [
     re: /\b(?:app|router|server)\.(?:get|post|put|delete|all)\s*\(\s*["']\/(?:debug|env|config|internal|test)["']/g,
     message:
       "Route exposing /debug, /env, /config, /internal or /test — often left unauthenticated. Remove it in production or gate it.",
+    fixed: "",
   },
   {
     rule: "cf-obvious-security-todo",
@@ -229,6 +241,7 @@ const RULES: AttackClassRule[] = [
     re: /\b(?:TODO|FIXME|HACK|XXX)\b[^\n]{0,80}\b(?:auth|validat|xss|csrf|permission|secret|inject|sanitiz)/gi,
     message:
       "A TODO/FIXME/HACK names a security control (auth, validation, CSRF, sanitization). Resolve it before shipping.",
+    fixed: "",
   },
   {
     rule: "cf-obvious-child-process",
@@ -237,6 +250,7 @@ const RULES: AttackClassRule[] = [
     re: /(?:require\s*\(|from\s+)["'](?:node:)?child_process["']/g,
     message:
       "child_process import in app code is a command-injection surface. If it must exist, keep it in a script with strict input validation.",
+    fixed: "",
   },
   {
     rule: "cf-obvious-weak-random-secret",
@@ -245,28 +259,12 @@ const RULES: AttackClassRule[] = [
     re: /(?:Math\.random\s*\(\s*\)[^\n]{0,60}\b(?:token|secret|nonce|password|api_?key|sessionId)|\b(?:token|secret|nonce|password|api_?key|sessionId)[^\n]{0,60}Math\.random\s*\(\s*\))/gi,
     message:
       "Math.random() near a token/secret/nonce value — it is not cryptographically random. Use crypto.randomUUID / crypto.getRandomValues.",
+    fixed: "",
   },
 ];
 
 export function attackClasses(code: string): ScanFinding[] {
-  const findings: ScanFinding[] = [];
-  for (const { rule, severity, confidence, re, message } of RULES) {
-    re.lastIndex = 0;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(code))) {
-      const { line, column } = lineColumnOf(code, m.index);
-      findings.push({
-        rule_id: rule,
-        severity,
-        confidence,
-        location: { line, column },
-        message,
-        original: m[0],
-        fixed: m[0], // advisory only — no deterministic auto-fix
-      });
-    }
-  }
-  return findings;
+  return runRules(code, ATTACK_CLASS_RULES);
 }
 
 export default attackClasses;

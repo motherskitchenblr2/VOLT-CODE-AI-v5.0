@@ -13,14 +13,14 @@ import {
   GitBranch,
 } from "lucide-react";
 
-interface AuditLog {
+export interface AuditLog {
   action: string;
   details: string;
   status: "SUCCESS" | "WARNING" | "FAILED";
   createdAt: string;
 }
 
-interface Checkpoint {
+export interface Checkpoint {
   checkpointId: string;
   filePath: string;
   codeBackup: string;
