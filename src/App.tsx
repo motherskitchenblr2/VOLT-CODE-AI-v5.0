@@ -19,10 +19,7 @@ import { TerminalPanel } from "./components/TerminalPanel";
 import { PRReviewDashboard } from "./components/PRReviewDashboard";
 
 import { riskLevel, levelLabel } from "./lib/sentinel/analyzers";
-import {
-  ConsensusEngine,
-  MultiAgentOrchestrator,
-} from "./services/AgentWorkforce";
+import { ConsensusEngine, runOrchestration } from "./services/AgentWorkforce";
 import { useLiveProviderModels } from "./hooks/useLiveProviderModels";
 import { useToast } from "./components/Toast";
 import { useVolt as _useVolt } from "./context/VoltContext";
@@ -66,19 +63,8 @@ interface Issue {
   original: string;
   fixed: string;
 }
-interface Checkpoint {
-  checkpointId: string;
-  filePath: string;
-  codeBackup: string;
-  gitCommitSha: string;
-  createdAt: string;
-}
-interface AuditLog {
-  action: string;
-  details: string;
-  status: "SUCCESS" | "WARNING" | "FAILED";
-  createdAt: string;
-}
+import { AuditLog, Checkpoint } from "./components/AdminCenter";
+
 interface GitHubIssue {
   id: number;
   number: number;
@@ -89,15 +75,7 @@ interface GitHubIssue {
   created_at: string;
 }
 import { PullRequest } from "./services/AgentCommunication";
-export interface ModelConfig {
-  id: string;
-  name: string;
-  tag: string;
-  ctx: string;
-  color: string;
-  provider: string;
-  tier?: string;
-}
+import { ModelConfig } from "./context/VoltContext";
 
 const FREE_MODELS: ModelConfig[] = [
   {
@@ -700,9 +678,8 @@ const App: React.FC = () => {
           `[ORCHESTRATOR] Spawning TriageAgent and initiating Multi-Agent DAG workflow...`,
           "info",
         );
-        const orchestrator = new MultiAgentOrchestrator();
         const keys = { groqKey, openrouterKey, nvidiaKey, huggingfaceKey };
-        const result = await orchestrator.runOrchestration(
+        const result = await runOrchestration(
           `Resolve and optimize: ${selectedSkill} with ${selectedPlugin}. Source code validation.`,
           code,
           username,

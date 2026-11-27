@@ -39,6 +39,37 @@ export function lineColumnOf(code: string, index: number): ScanLocation {
   return { line, column };
 }
 
+export interface RuleDef {
+  rule: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+  confidence: number;
+  re: RegExp;
+  message: string;
+  fixed?: string;
+}
+
+/** Generic rule runner — eliminates duplicate regex loop in each analyzer. */
+export function runRules(code: string, rules: RuleDef[]): ScanFinding[] {
+  const findings: ScanFinding[] = [];
+  for (const { rule, severity, confidence, re, message, fixed } of rules) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(code))) {
+      const { line, column } = lineColumnOf(code, m.index);
+      findings.push({
+        rule_id: rule,
+        severity,
+        confidence,
+        location: { line, column },
+        message,
+        original: m[0],
+        fixed: fixed ?? m[0],
+      });
+    }
+  }
+  return findings;
+}
+
 const WEIGHT: Record<string, number> = {
   CRITICAL: 50,
   HIGH: 25,

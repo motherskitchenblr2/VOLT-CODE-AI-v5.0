@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { SeniorQATesterAgent } from "../services/AgentWorkforce";
+import { rules } from "../services/AgentWorkforce";
 
-describe("SeniorQATesterAgent - Python Guardrails", () => {
-  const agent = new SeniorQATesterAgent();
+const qaRule = rules.find((r) => r.name === "Senior QA Tester Specialist")!;
 
+describe("QA Rule - Python Guardrails", () => {
   it("allows valid python code", async () => {
     const validPython = `
 def process_data(session_data):
@@ -12,7 +12,7 @@ def process_data(session_data):
         return True
     return False
 `;
-    const result = await agent.verify(validPython, { language: "python" });
+    const result = await qaRule.fn(validPython, { language: "python" });
     expect(result.passed).toBe(true);
     expect(result.score).toBeGreaterThanOrEqual(85);
     expect(result.feedback.length).toBe(0);
@@ -26,11 +26,11 @@ def process_data(session_data):
         return True
     return False
 `;
-    const result = await agent.verify(invalidPython, { language: "python" });
+    const result = await qaRule.fn(invalidPython, { language: "python" });
     expect(result.passed).toBe(false);
     expect(result.score).toBe(0);
     expect(
-      result.feedback.some((f) =>
+      result.feedback.some((f: string) =>
         f.includes("Python code contains out-of-bounds JS syntax"),
       ),
     ).toBe(true);
@@ -44,10 +44,10 @@ def process_data(session_data):
         return True
     return False
 `;
-    const result = await agent.verify(invalidPython, { language: "python" });
+    const result = await qaRule.fn(invalidPython, { language: "python" });
     expect(result.passed).toBe(false);
     expect(result.score).toBe(0);
-    expect(result.feedback.some((f) => f.includes("==="))).toBe(true);
+    expect(result.feedback.some((f: string) => f.includes("==="))).toBe(true);
   });
 
   it("rejects python code containing JS function definition", async () => {
@@ -60,7 +60,7 @@ function process_data(session_data) {
     return false
 }
 `;
-    const result = await agent.verify(invalidPython, { language: "python" });
+    const result = await qaRule.fn(invalidPython, { language: "python" });
     expect(result.passed).toBe(false);
     expect(result.score).toBe(0);
   });
